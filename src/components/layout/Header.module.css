@@ -1,0 +1,148 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: var(--background);
+    /* Solid background for visibility */
+    border-bottom: 1px solid transparent;
+}
+
+.scrolled {
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100px;
+    /* Taller header for premium feel */
+    transition: height 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.scrolled .container {
+    height: 80px;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    /* Wide tracking for high-end look */
+    text-transform: uppercase;
+    color: var(--primary);
+    transition: letter-spacing 0.5s ease;
+}
+
+.scrolled .logo {
+    font-size: 1.75rem;
+    letter-spacing: 0.2em;
+}
+
+.desktopNav {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+.navLink {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--foreground);
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.navLink::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--gold);
+    transition: width 0.3s ease;
+}
+
+.navLink:hover::after {
+    width: 100%;
+}
+
+.iconButton {
+    background: none;
+    border: none;
+    color: var(--foreground);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.iconButton:hover {
+    color: var(--gold);
+}
+
+.mobileToggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--foreground);
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1100;
+}
+
+/* Mobile Nav Overlay */
+.mobileNav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    height: 100vh;
+    background: var(--background);
+    padding: 100px 2rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+    z-index: 1050;
+    transition: right 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.mobileNavOpen {
+    right: 0;
+}
+
+.mobileNavLink {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Mobile Nav */
+@media (max-width: 1024px) {
+    .desktopNav {
+        display: none;
+    }
+
+    .mobileToggle {
+        display: block;
+    }
+
+    .container {
+        height: 80px;
+    }
+}

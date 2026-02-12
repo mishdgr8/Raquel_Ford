@@ -1,0 +1,34 @@
+.card {
+    background-color: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.hoverable:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.content {
+    padding: 1.25rem;
+    flex: 1;
+}
+
+.footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--border);
+    background-color: var(--muted);
+}

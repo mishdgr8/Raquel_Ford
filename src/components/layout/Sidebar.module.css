@@ -1,0 +1,81 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+}
+
+.latestArticles {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.articleItem {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.image {
+    width: 60px;
+    height: 40px;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    flex-shrink: 0;
+}
+
+.articleInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.articleTitle {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 0.25rem;
+    display: block;
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    text-wrap: balance;
+}
+
+.articleTitle:hover {
+    color: var(--gold);
+}
+
+.articleMeta {
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+    .sidebar {
+        margin-top: 4rem;
+    }
+}
