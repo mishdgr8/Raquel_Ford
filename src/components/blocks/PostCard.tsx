@@ -13,7 +13,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
     return (
         <Link href={`/articles/${article.slug}`} className={styles.link}>
             <Card className={variant === 'horizontal' ? styles.horizontal : styles.vertical} hoverable>
-                <div className={styles.imageWrapper}>
+                <div className={styles.imageContainer}>
                     {article.featuredImage ? (
                         <img src={article.featuredImage} alt={article.title} className={styles.image} />
                     ) : (
