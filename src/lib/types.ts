@@ -7,6 +7,7 @@ export interface Category {
     description?: string;
     image?: string;
     order: number;
+    isMain?: boolean;
 }
 
 export interface Tag {

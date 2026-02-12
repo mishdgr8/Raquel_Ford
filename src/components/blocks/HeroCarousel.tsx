@@ -25,10 +25,24 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
 
     useEffect(() => {
         categoryService.getCategories().then((data) => {
-            // Filter categories that have featured images or just take top ones
-            setCategories(data.slice(0, 5));
+            // Only main categories, sorted alphabetically
+            const main = data
+                .filter(cat => cat.isMain)
+                .sort((a, b) => a.name.localeCompare(b.name));
+            setCategories(main);
         });
     }, []);
+
+    // Auto-scroll logic
+    useEffect(() => {
+        if (categories.length === 0) return;
+
+        const interval = setInterval(() => {
+            setIndex((current) => (current + 1) % categories.length);
+        }, 4000); // 4 seconds interval
+
+        return () => clearInterval(interval);
+    }, [categories.length]);
 
     if (categories.length === 0) return null;
 
