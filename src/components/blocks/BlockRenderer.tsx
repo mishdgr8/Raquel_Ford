@@ -18,17 +18,17 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             {blocks.map((block) => {
                 switch (block.blockType) {
                     case 'HeroCarousel':
-                        return <HeroCarousel key={block.id} config={block.configJson} />;
+                        return <HeroCarousel key={block.id} config={block.configJson || {}} />;
                     case 'LatestArticles':
-                        return <LatestArticles key={block.id} config={block.configJson} />;
+                        return <LatestArticles key={block.id} config={block.configJson || {}} />;
                     case 'NewsletterSignup':
-                        return <NewsletterSignup key={block.id} config={block.configJson} />;
+                        return <NewsletterSignup key={block.id} config={block.configJson || {}} />;
                     case 'PostGrid':
-                        return <PostGrid key={block.id} config={block.configJson} />;
+                        return <PostGrid key={block.id} config={block.configJson || {}} />;
                     case 'IGReels':
-                        return <IGReels key={block.id} config={block.configJson} />;
+                        return <IGReels key={block.id} config={block.configJson || {}} />;
                     case 'MagazinePromo':
-                        return <MagazinePromo key={block.id} config={block.configJson} />;
+                        return <MagazinePromo key={block.id} config={block.configJson || {}} />;
                     default:
                         return (
                             <div key={block.id} style={{ padding: '2rem', border: '1px dashed var(--border)', textAlign: 'center' }}>

@@ -38,7 +38,7 @@ export function NewsletterSignup({ config }: NewsletterSignupProps) {
         <section className={styles.section}>
             <div className={styles.container}>
                 <div className={styles.content}>
-                    <h2 className={styles.title}>{config.title || "JOINT THE NEWSLETTER"}</h2>
+                    <h2 className={styles.title}>{config.title || "JOIN THE NEWSLETTER"}</h2>
                     <p className={styles.description}>
                         {config.description || "Stay ahead of the curve with our weekly curated stories."}
                     </p>

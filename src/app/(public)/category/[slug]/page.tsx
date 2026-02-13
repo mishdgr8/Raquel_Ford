@@ -1,6 +1,4 @@
-"use client";
 
-import { useEffect, useState, use } from "react";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
 import { PostCard } from "@/components/blocks/PostCard";

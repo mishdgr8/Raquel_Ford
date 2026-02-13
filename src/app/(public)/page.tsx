@@ -1,28 +1,11 @@
-"use client";
-
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
 import { templateService } from "@/lib/services/templates";
-import { useEffect, useState } from "react";
-import { PageTemplate } from "@/lib/types";
 
-export default function HomePage() {
-    const [template, setTemplate] = useState<PageTemplate | null>(null);
-    const [loading, setLoading] = useState(true);
+// Force dynamic rendering since we depend on database content
+export const dynamic = 'force-dynamic';
 
-    useEffect(() => {
-        templateService.getActiveTemplate('home')
-            .then((data) => {
-                setTemplate(data);
-            })
-            .catch((err) => {
-                console.error("Error loading home template:", err);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, []);
-
-    if (loading) return <div className="container">Loading...</div>;
+export default async function HomePage() {
+    const template = await templateService.getActiveTemplate('home');
 
     if (!template || !template.blocks || template.blocks.length === 0) {
         return (
