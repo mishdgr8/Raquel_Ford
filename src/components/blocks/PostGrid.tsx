@@ -66,8 +66,8 @@ export function PostGrid({ config }: PostGridProps) {
                     className={styles.grid}
                     style={{ gridTemplateColumns: `repeat(${config.columns || 3}, 1fr)` }}
                 >
-                    {/* Deduplicate articles to prevent key errors */}
-                    {Array.from(new Map(articles.map(item => [item.id, item])).values()).map((article) => (
+                    {/* Deduplicate articles by slug to prevent duplicate entries */}
+                    {Array.from(new Map(articles.map(item => [item.slug, item])).values()).map((article) => (
                         <PostCard key={article.id} article={article} variant="vertical" />
                     ))}
                 </div>

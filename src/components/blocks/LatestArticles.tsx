@@ -35,8 +35,8 @@ export function LatestArticles({ config }: LatestArticlesProps) {
                         </div>
 
                         <div className={styles.grid}>
-                            {/* Deduplicate articles by ID to prevent key errors */}
-                            {Array.from(new Map(articles.map(item => [item.id, item])).values()).slice(0, 5).map((article) => (
+                            {/* Deduplicate articles by slug to prevent duplicate entries */}
+                            {Array.from(new Map(articles.map(item => [item.slug, item])).values()).slice(0, 5).map((article) => (
                                 <PostCard key={article.id} article={article} variant="horizontal" />
                             ))}
                         </div>

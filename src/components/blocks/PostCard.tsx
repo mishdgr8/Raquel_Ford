@@ -10,6 +10,9 @@ interface PostCardProps {
 }
 
 export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
+    // Guard: don't render a broken link if slug is missing
+    if (!article.slug) return null;
+
     return (
         <Link href={`/articles/${article.slug}`} className={styles.link}>
             <Card className={variant === 'horizontal' ? styles.horizontal : styles.vertical} hoverable>
@@ -19,7 +22,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
                     ) : (
                         <div className={styles.imagePlaceholder} />
                     )}
-                    <span className={styles.category}>{article.categoryId.toUpperCase()}</span>
+                    <span className={styles.category}>{(article.categoryId || 'Uncategorized').toUpperCase()}</span>
                 </div>
 
                 <CardContent className={styles.content}>

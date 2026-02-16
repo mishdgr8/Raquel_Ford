@@ -1,0 +1,464 @@
+/* ─── Block Editor Layout ──────────────────────────── */
+.editor {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-height: 400px;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+}
+
+.emptyState p {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.emptyState span {
+    font-size: 0.875rem;
+}
+
+/* ─── Block Wrapper ──────────────────────────────────── */
+.blockWrapper {
+    display: flex;
+    gap: 0;
+    position: relative;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 2px;
+}
+
+.blockWrapper:hover {
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.blockWrapper:hover .blockSide {
+    opacity: 1;
+}
+
+.blockWrapper:hover .blockToolbar {
+    opacity: 1;
+}
+
+/* ─── Block Side Controls ────────────────────────────── */
+.blockSide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0.5rem 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    min-width: 28px;
+}
+
+.dragHandle {
+    background: none;
+    border: none;
+    cursor: grab;
+    color: #94a3b8;
+    padding: 2px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dragHandle:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.moveButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.moveButtons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 2px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.moveButtons button:hover:not(:disabled) {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.moveButtons button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ─── Block Body ─────────────────────────────────────── */
+.blockBody {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ─── Block Toolbar ──────────────────────────────────── */
+.blockToolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 8px;
+    background: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
+    border-radius: 8px 8px 0 0;
+    flex-wrap: wrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.blockToolbar button {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.15s;
+}
+
+.blockToolbar button:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.blockToolbar button.active {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.toolbarSection {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+}
+
+.toolbarDivider {
+    width: 1px;
+    height: 20px;
+    background: #e2e8f0;
+    margin: 0 4px;
+}
+
+.blockLabel {
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-right: auto;
+}
+
+.deleteBtn {
+    margin-left: auto !important;
+    color: #ef4444 !important;
+    opacity: 0.5;
+}
+
+.deleteBtn:hover {
+    opacity: 1 !important;
+    background: #fef2f2 !important;
+}
+
+/* ─── Text Editor ──────────────────────────────────── */
+.textEditor {
+    padding: 0.75rem 1rem;
+}
+
+.textEditor :global(.tiptap) {
+    outline: none;
+    min-height: 60px;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: #1a1a1a;
+}
+
+.textEditor :global(.tiptap p.is-editor-empty:first-child::before) {
+    content: attr(data-placeholder);
+    float: left;
+    color: #cbd5e1;
+    pointer-events: none;
+    height: 0;
+    font-style: italic;
+}
+
+.textEditor :global(.tiptap h1) {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0.5rem 0;
+}
+
+.textEditor :global(.tiptap h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0.5rem 0;
+}
+
+.textEditor :global(.tiptap h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0.5rem 0;
+}
+
+.textEditor :global(.tiptap h4) {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0.5rem 0;
+}
+
+.textEditor :global(.tiptap h5) {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.textEditor :global(.tiptap p) {
+    margin-bottom: 0.5rem;
+}
+
+.textEditor :global(.tiptap ul),
+.textEditor :global(.tiptap ol) {
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.textEditor :global(.tiptap ul) {
+    list-style: disc;
+}
+
+.textEditor :global(.tiptap ol) {
+    list-style: decimal;
+}
+
+.textEditor :global(.tiptap blockquote) {
+    border-left: 3px solid #1a1a1a;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+    color: #475569;
+    background: #f8fafc;
+}
+
+.textEditor :global(.tiptap a) {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.textEditor :global(.tiptap img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+}
+
+/* ─── Image Block ──────────────────────────────────── */
+.imageUploadZone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 2rem;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    margin: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #94a3b8;
+    background: #fafbfc;
+}
+
+.imageUploadZone:hover {
+    border-color: #64748b;
+    color: #64748b;
+    background: #f1f5f9;
+}
+
+.imageUploadZone p {
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+
+.imageUploadZone span {
+    font-size: 0.75rem;
+}
+
+.imagePreview {
+    position: relative;
+    margin: 0.75rem 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.imagePreview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.imageActions {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.imagePreview:hover .imageActions {
+    opacity: 1;
+}
+
+.imageActions button {
+    padding: 0.375rem 0.75rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.imageActions button:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.captionInput {
+    width: calc(100% - 2rem);
+    margin: 0 1rem 0.75rem;
+    padding: 0.5rem 0;
+    border: none;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.8125rem;
+    color: #64748b;
+    font-style: italic;
+    outline: none;
+    background: transparent;
+}
+
+.captionInput:focus {
+    border-bottom-color: #94a3b8;
+}
+
+/* ─── Divider Block ──────────────────────────────────── */
+.dividerLine {
+    border: none;
+    height: 1px;
+    background: #e2e8f0;
+    margin: 1rem;
+}
+
+/* ─── Block Inserter ──────────────────────────────────── */
+.inserter {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.blockWrapper:hover+.inserter,
+.inserter:hover {
+    opacity: 1;
+}
+
+/* Always show the last inserter when editor is empty */
+.editor>.inserter {
+    opacity: 1;
+}
+
+.inserterToggle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid #cbd5e1;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.inserterToggle:hover {
+    border-color: #1a1a1a;
+    color: #1a1a1a;
+    background: #f8fafc;
+    transform: scale(1.1);
+}
+
+.inserterMenu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    min-width: 220px;
+}
+
+.inserterMenu button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #475569;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.inserterMenu button:hover {
+    background: #f1f5f9;
+}
+
+.inserterMenu button strong {
+    display: block;
+    font-size: 0.8125rem;
+    color: #0f172a;
+}
+
+.inserterMenu button span {
+    display: block;
+    font-size: 0.6875rem;
+    color: #94a3b8;
+}
