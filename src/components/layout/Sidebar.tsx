@@ -7,6 +7,7 @@ import { Article } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
 import { formatDate } from "@/lib/utils";
 import { NewsletterSignup } from "../blocks/NewsletterSignup";
+import { RSSFeedWidget } from "../blocks/RSSFeedWidget";
 
 import { categoryService } from "@/lib/services/categories";
 
@@ -65,6 +66,26 @@ export function Sidebar() {
                 </div>
             </div>
 
+
+            {/* External Feeds */}
+            <div className={styles.section}>
+                <RSSFeedWidget
+                    title="Trending in Fashion"
+                    url="https://www.vogue.com/feed/rss"
+                    sourceName="Vogue"
+                    limit={3}
+                />
+            </div>
+
+            <div className={styles.section}>
+                <RSSFeedWidget
+                    title="World News"
+                    url="http://rss.cnn.com/rss/cnn_topstories.rss"
+                    sourceName="CNN"
+                    limit={3}
+                />
+            </div>
+
             {/* Newsletter Section */}
             <div className={styles.section}>
                 <h3 className={styles.title}>Newsletter</h3>
@@ -78,6 +99,6 @@ export function Sidebar() {
                     A curated digital destination for the modern individual, covering fashion, food, travel, and more with clinical precision and high-end editorial standards.
                 </p>
             </div>
-        </aside>
+        </aside >
     );
 }
