@@ -1,5 +1,5 @@
 .section {
-    padding: 10rem 0;
+    padding: 5rem 0;
     background: var(--background);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
@@ -27,7 +27,7 @@
     font-size: 1.25rem;
     line-height: 1.7;
     color: var(--muted-foreground);
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 .form {
