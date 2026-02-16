@@ -1,0 +1,36 @@
+.section {
+    padding: 4rem 0;
+}
+
+.header {
+    margin-bottom: 3rem;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.grid {
+    display: grid;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        gap: 2.5rem !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+}

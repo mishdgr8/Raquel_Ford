@@ -1,0 +1,115 @@
+.categoryBar {
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 80px;
+    /* Below the scrolled header */
+    z-index: 900;
+    transition: all 0.5s ease;
+}
+
+.scrolled .categoryBar {
+    top: 60px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+}
+
+.link {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    transition: color 0.3s ease;
+}
+
+.link:hover,
+.active {
+    color: var(--primary);
+}
+
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdownTrigger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+}
+
+.icon {
+    transition: transform 0.3s ease;
+}
+
+.iconActive {
+    transform: rotate(180deg);
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--background);
+    border: 1px solid var(--border);
+    padding: 1rem 0;
+    min-width: 200px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding-top: 0.75rem;
+    margin-top: 0;
+}
+
+.dropdownLink {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    transition: all 0.3s ease;
+}
+
+.dropdownLink:hover {
+    color: var(--primary);
+    background: var(--muted);
+    padding-left: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        gap: 1.5rem;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0 1rem;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .categoryBar {
+        top: 80px;
+    }
+
+    .dropdown {
+        display: none;
+        /* Hide dropdown on mobile, let them scroll */
+    }
+}

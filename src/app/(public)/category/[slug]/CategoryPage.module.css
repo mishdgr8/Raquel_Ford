@@ -1,0 +1,59 @@
+.page {
+    background: var(--background);
+}
+
+.header {
+    padding: 6rem 0;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6rem;
+}
+
+.label {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.description {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--muted-foreground);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Cards handle their own spacing/borders */
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        gap: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding-top: 100px;
+        padding-bottom: 4rem;
+        margin-bottom: 4rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+    }
+
+    .title {
+        font-size: 2.5rem;
+    }
+}

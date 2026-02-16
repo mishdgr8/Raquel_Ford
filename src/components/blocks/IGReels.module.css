@@ -1,0 +1,80 @@
+.section {
+    padding: 5rem 0;
+    background-color: var(--muted);
+}
+
+.title {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 5rem;
+    color: var(--gold-light);
+}
+
+.reelScroll {
+    display: flex;
+    gap: 2rem;
+    overflow-x: auto;
+    padding-bottom: 2rem;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding: 0 4rem;
+}
+
+.reelScroll::-webkit-scrollbar {
+    display: none;
+}
+
+.reelPlaceholder {
+    flex: 0 0 300px;
+    aspect-ratio: 9 / 16;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.reelPlaceholder:hover {
+    border-color: var(--gold);
+    transform: translateY(-10px);
+}
+
+.reelPlaceholder p {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+}
+
+.url {
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.5);
+    word-break: break-all;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .section {
+        padding: 6rem 0;
+    }
+
+    .reelScroll {
+        padding: 0 1.5rem;
+        gap: 1rem;
+    }
+
+    .reelPlaceholder {
+        flex: 0 0 240px;
+    }
+}
