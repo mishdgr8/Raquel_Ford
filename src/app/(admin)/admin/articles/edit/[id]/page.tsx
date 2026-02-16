@@ -19,7 +19,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
 
     return (
         <div style={{ padding: '0 2rem' }}>
-            <ArticleEditor initialData={serializedArticle} />
+            <ArticleEditor articleId={id} initialData={serializedArticle} />
         </div>
     );
 }

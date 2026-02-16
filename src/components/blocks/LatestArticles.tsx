@@ -19,7 +19,7 @@ export function LatestArticles({ config }: LatestArticlesProps) {
     const [articles, setArticles] = useState<Article[]>([]);
 
     useEffect(() => {
-        articleService.getPublishedArticles(undefined, config.count || 5).then(setArticles);
+        articleService.getPublishedArticles(undefined, config.count || 5).then(res => setArticles(res.articles));
     }, [config.count]);
 
     if (articles.length === 0) return null;
@@ -35,9 +35,23 @@ export function LatestArticles({ config }: LatestArticlesProps) {
                         </div>
 
                         <div className={styles.grid}>
-                            {articles.map((article) => (
+                            {/* Deduplicate articles by ID to prevent key errors */}
+                            {Array.from(new Map(articles.map(item => [item.id, item])).values()).slice(0, 5).map((article) => (
                                 <PostCard key={article.id} article={article} variant="horizontal" />
                             ))}
+                        </div>
+
+                        <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
+                            <a href="/articles" style={{
+                                display: 'inline-block',
+                                padding: '1rem 2rem',
+                                border: '1px solid currentColor',
+                                textDecoration: 'none',
+                                letterSpacing: '0.1em',
+                                fontSize: '0.875rem'
+                            }}>
+                                SEE ALL STORIES
+                            </a>
                         </div>
                     </div>
                     <Sidebar />

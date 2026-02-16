@@ -111,7 +111,11 @@ export const wordPressService = {
     parseContent(html: string): ContentBlock[] {
         const blocks: ContentBlock[] = [];
 
-        if (typeof window === "undefined" || !html?.trim()) {
+        if (typeof window === "undefined" || !html || html === "undefined") {
+            return blocks;
+        }
+
+        if (!html?.trim()) {
             if (html?.trim()) {
                 blocks.push({
                     id: `block-${Date.now()}`,

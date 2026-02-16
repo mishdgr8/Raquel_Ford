@@ -10,7 +10,9 @@ import {
     where,
     orderBy,
     limit,
-    serverTimestamp
+    serverTimestamp,
+    startAfter,
+    QueryDocumentSnapshot
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { Article } from "../types";
@@ -19,8 +21,8 @@ const ARTICLES_COLLECTION = "articles";
 
 export const articleService = {
     // Public Fetch
-    async getPublishedArticles(categoryId?: string, count: number = 10) {
-        const constraints = [
+    async getPublishedArticles(categoryId?: string, count: number = 10, lastDoc?: any) {
+        const constraints: any[] = [
             where("status", "==", "published"),
             orderBy("publishedAt", "desc"),
             limit(count)
@@ -30,9 +32,17 @@ export const articleService = {
             constraints.unshift(where("categoryId", "==", categoryId));
         }
 
+        if (lastDoc) {
+            constraints.push(startAfter(lastDoc));
+        }
+
         const q = query(collection(db, ARTICLES_COLLECTION), ...constraints);
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+
+        return {
+            articles: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article)),
+            lastDoc: snapshot.docs[snapshot.docs.length - 1]
+        };
     },
 
     async getArticleBySlug(slug: string) {

@@ -25,10 +25,17 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
 
     useEffect(() => {
         categoryService.getCategories().then((data) => {
-            // Only main categories, sorted alphabetically
+            // Filter for specific main categories
+            // We compare lowercased names to handle potential inconsistencies
+            const targetNames = ['fashion', 'food', 'entertainment', 'events', 'health & wellness', 'health.wellness', 'living'];
+
             const main = data
-                .filter(cat => cat.isMain)
-                .sort((a, b) => a.name.localeCompare(b.name));
+                .filter(cat => targetNames.includes(cat.name.toLowerCase()))
+                .sort((a, b) => {
+                    const indexA = targetNames.indexOf(a.name.toLowerCase());
+                    const indexB = targetNames.indexOf(b.name.toLowerCase());
+                    return indexA - indexB;
+                });
             setCategories(main);
         });
     }, []);

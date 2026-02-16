@@ -68,7 +68,8 @@
     min-width: 200px;
     z-index: 1000;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    margin-top: 0;
 }
 
 .dropdownLink {

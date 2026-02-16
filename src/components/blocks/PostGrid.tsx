@@ -17,12 +17,41 @@ interface PostGridProps {
 
 export function PostGrid({ config }: PostGridProps) {
     const [articles, setArticles] = useState<Article[]>([]);
+    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+
+    const count = config.count || 12;
 
     useEffect(() => {
-        articleService.getPublishedArticles(config.categoryId, config.count || 4).then(setArticles);
-    }, [config.categoryId, config.count]);
+        loadArticles(true);
+    }, [config.categoryId]);
 
-    if (articles.length === 0) return null;
+    const loadArticles = async (isInitial: boolean = false) => {
+        setLoading(true);
+        try {
+            const result = await articleService.getPublishedArticles(
+                config.categoryId,
+                count,
+                isInitial ? null : lastDoc
+            );
+
+            if (isInitial) {
+                setArticles(result.articles);
+            } else {
+                setArticles(prev => [...prev, ...result.articles]);
+            }
+
+            setLastDoc(result.lastDoc);
+            setHasMore(result.articles.length === count);
+        } catch (error) {
+            console.error("Failed to load articles", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (articles.length === 0 && !loading) return null;
 
     return (
         <section className={styles.section}>
@@ -35,12 +64,34 @@ export function PostGrid({ config }: PostGridProps) {
 
                 <div
                     className={styles.grid}
-                    style={{ gridTemplateColumns: `repeat(${config.columns || 4}, 1fr)` }}
+                    style={{ gridTemplateColumns: `repeat(${config.columns || 3}, 1fr)` }}
                 >
-                    {articles.map((article) => (
+                    {/* Deduplicate articles to prevent key errors */}
+                    {Array.from(new Map(articles.map(item => [item.id, item])).values()).map((article) => (
                         <PostCard key={article.id} article={article} variant="vertical" />
                     ))}
                 </div>
+
+                {hasMore && (
+                    <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+                        <button
+                            onClick={() => loadArticles(false)}
+                            disabled={loading}
+                            style={{
+                                padding: '1rem 3rem',
+                                border: '1px solid currentColor',
+                                background: 'transparent',
+                                fontSize: '0.8rem',
+                                letterSpacing: '0.1em',
+                                textTransform: 'uppercase',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {loading ? 'Loading...' : 'Load More'}
+                        </button>
+                    </div>
+                )}
             </div>
         </section>
     );

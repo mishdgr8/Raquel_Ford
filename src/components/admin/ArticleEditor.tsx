@@ -11,6 +11,7 @@ import styles from "./ArticleEditor.module.css";
 import { slugify } from "@/lib/utils";
 import { Save, ChevronLeft, Image as ImageIcon, Plus, Trash2 } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
+import { clsx } from "clsx";
 
 interface ArticleEditorProps {
     articleId?: string;
@@ -21,6 +22,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     const [form, setForm] = useState<Partial<Article>>({
         title: "",
@@ -36,18 +38,40 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
         categoryService.getCategories().then(setCategories);
     }, []);
 
-    const handleSave = async () => {
+    // Track created ID to prevent duplicates if user keeps clicking
+    const [createdId, setCreatedId] = useState<string | null>(null);
+
+    const handleSave = async (newStatus: ArticleStatus) => {
+        if (loading) return;
         setLoading(true);
+
         try {
-            if (articleId) {
-                await articleService.updateArticle(articleId, form);
+            // Update the form with the new status immediately
+            const dataToSave: any = { ...form, status: newStatus };
+            if (newStatus === 'published' && !form.publishedAt) {
+                dataToSave.publishedAt = new Date(); // Use client date or serverTimestamp
+            }
+
+            setForm(prev => ({ ...prev, status: newStatus }));
+
+            const targetId = articleId || initialData?.id || createdId;
+
+            if (targetId) {
+                // Update existing
+                await articleService.updateArticle(targetId, dataToSave);
+                // alert(`Article ${newStatus === 'published' ? 'posted' : 'saved'} successfully`);
+                setNotification({ type: 'success', message: `Article ${newStatus === 'published' ? 'posted' : 'saved'} successfully` });
+                setTimeout(() => setNotification(null), 3000);
             } else {
-                const id = await articleService.createArticle(form as Article);
+                // Create new
+                const id = await articleService.createArticle(dataToSave as Article);
+                setCreatedId(id); // Prevent duplicate creation
                 router.push(`/admin/articles/edit/${id}`);
             }
-            alert("Article saved successfully");
         } catch (err) {
-            alert("Error saving article");
+            console.error(err);
+            setNotification({ type: 'error', message: "Error saving article" });
+            setTimeout(() => setNotification(null), 3000);
         } finally {
             setLoading(false);
         }
@@ -87,17 +111,51 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
     return (
         <div className={styles.container}>
+            {notification && (
+                <div style={{
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    padding: '1rem 2rem',
+                    borderRadius: '8px',
+                    backgroundColor: notification.type === 'success' ? '#22c55e' : '#ef4444',
+                    color: 'white',
+                    zIndex: 1000,
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    animation: 'slideIn 0.3s ease-out'
+                }}>
+                    {notification.message}
+                </div>
+            )}
             <header className={styles.header}>
                 <div className={styles.headerLeft}>
                     <button onClick={() => router.back()} className={styles.backBtn}>
                         <ChevronLeft size={20} />
                     </button>
                     <h1 className={styles.title}>{articleId ? "Edit Article" : "New Article"}</h1>
+                    {form.status && (
+                        <span className={clsx(styles.badge, styles[form.status])}>
+                            {form.status}
+                        </span>
+                    )}
                 </div>
                 <div className={styles.headerRight}>
-                    <Button variant="outline" onClick={handleSave} loading={loading}>
+                    <Button
+                        variant="outline"
+                        onClick={() => handleSave('draft')}
+                        loading={loading}
+                        disabled={loading}
+                    >
                         <Save size={18} />
-                        <span>{articleId ? "Update" : "Save Draft"}</span>
+                        <span>Save Draft</span>
+                    </Button>
+                    <Button
+                        onClick={() => handleSave('published')}
+                        loading={loading}
+                        disabled={loading}
+                        style={{ backgroundColor: 'black', color: 'white' }}
+                    >
+                        <span>Post</span>
                     </Button>
                 </div>
             </header>
@@ -183,20 +241,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 </div>
 
                 <aside className={styles.settings}>
-                    <div className={styles.settingBlock}>
-                        <h3>Publishing</h3>
-                        <div className={styles.selectRow}>
-                            <label>Status</label>
-                            <select
-                                value={form.status}
-                                onChange={(e) => setForm(prev => ({ ...prev, status: e.target.value as ArticleStatus }))}
-                            >
-                                <option value="draft">Draft</option>
-                                <option value="published">Published</option>
-                                <option value="scheduled">Scheduled</option>
-                            </select>
-                        </div>
-                    </div>
+                    {/* Status is now controlled by top buttons */}
 
                     <div className={styles.settingBlock}>
                         <h3>Categories</h3>

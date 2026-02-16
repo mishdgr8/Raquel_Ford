@@ -21,7 +21,9 @@ export default function ArticleListPage() {
         setLoading(true);
         try {
             const data = await articleService.getAllArticles();
-            setArticles(data);
+            // Deduplicate to ensure no UI glitches
+            const uniqueData = Array.from(new Map(data.map(item => [item.id, item])).values());
+            setArticles(uniqueData);
         } catch (err) {
             console.error(err);
         } finally {
@@ -30,13 +32,18 @@ export default function ArticleListPage() {
     };
 
     const handleDelete = async (id: string | undefined) => {
-        if (!id) return;
-        if (confirm("Are you sure you want to delete this article?")) {
+        if (!id) {
+            console.error("Attempted to delete article with no ID");
+            return;
+        }
+        if (confirm("Are you sure you want to delete this article? This action cannot be undone.")) {
             try {
+                console.log("Deleting article:", id);
                 await articleService.deleteArticle(id);
                 setArticles(articles.filter(a => a.id !== id));
-            } catch (err) {
-                console.error(err);
+            } catch (err: any) {
+                console.error("Delete failed:", err);
+                alert(`Failed to delete article: ${err.message || 'Unknown error'}`);
             }
         }
     };
@@ -98,6 +105,23 @@ export default function ArticleListPage() {
                                     <button onClick={() => handleDelete(article.id)} title="Delete">
                                         <Trash2 size={16} />
                                     </button>
+                                    {article.status === 'draft' && (
+                                        <button
+                                            onClick={async () => {
+                                                if (confirm("Publish this article immediately?")) {
+                                                    await articleService.updateArticle(article.id!, {
+                                                        status: 'published',
+                                                        publishedAt: new Date()
+                                                    });
+                                                    setArticles(articles.map(a => a.id === article.id ? { ...a, status: 'published', publishedAt: new Date() } : a));
+                                                }
+                                            }}
+                                            title="Quick Publish"
+                                            style={{ color: '#16a34a' }}
+                                        >
+                                            <ExternalLink size={16} style={{ transform: 'rotate(180deg)' }} />
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

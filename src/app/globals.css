@@ -29,7 +29,7 @@
   /* Professional Spacing */
   --container-width: 1400px;
   /* Slightly wider for immersive feel */
-  --section-padding: 6rem;
+  --section-padding: 4rem;
 
   /* Shadows - Minimalist */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

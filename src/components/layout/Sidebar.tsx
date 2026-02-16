@@ -26,7 +26,7 @@ export function Sidebar() {
                 );
 
                 const results = await Promise.all(articlePromises);
-                const articles = results.flat().filter(Boolean);
+                const articles = results.flatMap(res => res.articles).filter(Boolean);
 
                 setLatest(articles);
             } catch (error) {

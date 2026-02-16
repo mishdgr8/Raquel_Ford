@@ -31,6 +31,9 @@ export function Header() {
                 <Link href="/" className={styles.logo}>
                     RAQUEL FORD
                 </Link>
+                <Link href="/about" className={styles.navLink}>ABOUT</Link>
+                <Link href="/articles" className={styles.navLink}>STORIES</Link>
+                <Link href="/contact" className={styles.navLink}>CONTACT</Link>
 
                 {/* Mobile Toggle */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
