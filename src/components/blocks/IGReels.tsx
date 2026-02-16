@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { getInstagramFeed } from "@/app/actions/instagram";
+import { InstagramMedia } from "@/lib/services/instagram";
 import styles from "./IGReels.module.css";
 
 interface IGReelsProps {
@@ -10,24 +13,82 @@ interface IGReelsProps {
 }
 
 export function IGReels({ config }: IGReelsProps) {
-    const reels = config.reelUrls || [];
+    const [feeds, setFeeds] = useState<InstagramMedia[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // If manual URLs are provided in config, don't fetch from API
+        if (config.reelUrls && config.reelUrls.length > 0) {
+            setLoading(false);
+            return;
+        }
+
+        getInstagramFeed(6)
+            .then(setFeeds)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [config.reelUrls]);
+
+    const title = config.title || "FOLLOW THE VIBE";
+    const manualReels = config.reelUrls || [];
 
     return (
         <section className={styles.section}>
             <div className="container">
-                <h2 className={styles.title}>{config.title || "FOLLOW THE VIBE"}</h2>
+                <h2 className={styles.title}>{title}</h2>
                 <div className={styles.reelScroll}>
-                    {reels.length > 0 ? (
-                        reels.map((url, i) => (
+                    {loading ? (
+                        // Skeleton Loaders
+                        [1, 2, 3, 4, 5, 6].map((i) => (
                             <div key={i} className={styles.reelPlaceholder}>
-                                <p>REEL EMBED</p>
-                                <span className={styles.url}>{url}</span>
+                                <div className={styles.skeleton} />
                             </div>
                         ))
-                    ) : (
-                        [1, 2, 3, 4, 5].map((i) => (
+                    ) : manualReels.length > 0 ? (
+                        manualReels.map((url, i) => (
                             <div key={i} className={styles.reelPlaceholder}>
-                                <p>INSTAGRAM REEL</p>
+                                <iframe
+                                    src={`${url.split('?')[0]}embed`}
+                                    className={styles.reelIframe}
+                                    frameBorder="0"
+                                    scrolling="no"
+                                    allowTransparency={true}
+                                />
+                            </div>
+                        ))
+                    ) : feeds.length > 0 ? (
+                        feeds.map((feed) => (
+                            <a
+                                key={feed.id}
+                                href={feed.permalink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={styles.reelPlaceholder}
+                            >
+                                {feed.media_type === 'VIDEO' ? (
+                                    <video
+                                        src={feed.media_url}
+                                        poster={feed.thumbnail_url}
+                                        className={styles.reelVideo}
+                                        muted
+                                        loop
+                                        onMouseOver={(e) => e.currentTarget.play()}
+                                        onMouseOut={(e) => e.currentTarget.pause()}
+                                    />
+                                ) : (
+                                    <img
+                                        src={feed.media_url}
+                                        alt={feed.caption}
+                                        className={styles.reelImage}
+                                    />
+                                )}
+                            </a>
+                        ))
+                    ) : (
+                        // Fallback if no config and no API success
+                        [1, 2, 3, 4, 5, 6].map((i) => (
+                            <div key={i} className={styles.reelPlaceholder}>
+                                <p>CONNECT INSTAGRAM</p>
                             </div>
                         ))
                     )}

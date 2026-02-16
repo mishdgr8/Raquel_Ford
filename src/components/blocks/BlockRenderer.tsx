@@ -5,6 +5,7 @@ import { NewsletterSignup } from "./NewsletterSignup";
 import { PostGrid } from "./PostGrid";
 import { IGReels } from "./IGReels";
 import { MagazinePromo } from "./MagazinePromo";
+import { EditorsPick } from "./EditorsPick";
 
 interface BlockRendererProps {
     blocks: BlockInstance[];
@@ -26,9 +27,16 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                     case 'PostGrid':
                         return <PostGrid key={block.id} config={block.configJson || {}} />;
                     case 'IGReels':
-                        return <IGReels key={block.id} config={block.configJson || {}} />;
+                        return (
+                            <>
+                                <EditorsPick />
+                                <IGReels key={block.id} config={block.configJson || {}} />
+                            </>
+                        );
                     case 'MagazinePromo':
                         return <MagazinePromo key={block.id} config={block.configJson || {}} />;
+                    case 'EditorsPick':
+                        return <EditorsPick key={block.id} />;
                     default:
                         return (
                             <div key={block.id} style={{ padding: '2rem', border: '1px dashed var(--border)', textAlign: 'center' }}>

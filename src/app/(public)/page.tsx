@@ -1,4 +1,6 @@
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
+import { EditorsPick } from "@/components/blocks/EditorsPick";
+import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
 
 // Force dynamic rendering since we depend on database content
