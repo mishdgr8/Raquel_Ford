@@ -6,6 +6,7 @@ import styles from "./ArticlePage.module.css";
 import clsx from "clsx";
 
 import { Sidebar } from "@/components/layout/Sidebar";
+import { CommentSection } from "@/components/articles/CommentSection";
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -40,7 +41,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                                 <img src={article.featuredImage} alt={article.title} />
                             </div>
                         )}
-                        <ArticleRenderer blocks={article.contentJson?.blocks || []} />
+                        <ArticleRenderer
+                            html={article.contentHtml}
+                            blocks={article.contentJson?.blocks || []}
+                        />
+
+                        {/* Comment Section */}
+                        {article.id && <CommentSection articleId={article.id} />}
                     </div>
                     <Sidebar />
                 </div>

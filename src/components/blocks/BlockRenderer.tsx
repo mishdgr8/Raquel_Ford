@@ -1,3 +1,4 @@
+import React from "react";
 import { BlockInstance } from "@/lib/types";
 import { HeroCarousel } from "./HeroCarousel";
 import { LatestArticles } from "./LatestArticles";
@@ -28,10 +29,10 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                         return <PostGrid key={block.id} config={block.configJson || {}} />;
                     case 'IGReels':
                         return (
-                            <>
+                            <React.Fragment key={block.id}>
                                 <EditorsPick />
-                                <IGReels key={block.id} config={block.configJson || {}} />
-                            </>
+                                <IGReels config={block.configJson || {}} />
+                            </React.Fragment>
                         );
                     case 'MagazinePromo':
                         return <MagazinePromo key={block.id} config={block.configJson || {}} />;

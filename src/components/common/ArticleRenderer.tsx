@@ -2,10 +2,22 @@ import { ContentBlock } from "@/lib/types";
 import styles from "./ArticleRenderer.module.css";
 
 interface ArticleRendererProps {
-    blocks: ContentBlock[];
+    blocks?: ContentBlock[];
+    html?: string;
 }
 
-export function ArticleRenderer({ blocks }: ArticleRendererProps) {
+export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
+    // New format: render HTML directly
+    if (html) {
+        return (
+            <div
+                className={styles.container}
+                dangerouslySetInnerHTML={{ __html: html }}
+            />
+        );
+    }
+
+    // Legacy format: render blocks
     if (!blocks || blocks.length === 0) return null;
 
     return (

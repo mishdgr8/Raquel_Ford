@@ -34,6 +34,7 @@ export interface Article {
     title: string;
     slug: string;
     excerpt: string;
+    contentHtml?: string;
     contentJson: {
         blocks: ContentBlock[];
     };
