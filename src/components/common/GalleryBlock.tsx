@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import styles from "./GalleryBlock.module.css";
 
 interface GalleryImage {
@@ -52,11 +53,11 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                         onClick={() => setLightboxIndex(i)}
                         aria-label={`View image ${i + 1}: ${img.alt || ''}`}
                     >
-                        <img
+                        <Image
                             src={img.url}
                             alt={img.alt || `Gallery image ${i + 1}`}
-                            loading="lazy"
-                            decoding="async"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 33vw"
                         />
                     </button>
                 ))}
@@ -89,12 +90,16 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                         ‹
                     </button>
 
-                    <img
-                        src={images[lightboxIndex].url}
-                        alt={images[lightboxIndex].alt || ''}
-                        className={styles.lightboxImage}
-                        onClick={(e) => e.stopPropagation()}
-                    />
+                    <div className={styles.lightboxImageContainer} onClick={(e) => e.stopPropagation()}>
+                        <Image
+                            src={images[lightboxIndex].url}
+                            alt={images[lightboxIndex].alt || ''}
+                            fill
+                            className={styles.lightboxImage}
+                            sizes="100vw"
+                            priority
+                        />
+                    </div>
 
                     <button
                         className={`${styles.lightboxNav} ${styles.lightboxNext}`}

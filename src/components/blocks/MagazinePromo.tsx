@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./MagazinePromo.module.css";
 import { Button } from "../ui/Button";
 
@@ -6,6 +7,7 @@ interface MagazinePromoProps {
         title?: string;
         description?: string;
         downloadUrl?: string;
+        coverImage?: string;
     };
 }
 
@@ -20,12 +22,28 @@ export function MagazinePromo({ config }: MagazinePromoProps) {
                         <p className={styles.description}>
                             {config.description || "Download our latest digital issue featuring exclusive interviews, fashion trends, and culinary secrets."}
                         </p>
-                        <Button className={styles.button}>DOWNLOAD NOW</Button>
+                        {config.downloadUrl ? (
+                            <a href={config.downloadUrl} target="_blank" rel="noopener noreferrer">
+                                <Button className={styles.button}>DOWNLOAD NOW</Button>
+                            </a>
+                        ) : (
+                            <Button className={styles.button}>DOWNLOAD NOW</Button>
+                        )}
                     </div>
                     <div className={styles.visual}>
-                        <div className={styles.magazinePlaceholder}>
-                            <span>MAGAZINE COVER</span>
-                        </div>
+                        {config.coverImage ? (
+                            <Image
+                                src={config.coverImage}
+                                alt={config.title || "Magazine cover"}
+                                width={400}
+                                height={560}
+                                className={styles.coverImage}
+                            />
+                        ) : (
+                            <div className={styles.magazinePlaceholder}>
+                                <span>MAGAZINE COVER</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -294,6 +294,18 @@
     margin: 0.5rem 0;
 }
 
+.galleryImageContainer {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.galleryImage {
+    object-fit: cover;
+}
+
 /* ─── Image Block ──────────────────────────────────── */
 .imageUploadZone {
     display: flex;
@@ -331,12 +343,11 @@
     margin: 0.75rem 1rem;
     border-radius: 8px;
     overflow: hidden;
+    min-height: 200px;
 }
 
-.imagePreview img {
-    width: 100%;
-    height: auto;
-    display: block;
+.imagePreviewImage {
+    object-fit: cover;
 }
 
 .imageActions {

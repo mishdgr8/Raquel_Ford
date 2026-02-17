@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { mediaService } from "@/lib/services/media";
 import { Media } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 import { Upload, Trash2, Copy, Check } from "lucide-react";
 import styles from "./MediaLibrary.module.css";
 
@@ -60,7 +61,13 @@ export default function MediaLibraryPage() {
                     <div key={item.id} className={styles.card}>
                         <div className={styles.preview}>
                             {item.type.startsWith("image") ? (
-                                <img src={item.url} alt={item.altText} />
+                                <Image
+                                    src={item.url}
+                                    alt={item.altText || ""}
+                                    fill
+                                    sizes="(max-width: 768px) 50vw, 200px"
+                                    className={styles.image}
+                                />
                             ) : (
                                 <div className={styles.fileIcon}>📄</div>
                             )}

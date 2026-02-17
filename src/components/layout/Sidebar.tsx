@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./Sidebar.module.css";
 import { Article } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
 import { formatDate } from "@/lib/utils";
 import { NewsletterSignup } from "../blocks/NewsletterSignup";
 import { RSSFeedWidget } from "../blocks/RSSFeedWidget";
+import clsx from "clsx";
 
 import { categoryService } from "@/lib/services/categories";
 
@@ -49,9 +51,11 @@ export function Sidebar() {
                     {latest.map((article) => (
                         <div key={article.id} className={styles.articleItem}>
                             {article.featuredImage && (
-                                <img
+                                <Image
                                     src={article.featuredImage}
                                     alt={article.title}
+                                    width={120}
+                                    height={80}
                                     className={styles.image}
                                 />
                             )}
@@ -87,8 +91,8 @@ export function Sidebar() {
             </div>
 
             {/* Newsletter Section */}
-            <div className={styles.section}>
-                <h3 className={styles.title}>Newsletter</h3>
+            <div className={clsx(styles.section, styles.newsletterSection)}>
+                <h3 className={clsx(styles.title)} style={{ paddingLeft: '3rem', paddingRight: '3rem' }}>Newsletter</h3>
                 <NewsletterSignup config={{}} />
             </div>
 

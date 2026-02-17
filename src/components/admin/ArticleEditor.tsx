@@ -8,6 +8,7 @@ import { mediaService } from "@/lib/services/media";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
+import Image from "next/image";
 import styles from "./ArticleEditor.module.css";
 import { slugify } from "@/lib/utils";
 import { Save, ChevronLeft, Eye, Edit3, Upload, X } from "lucide-react";
@@ -36,8 +37,11 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
         categoryId: "",
         status: "draft" as ArticleStatus,
         contentJson: { blocks: [] },
+        tags: [],
         ...initialData
     });
+
+    const [tagInput, setTagInput] = useState("");
 
     useEffect(() => {
         categoryService.getCategories().then(setCategories);
@@ -72,6 +76,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 isEditorsPick: form.isEditorsPick || false,
                 contentHtml: html,
                 contentJson: form.contentJson,
+                tags: form.tags || [],
             };
 
             if (newStatus === 'published') {
@@ -328,7 +333,12 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
                             {form.featuredImage ? (
                                 <div className={styles.featuredPreview}>
-                                    <img src={form.featuredImage} alt="Featured" />
+                                    <Image
+                                        src={form.featuredImage}
+                                        alt="Featured"
+                                        fill
+                                        className={styles.featuredPreviewImage}
+                                    />
                                     <div className={styles.featuredActions}>
                                         <button onClick={() => featuredInputRef.current?.click()}>
                                             <Upload size={14} /> Replace
@@ -356,6 +366,48 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                 className={styles.featuredUrlInput}
                             />
                         </div>
+
+                        <div className={styles.settingBlock}>
+                            <h3>Tags & SEO</h3>
+                            <div className={styles.tagInputWrapper}>
+                                <div className={styles.tagsList}>
+                                    {(form.tags || []).map((tag, i) => (
+                                        <span key={i} className={styles.tagItem}>
+                                            {tag}
+                                            <button
+                                                className={styles.tagRemove}
+                                                onClick={() => {
+                                                    const newTags = [...(form.tags || [])];
+                                                    newTags.splice(i, 1);
+                                                    setForm(prev => ({ ...prev, tags: newTags }));
+                                                }}
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                                <input
+                                    className={styles.tagInput}
+                                    placeholder="Add tag (press Enter or comma)"
+                                    value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ',') {
+                                            e.preventDefault();
+                                            const tag = tagInput.trim().replace(/,$/, '');
+                                            if (tag && !(form.tags || []).includes(tag)) {
+                                                setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
+                                                setTagInput("");
+                                            }
+                                        }
+                                    }}
+                                />
+                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+                                    Tags help categorize your content and improve SEO ranking.
+                                </p>
+                            </div>
+                        </div>
                     </aside>
                 </div>
             ) : (
@@ -378,7 +430,13 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                             </header>
                             {form.featuredImage && (
                                 <div className={styles.previewHero}>
-                                    <img src={form.featuredImage} alt={form.title || ""} />
+                                    <Image
+                                        src={form.featuredImage}
+                                        alt={form.title || ""}
+                                        fill
+                                        className={styles.previewHeroImage}
+                                        priority
+                                    />
                                 </div>
                             )}
                             <div className={styles.previewContent}>

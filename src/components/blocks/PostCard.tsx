@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./PostCard.module.css";
 import { Article } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
@@ -18,7 +19,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
             <Card className={variant === 'horizontal' ? styles.horizontal : styles.vertical} hoverable>
                 <div className={styles.imageContainer}>
                     {article.featuredImage ? (
-                        <img src={article.featuredImage} alt={article.title} className={styles.image} />
+                        <Image src={article.featuredImage} alt={article.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className={styles.image} />
                     ) : (
                         <div className={styles.imagePlaceholder} />
                     )}

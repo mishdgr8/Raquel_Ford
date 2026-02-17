@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { ContentBlock } from "@/lib/types";
+import Image from "next/image";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -16,7 +17,7 @@ import {
     Link as LinkIcon,
     AlignLeft, AlignCenter, AlignRight,
     GripVertical, Trash2, Plus, ArrowUp, ArrowDown,
-    Type, Image as ImageIcon, Minus as DividerIcon, Upload, Video
+    Type, Image as ImageIcon, Minus as DividerIcon, Upload, Video, Images, X, Columns
 } from "lucide-react";
 import styles from "./BlockEditor.module.css";
 import { mediaService } from "@/lib/services/media";
@@ -43,6 +44,181 @@ function isEmbedUrl(text: string): boolean {
     const trimmed = text.trim();
     const { type } = detectEmbedUrl(trimmed);
     return type !== null;
+}
+
+// ─── Gallery Block Editor ────────────────────────────
+function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
+    block: ContentBlock;
+    onUpdate: (data: any) => void;
+    onDelete: () => void;
+    onMoveUp: () => void;
+    onMoveDown: () => void;
+    isFirst: boolean;
+    isLast: boolean;
+}) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+    const images: { url: string; alt: string }[] = block.data.images || [];
+    const columns: number = block.data.columns || 3;
+
+    const handleUpload = async (files: FileList) => {
+        setUploading(true);
+        try {
+            const uploaded: { url: string; alt: string }[] = [];
+            for (const file of Array.from(files)) {
+                const result = await mediaService.uploadMedia(file, 'uploads');
+                uploaded.push({ url: result.url, alt: file.name.replace(/\.[^.]+$/, '') });
+            }
+            onUpdate({ ...block.data, images: [...images, ...uploaded] });
+        } catch (err) {
+            console.error('Gallery upload failed:', err);
+            alert('Some images failed to upload');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        const next = images.filter((_, i) => i !== index);
+        onUpdate({ ...block.data, images: next });
+    };
+
+    const moveImage = (from: number, to: number) => {
+        if (to < 0 || to >= images.length) return;
+        const next = [...images];
+        [next[from], next[to]] = [next[to], next[from]];
+        onUpdate({ ...block.data, images: next });
+    };
+
+    return (
+        <div className={styles.blockWrapper}>
+            <div className={styles.blockSide}>
+                <button className={styles.dragHandle} title="Drag to reorder"><GripVertical size={16} /></button>
+                <div className={styles.moveButtons}>
+                    <button onClick={onMoveUp} disabled={isFirst} title="Move up"><ArrowUp size={12} /></button>
+                    <button onClick={onMoveDown} disabled={isLast} title="Move down"><ArrowDown size={12} /></button>
+                </div>
+            </div>
+            <div className={styles.blockBody}>
+                <div className={styles.blockToolbar}>
+                    <span className={styles.blockLabel}>🖼 GALLERY</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto', marginRight: '0.5rem' }}>
+                        <Columns size={14} style={{ color: '#64748b' }} />
+                        <select
+                            value={columns}
+                            onChange={(e) => onUpdate({ ...block.data, columns: parseInt(e.target.value) })}
+                            style={{
+                                padding: '2px 6px', border: '1px solid #e2e8f0', borderRadius: '4px',
+                                fontSize: '0.8rem', background: 'white', cursor: 'pointer',
+                            }}
+                        >
+                            <option value={2}>2 cols</option>
+                            <option value={3}>3 cols</option>
+                            <option value={4}>4 cols</option>
+                        </select>
+                    </div>
+                    <button className={styles.deleteBtn} onClick={onDelete} title="Delete block"><Trash2 size={14} /></button>
+                </div>
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) handleUpload(e.target.files);
+                        e.target.value = '';
+                    }}
+                />
+
+                {images.length > 0 && (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${Math.min(columns, 4)}, 1fr)`,
+                        gap: '0.5rem',
+                        padding: '0.75rem 1rem',
+                    }}>
+                        {images.map((img, i) => (
+                            <div key={i} className={styles.galleryImageContainer}>
+                                <Image
+                                    src={img.url}
+                                    alt={img.alt || ""}
+                                    fill
+                                    className={styles.galleryImage}
+                                    sizes="(max-width: 768px) 50vw, 200px"
+                                />
+                                <div style={{
+                                    position: 'absolute', top: 0, right: 0,
+                                    display: 'flex', gap: '2px', padding: '4px',
+                                    zIndex: 10,
+                                }}>
+                                    {i > 0 && (
+                                        <button
+                                            onClick={() => moveImage(i, i - 1)}
+                                            style={{
+                                                width: '22px', height: '22px', borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.6)', color: 'white',
+                                                border: 'none', cursor: 'pointer', fontSize: '0.7rem',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}
+                                            title="Move left"
+                                        >←</button>
+                                    )}
+                                    {i < images.length - 1 && (
+                                        <button
+                                            onClick={() => moveImage(i, i + 1)}
+                                            style={{
+                                                width: '22px', height: '22px', borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.6)', color: 'white',
+                                                border: 'none', cursor: 'pointer', fontSize: '0.7rem',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}
+                                            title="Move right"
+                                        >→</button>
+                                    )}
+                                    <button
+                                        onClick={() => removeImage(i)}
+                                        style={{
+                                            width: '22px', height: '22px', borderRadius: '50%',
+                                            background: 'rgba(220,38,38,0.85)', color: 'white',
+                                            border: 'none', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        }}
+                                        title="Remove image"
+                                    ><X size={12} /></button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div
+                    style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        gap: '0.5rem', padding: '1.5rem', margin: '0.5rem 1rem 1rem',
+                        border: '2px dashed #cbd5e1', borderRadius: '8px',
+                        background: '#fafbfc', color: '#64748b', cursor: 'pointer',
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {uploading ? (
+                        <p style={{ margin: 0, fontSize: '0.9rem' }}>Uploading...</p>
+                    ) : (
+                        <>
+                            <Upload size={28} />
+                            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 500 }}>
+                                {images.length > 0 ? 'Add more images' : 'Click to upload images'}
+                            </p>
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                Select multiple files at once · JPG, PNG, GIF, WebP
+                            </span>
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 // ─── Types ──────────────────────────────────────────
@@ -323,7 +499,13 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
 
                 {block.data.url ? (
                     <div className={styles.imagePreview}>
-                        <img src={block.data.url} alt={block.data.caption || ""} />
+                        <Image
+                            src={block.data.url}
+                            alt={block.data.caption || ""}
+                            fill
+                            className={styles.imagePreviewImage}
+                            sizes="(max-width: 1024px) 100vw, 800px"
+                        />
                         <div className={styles.imageActions}>
                             <button onClick={() => fileInputRef.current?.click()}>Replace</button>
                             <button onClick={() => onUpdate({ ...block.data, url: "" })}>Remove</button>
@@ -415,6 +597,13 @@ function BlockInserter({ onAdd }: { onAdd: (type: ContentBlock['type']) => void 
                             <span>YouTube, Instagram</span>
                         </div>
                     </button>
+                    <button onClick={() => { onAdd('gallery'); setOpen(false); }}>
+                        <Images size={18} />
+                        <div>
+                            <strong>Gallery</strong>
+                            <span>Multiple images in a grid</span>
+                        </div>
+                    </button>
                     <button onClick={() => { onAdd('divider'); setOpen(false); }}>
                         <DividerIcon size={18} />
                         <div>
@@ -439,7 +628,8 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
             data: type === 'text' ? { text: "" }
                 : type === 'image' ? { url: "", caption: "" }
                     : type === 'embed' ? { embedType: null, embedId: null, originalUrl: "" }
-                        : {}
+                        : type === 'gallery' ? { images: [], columns: 3 }
+                            : {}
         };
         const next = [...blocks];
         const idx = afterIndex !== undefined ? afterIndex + 1 : next.length;
@@ -510,6 +700,17 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
                     )}
                     {block.type === 'embed' && (
                         <EmbedBlockEditor
+                            block={block}
+                            onUpdate={(data) => updateBlock(block.id, data)}
+                            onDelete={() => removeBlock(block.id)}
+                            onMoveUp={() => moveBlock(index, -1)}
+                            onMoveDown={() => moveBlock(index, 1)}
+                            isFirst={index === 0}
+                            isLast={index === blocks.length - 1}
+                        />
+                    )}
+                    {block.type === 'gallery' && (
+                        <GalleryBlockEditor
                             block={block}
                             onUpdate={(data) => updateBlock(block.id, data)}
                             onDelete={() => removeBlock(block.id)}

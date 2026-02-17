@@ -8,6 +8,22 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { categoryService } from "@/lib/services/categories";
 import { notFound } from "next/navigation";
 import { PostGrid } from "@/components/blocks/PostGrid";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+    const { slug } = await params;
+    const category = await categoryService.getCategoryBySlug(slug);
+    if (!category) return { title: "Category Not Found" };
+    return {
+        title: `${category.name} | Raquel Ford`,
+        description: category.description || `Explore ${category.name} articles on Raquel Ford.`,
+        openGraph: {
+            title: `${category.name} | Raquel Ford`,
+            description: category.description || "",
+            images: category.image ? [{ url: category.image }] : [],
+        },
+    };
+}
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BlockInstance, Category } from "@/lib/types";
 import { categoryService } from "@/lib/services/categories";
+import { mediaService } from "@/lib/services/media";
 import { Input } from "../ui/Input";
+import Image from "next/image";
 import styles from "./BlockInspector.module.css";
 
 interface BlockInspectorProps {
@@ -13,6 +15,8 @@ interface BlockInspectorProps {
 
 export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         categoryService.getCategories().then(setCategories);
@@ -175,10 +179,89 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                             />
                         </div>
                         <div className={styles.fieldGroup}>
-                            <label>Link URL</label>
+                            <label>Cover Image</label>
+                            <input
+                                type="file"
+                                ref={coverInputRef}
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setUploading(true);
+                                    try {
+                                        const result = await mediaService.uploadMedia(file, 'magazine');
+                                        handleChange('coverImage', result.url);
+                                    } catch (err) {
+                                        console.error('Cover upload failed:', err);
+                                        alert('Upload failed');
+                                    } finally {
+                                        setUploading(false);
+                                        e.target.value = '';
+                                    }
+                                }}
+                            />
+                            {block.configJson.coverImage ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{
+                                        position: 'relative',
+                                        width: '80px',
+                                        height: '107px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Image
+                                            src={block.configJson.coverImage}
+                                            alt="Cover preview"
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => coverInputRef.current?.click()}
+                                            style={{
+                                                padding: '4px 10px', fontSize: '0.8rem', fontWeight: 600,
+                                                background: '#f1f5f9', border: '1px solid #e2e8f0',
+                                                borderRadius: '4px', cursor: 'pointer',
+                                            }}
+                                        >Replace</button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChange('coverImage', '')}
+                                            style={{
+                                                padding: '4px 10px', fontSize: '0.8rem', fontWeight: 600,
+                                                background: '#fef2f2', border: '1px solid #fecaca',
+                                                borderRadius: '4px', cursor: 'pointer', color: '#dc2626',
+                                            }}
+                                        >Remove</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => coverInputRef.current?.click()}
+                                    disabled={uploading}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        padding: '0.75rem 1rem', width: '100%',
+                                        border: '2px dashed #cbd5e1', borderRadius: '6px',
+                                        background: '#fafbfc', color: '#64748b',
+                                        cursor: 'pointer', fontSize: '0.85rem', fontWeight: 500,
+                                    }}
+                                >
+                                    {uploading ? 'Uploading...' : '📷 Upload cover image'}
+                                </button>
+                            )}
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Download URL</label>
                             <Input
-                                value={block.configJson.link || ""}
-                                onChange={(e) => handleChange('link', e.target.value)}
+                                value={block.configJson.downloadUrl || ""}
+                                onChange={(e) => handleChange('downloadUrl', e.target.value)}
+                                placeholder="https://..."
                             />
                         </div>
                     </>

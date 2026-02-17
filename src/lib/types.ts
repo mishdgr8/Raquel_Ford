@@ -55,13 +55,14 @@ export interface Article {
     isEditorsPick?: boolean;
     editorPickOrder?: number;
     headingStyle?: HeadingStyle;
+    tags?: string[];
     createdAt: any;
     updatedAt: any;
 }
 
 export interface ContentBlock {
     id: string;
-    type: 'text' | 'image' | 'video' | 'divider' | 'embed';
+    type: 'text' | 'image' | 'video' | 'divider' | 'embed' | 'gallery';
     data: any;
 }
 

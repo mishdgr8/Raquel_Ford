@@ -1,5 +1,6 @@
 .article {
-    padding-bottom: 10rem;
+    padding-bottom: 0;
+    background-color: #E8ECEF;
 }
 
 .header {
@@ -31,10 +32,10 @@
 
 .title {
     font-family: var(--font-display);
-    font-size: 4.5rem;
+    font-size: 3rem;
     font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     max-width: 1000px;
     margin: 0 auto 3rem;
     text-transform: none;
@@ -51,10 +52,9 @@
 
 .heroImage {
     width: 100%;
-    height: auto;
-    max-height: 500px;
-    overflow: hidden;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
+    aspect-ratio: 16 / 9;
+    position: relative;
 }
 
 .heroImage img {
@@ -64,15 +64,53 @@
 }
 
 .layout {
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 4rem;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.contentContainer {
+    flex: 1;
+    max-width: var(--container-width);
+    margin: 0 !important;
+    padding: 0;
+    /* Remove container padding so image can span */
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    background: var(--muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+}
+
+.tag:hover {
+    color: var(--foreground);
+    background: #e2e8f0;
 }
 
 .content {
-    padding: 0;
+    background: #E8ECEF;
     min-width: 0;
     /* Prevent grid blowout */
+}
+
+.contentInner {
+    padding: 0 3rem;
 }
 
 @media (max-width: 1024px) {
@@ -97,7 +135,7 @@
     }
 
     .article {
-        padding-bottom: 4rem;
+        padding-bottom: 2rem;
     }
 
     .header {

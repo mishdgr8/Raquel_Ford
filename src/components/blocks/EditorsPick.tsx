@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./EditorsPick.module.css";
 import { Article } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
@@ -60,9 +61,11 @@ export function EditorsPick() {
                                 <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.innerCard}`}>
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
-                                            <img
+                                            <Image
                                                 src={article.featuredImage}
                                                 alt={article.title}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                                 className={styles.image}
                                             />
                                         )}
@@ -79,9 +82,11 @@ export function EditorsPick() {
                                 <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.outerCard}`}>
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
-                                            <img
+                                            <Image
                                                 src={article.featuredImage}
                                                 alt={article.title}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                                 className={styles.image}
                                             />
                                         )}

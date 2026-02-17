@@ -38,24 +38,41 @@ export function NewsletterSignup({ config }: NewsletterSignupProps) {
         <section className={styles.section}>
             <div className={styles.container}>
                 <div className={styles.content}>
-                    <h2 className={styles.title}>{config.title || "JOIN THE NEWSLETTER"}</h2>
+                    <h2 className={styles.title}>
+                        WE EMPOWER OUR,<br />
+                        AUDIENCE TO LIVE<br />
+                        THEIR BEST LIVE
+                    </h2>
+
+                    <div className={styles.divider} />
+
                     <p className={styles.description}>
-                        {config.description || "Stay ahead of the curve with our weekly curated stories."}
+                        Sign up for our newsletter to see more of<br />
+                        Black Women's Boundlessness
                     </p>
 
                     <form className={styles.form} onSubmit={handleSubmit}>
-                        <Input
-                            type="email"
-                            placeholder="Enter your email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className={styles.input}
-                        />
+                        <div className={styles.inputWrapper}>
+                            <input
+                                type="email"
+                                placeholder="Email Address*"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className={styles.input}
+                            />
+                        </div>
                         <Button type="submit" loading={loading} className={styles.button}>
-                            SUBSCRIBE
+                            SUBSCRIBE NOW
                         </Button>
                     </form>
+
+                    <div className={styles.terms}>
+                        <input type="checkbox" required id="newsletter-terms" className={styles.checkbox} />
+                        <label htmlFor="newsletter-terms">
+                            By clicking Subscribe Now, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
+                        </label>
+                    </div>
 
                     {status === 'success' && <p className={styles.success}>Thanks for subscribing!</p>}
                     {status === 'error' && <p className={styles.error}>Something went wrong. Please try again.</p>}

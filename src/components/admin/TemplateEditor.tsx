@@ -129,45 +129,74 @@ export function TemplateEditor({ templateId, initialData }: TemplateEditorProps)
                 </div>
             </header>
 
-            <div className={clsx(styles.layout, showPreview && styles.withPreview)}>
-                <div className={styles.builder}>
-                    <div className={styles.blockList}>
-                        {(template.blocks || []).map((block, index) => (
-                            <div
-                                key={block.id}
-                                className={clsx(styles.blockItem, selectedBlockId === block.id && styles.selected)}
-                                onClick={() => setSelectedBlockId(block.id)}
-                            >
-                                <div className={styles.blockHeader}>
-                                    <div className={styles.blockType}>
-                                        <div className={styles.dragHandle} />
-                                        <span>{block.blockType}</span>
-                                    </div>
-                                    <div className={styles.blockActions}>
-                                        <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'up'); }} disabled={index === 0}><ArrowUp size={14} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'down'); }} disabled={index === (template.blocks?.length || 0) - 1}><ArrowDown size={14} /></button>
-                                        <button
-                                            className={styles.settingsBtn}
-                                            onClick={(e) => { e.stopPropagation(); setSelectedBlockId(block.id); }}
-                                        ><Settings size={14} /></button>
-                                        <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className={styles.deleteBtn}><Trash2 size={14} /></button>
+            <div className={styles.layout}>
+                <div className={clsx(styles.mainEditor, !showPreview && styles.fullHeight)}>
+                    <div className={styles.builder}>
+                        <div className={styles.blockList}>
+                            {(template.blocks || []).map((block, index) => (
+                                <div
+                                    key={block.id}
+                                    className={clsx(styles.blockItem, selectedBlockId === block.id && styles.selected)}
+                                    onClick={() => setSelectedBlockId(block.id)}
+                                >
+                                    <div className={styles.blockHeader}>
+                                        <div className={styles.blockType}>
+                                            <div className={styles.dragHandle} />
+                                            <span>{block.blockType}</span>
+                                        </div>
+                                        <div className={styles.blockActions}>
+                                            <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'up'); }} disabled={index === 0}><ArrowUp size={14} /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); moveBlock(index, 'down'); }} disabled={index === (template.blocks?.length || 0) - 1}><ArrowDown size={14} /></button>
+                                            <button
+                                                className={styles.settingsBtn}
+                                                onClick={(e) => { e.stopPropagation(); setSelectedBlockId(block.id); }}
+                                            ><Settings size={14} /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); removeBlock(block.id); }} className={styles.deleteBtn}><Trash2 size={14} /></button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className={styles.addBlockSection}>
-                        <h3>Add Section</h3>
-                        <div className={styles.blockChoices}>
-                            {AVAILABLE_BLOCKS.map(b => (
-                                <button key={b.type} onClick={() => addBlock(b.type)} className={styles.choiceBtn}>
-                                    <Plus size={16} />
-                                    <span>{b.label}</span>
-                                </button>
                             ))}
                         </div>
+
+                        <div className={styles.addBlockSection}>
+                            <h3>Add Section</h3>
+                            <div className={styles.blockChoices}>
+                                {AVAILABLE_BLOCKS.map(b => (
+                                    <button key={b.type} onClick={() => addBlock(b.type)} className={styles.choiceBtn}>
+                                        <Plus size={16} />
+                                        <span>{b.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+
+                    <aside className={clsx(styles.inspector, selectedBlockId && styles.inspectorOpen)}>
+                        <div className={styles.inspectorHeader}>
+                            <Settings size={16} />
+                            <span>Configure {selectedBlock?.blockType}</span>
+                            <button onClick={() => setSelectedBlockId(null)}><X size={14} /></button>
+                        </div>
+                        {selectedBlock ? (
+                            <div className={styles.inspectorContent}>
+                                <BlockInspector
+                                    block={selectedBlock}
+                                    onUpdate={(newConfig) => {
+                                        setTemplate(prev => ({
+                                            ...prev,
+                                            blocks: (prev.blocks || []).map(b =>
+                                                b.id === selectedBlockId ? { ...b, configJson: newConfig } : b
+                                            )
+                                        }));
+                                    }}
+                                />
+                            </div>
+                        ) : (
+                            <div className={styles.inspectorEmpty}>
+                                Select a block to configure its properties
+                            </div>
+                        )}
+                    </aside>
                 </div>
 
                 {showPreview && (
@@ -179,33 +208,6 @@ export function TemplateEditor({ templateId, initialData }: TemplateEditorProps)
                         </div>
                     </div>
                 )}
-
-                <aside className={clsx(styles.inspector, selectedBlockId && styles.inspectorOpen)}>
-                    <div className={styles.inspectorHeader}>
-                        <Settings size={16} />
-                        <span>Configure {selectedBlock?.blockType}</span>
-                        <button onClick={() => setSelectedBlockId(null)}><X size={14} /></button>
-                    </div>
-                    {selectedBlock ? (
-                        <div className={styles.inspectorContent}>
-                            <BlockInspector
-                                block={selectedBlock}
-                                onUpdate={(newConfig) => {
-                                    setTemplate(prev => ({
-                                        ...prev,
-                                        blocks: (prev.blocks || []).map(b =>
-                                            b.id === selectedBlockId ? { ...b, configJson: newConfig } : b
-                                        )
-                                    }));
-                                }}
-                            />
-                        </div>
-                    ) : (
-                        <div className={styles.inspectorEmpty}>
-                            Select a block to configure its properties
-                        </div>
-                    )}
-                </aside>
             </div>
         </div>
     );

@@ -1,5 +1,7 @@
 import { ContentBlock } from "@/lib/types";
+import Image from "next/image";
 import styles from "./ArticleRenderer.module.css";
+import { GalleryBlock } from "./GalleryBlock";
 
 interface ArticleRendererProps {
     blocks?: ContentBlock[];
@@ -35,10 +37,29 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                     case 'image':
                         return (
                             <figure key={block.id} className={styles.imageWrapper}>
-                                <img src={block.data.url} alt={block.data.caption || ""} />
+                                <Image
+                                    src={block.data.url}
+                                    alt={block.data.caption || ""}
+                                    width={800}
+                                    height={500}
+                                    sizes="(max-width: 768px) 100vw, 700px"
+                                    style={{ width: '100%', height: 'auto' }}
+                                />
                                 {block.data.caption && <figcaption>{block.data.caption}</figcaption>}
                             </figure>
                         );
+                    case 'gallery':
+                        if (block.data.images && block.data.images.length > 0) {
+                            return (
+                                <div key={block.id} style={{ margin: '2rem 0' }}>
+                                    <GalleryBlock
+                                        images={block.data.images}
+                                        columns={block.data.columns || 3}
+                                    />
+                                </div>
+                            );
+                        }
+                        return null;
                     case 'divider':
                         return <hr key={block.id} className={styles.divider} />;
                     case 'embed':

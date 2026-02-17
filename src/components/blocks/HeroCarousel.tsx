@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import styles from "./HeroCarousel.module.css";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
@@ -63,9 +64,13 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
             <div className={styles.slide}>
                 <div className={styles.overlay} />
                 {current.image ? (
-                    <img
+                    <Image
                         src={current.image}
                         alt={current.name}
+                        fill
+                        priority
+                        unoptimized
+                        sizes="100vw"
                         className={styles.heroImage}
                     />
                 ) : (

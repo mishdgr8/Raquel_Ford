@@ -31,6 +31,7 @@
 }
 
 .reelPlaceholder {
+    position: relative;
     flex: 0 0 300px;
     aspect-ratio: 9 / 16;
     background: #111;

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getInstagramFeed } from "@/app/actions/instagram";
 import { InstagramMedia } from "@/lib/services/instagram";
+import Image from "next/image";
 import styles from "./IGReels.module.css";
 
 interface IGReelsProps {
@@ -76,9 +77,11 @@ export function IGReels({ config }: IGReelsProps) {
                                         onMouseOut={(e) => e.currentTarget.pause()}
                                     />
                                 ) : (
-                                    <img
+                                    <Image
                                         src={feed.media_url}
-                                        alt={feed.caption}
+                                        alt={feed.caption || "Instagram post"}
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, 16vw"
                                         className={styles.reelImage}
                                     />
                                 )}

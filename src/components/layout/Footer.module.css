@@ -1,8 +1,8 @@
 .footer {
-    background: var(--background);
-    color: var(--foreground);
+    background: #11001C;
+    color: #ffffff;
     padding: 8rem 0 4rem;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .grid {
@@ -46,10 +46,10 @@
 .sectionTitle {
     font-family: var(--font-sans);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--primary);
+    color: #ffffff;
     margin-bottom: 2rem;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .social .icons a {
-    color: var(--muted-foreground);
+    color: rgba(255, 255, 255, 0.6);
     transition: color 0.3s ease;
 }
 
@@ -104,7 +104,7 @@
     padding: 0.75rem 0;
     font-family: var(--font-sans);
     font-size: 0.875rem;
-    color: var(--foreground);
+    color: #ffffff;
     outline: none;
 }
 
@@ -123,7 +123,7 @@
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--primary);
+    color: #ffffff;
     cursor: pointer;
     padding: 0.75rem 0 0.75rem 1rem;
 }
@@ -133,10 +133,10 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 3rem;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     font-family: var(--font-sans);
     font-size: 0.75rem;
-    color: var(--muted-foreground);
+    color: rgba(255, 255, 255, 0.5);
     letter-spacing: 0.05em;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .legal a:hover {
-    color: var(--primary);
+    color: #ffffff;
 }
 
 @media (max-width: 640px) {
