@@ -7,6 +7,8 @@ import clsx from "clsx";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommentSection } from "@/components/articles/CommentSection";
+import { SocialShare } from "@/components/articles/SocialShare";
+import { ViewTracker } from "@/components/articles/ViewTracker";
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
@@ -16,6 +18,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
     return (
         <article className={styles.article}>
+            <ViewTracker articleId={article.id!} />
             <header className={styles.header}>
                 <div className="container">
                     <div className={styles.meta}>
@@ -34,8 +37,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             </header>
 
             <div className="container">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '4rem' }}>
-                    <div className={styles.content}>
+                <div className={styles.layout}>
+                    <div className={styles.content} data-heading-style={article.headingStyle || 'none'}>
                         {article.featuredImage && (
                             <div className={styles.heroImage}>
                                 <img src={article.featuredImage} alt={article.title} />
@@ -44,6 +47,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                         <ArticleRenderer
                             html={article.contentHtml}
                             blocks={article.contentJson?.blocks || []}
+                        />
+
+                        {/* Social Share */}
+                        <SocialShare
+                            articleId={article.id!}
+                            title={article.title}
+                            slug={article.slug}
+                            excerpt={article.excerpt}
                         />
 
                         {/* Comment Section */}

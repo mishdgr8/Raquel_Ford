@@ -18,10 +18,13 @@ export function EditorsPick() {
 
         const fetchArticles = async () => {
             try {
-                // Fetching a few more to filter if needed, but for now just taking latest 4
-                // Or specific IDs if we knew them.
-                const result = await articleService.getPublishedArticles(undefined, 4);
-                setArticles(result.articles);
+                // Fetch articles marked as Editor's Pick
+                const result = await articleService.getEditorsPicks();
+
+                // If we don't have enough picks, fallback to latest published?
+                // For now, let's just set what we have.
+                // Optionally, we could fill the gaps with latest articles if needed.
+                setArticles(result);
             } catch (error) {
                 console.error("Failed to load Editors Pick", error);
             }

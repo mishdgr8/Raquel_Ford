@@ -127,3 +127,24 @@
     color: var(--foreground);
     white-space: pre-wrap;
 }
+
+@media (max-width: 768px) {
+    .container {
+        margin-top: 2rem;
+        padding-top: 2rem;
+    }
+
+    .form {
+        padding: 1.5rem;
+    }
+
+    .commentHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .submitBtn {
+        width: 100%;
+    }
+}

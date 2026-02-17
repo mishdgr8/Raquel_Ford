@@ -15,7 +15,7 @@ import {
     QueryDocumentSnapshot
 } from "firebase/firestore";
 import { db } from "../firebase";
-import { Article } from "../types";
+import { Article, ArticleStatus } from "../types";
 
 const ARTICLES_COLLECTION = "articles";
 
@@ -43,6 +43,29 @@ export const articleService = {
             articles: snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article)),
             lastDoc: snapshot.docs[snapshot.docs.length - 1]
         };
+    },
+
+    async getAllPublishedArticles() {
+        const q = query(
+            collection(db, ARTICLES_COLLECTION),
+            where("status", "==", "published"),
+            orderBy("publishedAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+    },
+
+    async getEditorsPicks() {
+        // Simple query for now, fetching up to 4
+        const q = query(
+            collection(db, ARTICLES_COLLECTION),
+            where("status", "==", "published"),
+            where("isEditorsPick", "==", true),
+            orderBy("publishedAt", "desc"),
+            limit(4)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
     },
 
     async getArticleBySlug(slug: string) {
@@ -97,5 +120,59 @@ export const articleService = {
     async deleteArticle(id: string) {
         const docRef = doc(db, ARTICLES_COLLECTION, id);
         await deleteDoc(docRef);
-    }
+    },
+
+    // Bulk Operations (Feature 8)
+    async bulkUpdateStatus(ids: string[], status: ArticleStatus) {
+        const promises = ids.map(id => {
+            const docRef = doc(db, ARTICLES_COLLECTION, id);
+            return updateDoc(docRef, {
+                status,
+                updatedAt: serverTimestamp(),
+                ...(status === 'published' ? { publishedAt: serverTimestamp() } : {}),
+            });
+        });
+        await Promise.all(promises);
+    },
+
+    async softDeleteArticles(ids: string[]) {
+        const promises = ids.map(id => {
+            const docRef = doc(db, ARTICLES_COLLECTION, id);
+            return updateDoc(docRef, {
+                status: 'archived',
+                updatedAt: serverTimestamp(),
+            });
+        });
+        await Promise.all(promises);
+    },
+
+    async bulkHardDelete(ids: string[]) {
+        const promises = ids.map(id => {
+            const docRef = doc(db, ARTICLES_COLLECTION, id);
+            return deleteDoc(docRef);
+        });
+        await Promise.all(promises);
+    },
+
+    // Editor's Pick (Feature 9)
+    async toggleEditorsPick(id: string, currentValue: boolean) {
+        const docRef = doc(db, ARTICLES_COLLECTION, id);
+        if (currentValue) {
+            // Unpin
+            await updateDoc(docRef, {
+                isEditorsPick: false,
+                editorPickOrder: null,
+                updatedAt: serverTimestamp(),
+            });
+        } else {
+            // Pin — get max order and add 1
+            const picks = await this.getEditorsPicks();
+            const maxOrder = picks.reduce((max, p) => Math.max(max, p.editorPickOrder || 0), 0);
+            await updateDoc(docRef, {
+                isEditorsPick: true,
+                editorPickOrder: maxOrder + 1,
+                updatedAt: serverTimestamp(),
+            });
+        }
+    },
 };

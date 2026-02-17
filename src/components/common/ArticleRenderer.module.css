@@ -85,15 +85,69 @@
 .container blockquote,
 .text blockquote {
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 500;
-    line-height: 1.3;
-    padding: 3rem 0;
-    margin: 3rem 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    text-align: center;
-    color: var(--primary);
+    font-style: italic;
+    line-height: 1.5;
+    padding: 2rem 2.5rem;
+    margin: 2.5rem 0;
+    border-left: 4px solid #7c3aed;
+    border-radius: 0 12px 12px 0;
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #f0f9ff 100%);
+    color: #1e293b;
+    position: relative;
+}
+
+.container blockquote::before,
+.text blockquote::before {
+    content: '\201C';
+    position: absolute;
+    top: 0.5rem;
+    left: 1rem;
+    font-size: 4rem;
+    font-family: Georgia, serif;
+    color: rgba(124, 58, 237, 0.2);
+    line-height: 1;
+}
+
+.container blockquote footer,
+.container blockquote cite,
+.text blockquote footer,
+.text blockquote cite {
+    display: block;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #6d28d9;
+    text-align: right;
+}
+
+.container blockquote footer::before,
+.container blockquote cite::before,
+.text blockquote footer::before,
+.text blockquote cite::before {
+    content: '— ';
+}
+
+/* ─── Links in article content ─── */
+
+.container a,
+.text a {
+    color: #6d28d9;
+    text-decoration: underline;
+    text-decoration-color: rgba(109, 40, 217, 0.3);
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.container a:hover,
+.text a:hover {
+    color: #4c1d95;
+    text-decoration-color: #4c1d95;
+    opacity: 1;
 }
 
 /* ─── Text block wrapper ─── */
@@ -166,7 +220,7 @@
 
     .container blockquote,
     .text blockquote {
-        font-size: 1.5rem;
-        padding: 2rem 0;
+        font-size: 1.25rem;
+        padding: 1.5rem 1.75rem;
     }
 }

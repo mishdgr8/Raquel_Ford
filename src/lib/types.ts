@@ -1,4 +1,5 @@
 export type ArticleStatus = 'draft' | 'scheduled' | 'published' | 'archived';
+export type HeadingStyle = 'none' | 'uppercase' | 'sentence' | 'title';
 
 export interface Category {
     id?: string;
@@ -26,6 +27,10 @@ export interface Media {
     extension: string;
     altText?: string;
     caption?: string;
+    title?: string;
+    description?: string;
+    fileName?: string;
+    slug?: string;
     createdAt: any; // Firestore Timestamp
 }
 
@@ -47,13 +52,16 @@ export interface Article {
     seoTitle?: string;
     seoDescription?: string;
     ogMediaId?: string;
+    isEditorsPick?: boolean;
+    editorPickOrder?: number;
+    headingStyle?: HeadingStyle;
     createdAt: any;
     updatedAt: any;
 }
 
 export interface ContentBlock {
     id: string;
-    type: 'text' | 'image' | 'video' | 'divider';
+    type: 'text' | 'image' | 'video' | 'divider' | 'embed';
     data: any;
 }
 

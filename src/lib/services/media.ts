@@ -4,6 +4,7 @@ import {
     doc,
     addDoc,
     deleteDoc,
+    updateDoc,
     query,
     orderBy,
     serverTimestamp
@@ -14,6 +15,15 @@ import { Media } from "../types";
 
 const MEDIA_COLLECTION = "media";
 
+function slugify(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+}
+
 export const mediaService = {
     async getMedia() {
         const q = query(collection(db, MEDIA_COLLECTION), orderBy("createdAt", "desc"));
@@ -21,7 +31,11 @@ export const mediaService = {
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Media));
     },
 
-    async uploadMedia(file: File, folder: string = "uploads", altText: string = "") {
+    async uploadMedia(
+        file: File,
+        folder: string = "uploads",
+        meta: { altText?: string; title?: string; caption?: string; description?: string } = {}
+    ) {
         // 1. Upload to Storage
         const path = `${folder}/${Date.now()}_${file.name}`;
         const storageRef = ref(storage, path);
@@ -29,18 +43,29 @@ export const mediaService = {
         const url = await getDownloadURL(snapshot.ref);
 
         // 2. Save metadata to Firestore
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
         const docRef = await addDoc(collection(db, MEDIA_COLLECTION), {
             url,
             path,
             name: file.name,
+            fileName: file.name,
             type: file.type,
             size: file.size,
             extension: file.name.split('.').pop() || "",
-            altText,
+            altText: meta.altText || "",
+            title: meta.title || baseName,
+            caption: meta.caption || "",
+            description: meta.description || "",
+            slug: slugify(baseName),
             createdAt: serverTimestamp(),
         });
 
         return { id: docRef.id, url, path };
+    },
+
+    async updateMediaMeta(id: string, meta: Partial<Pick<Media, 'altText' | 'title' | 'caption' | 'description'>>) {
+        const docRef = doc(db, MEDIA_COLLECTION, id);
+        await updateDoc(docRef, { ...meta });
     },
 
     async deleteMedia(id: string, path: string) {
@@ -53,3 +78,4 @@ export const mediaService = {
         await deleteDoc(docRef);
     }
 };
+

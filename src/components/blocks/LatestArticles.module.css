@@ -3,6 +3,12 @@
     background: var(--background);
 }
 
+.layoutGrid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 4rem;
+}
+
 .header {
     margin-bottom: 0;
     display: flex;
@@ -32,8 +38,26 @@
     /* Remove gap for a seamless look or use border-bottom on cards */
 }
 
+@media (max-width: 1024px) {
+    .layoutGrid {
+        grid-template-columns: 1fr 280px;
+        gap: 3rem;
+    }
+}
+
 @media (max-width: 768px) {
     .section {
-        padding: 6rem 0;
+        padding: 3rem 0;
+    }
+
+    .layoutGrid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .section {
+        padding: 2rem 0;
     }
 }

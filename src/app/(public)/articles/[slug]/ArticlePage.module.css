@@ -63,32 +63,101 @@
     object-fit: cover;
 }
 
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 4rem;
+}
+
 .content {
     padding: 0;
+    min-width: 0;
+    /* Prevent grid blowout */
 }
 
 @media (max-width: 1024px) {
+    .layout {
+        grid-template-columns: 1fr 280px;
+        gap: 3rem;
+    }
+
     .title {
         font-size: 3.5rem;
+    }
+
+    .header {
+        padding: 5rem 0 3rem;
     }
 }
 
 @media (max-width: 768px) {
-    .header {
-        padding-top: 100px;
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .article {
         padding-bottom: 4rem;
     }
 
+    .header {
+        padding: 6rem 0 2rem;
+    }
+
+    .meta {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
     .title {
-        font-size: 2.5rem;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .excerpt {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
     }
 
     .heroImage {
-        height: 60vh;
-        margin-bottom: 4rem;
+        max-height: 300px;
+        margin-bottom: 2rem;
     }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .excerpt {
+        font-size: 1rem;
+    }
+}
+
+/* Heading Capitalization Control */
+.content[data-heading-style="uppercase"] :global(h1),
+.content[data-heading-style="uppercase"] :global(h2),
+.content[data-heading-style="uppercase"] :global(h3),
+.content[data-heading-style="uppercase"] :global(h4),
+.content[data-heading-style="uppercase"] :global(h5),
+.content[data-heading-style="uppercase"] :global(h6) {
+    text-transform: uppercase;
+}
+
+.content[data-heading-style="sentence"] :global(h1),
+.content[data-heading-style="sentence"] :global(h2),
+.content[data-heading-style="sentence"] :global(h3),
+.content[data-heading-style="sentence"] :global(h4),
+.content[data-heading-style="sentence"] :global(h5),
+.content[data-heading-style="sentence"] :global(h6) {
+    text-transform: none;
+}
+
+.content[data-heading-style="title"] :global(h1),
+.content[data-heading-style="title"] :global(h2),
+.content[data-heading-style="title"] :global(h3),
+.content[data-heading-style="title"] :global(h4),
+.content[data-heading-style="title"] :global(h5),
+.content[data-heading-style="title"] :global(h6) {
+    text-transform: capitalize;
 }
