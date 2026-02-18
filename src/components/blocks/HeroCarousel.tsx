@@ -17,8 +17,14 @@ interface HeroCarouselProps {
     };
 }
 
-import { categoryService } from "@/lib/services/categories";
 import { Category } from "@/lib/types";
+
+const HERO_IMAGES: Record<string, string> = {
+    'fashion': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771422242914_fashion.png?alt=media&token=98e8a617-d7b9-41de-be33-7665bcdbd12d',
+    'food': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420467268_food.png?alt=media&token=1f8d4cee-82a9-40a0-b5fd-f24a7baa238a',
+    'living': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420421988_living.jpg?alt=media&token=3425673a-2bb9-4842-8b1e-9356f301f8a4',
+    'entertainment': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771345483671_Zendaya_entertainment.jpg?alt=media&token=18abe3a5-4d7a-4bfd-89ed-857630645a22'
+};
 
 export function HeroCarousel({ config }: HeroCarouselProps) {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -58,14 +64,15 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
     const prev = () => setIndex((i) => (i - 1 + categories.length) % categories.length);
 
     const current = categories[index];
+    const displayImage = HERO_IMAGES[current.name.toLowerCase()] || current.image;
 
     return (
         <section className={styles.hero}>
             <div className={styles.slide}>
                 <div className={styles.overlay} />
-                {current.image ? (
+                {displayImage ? (
                     <Image
-                        src={current.image}
+                        src={displayImage}
                         alt={current.name}
                         fill
                         priority

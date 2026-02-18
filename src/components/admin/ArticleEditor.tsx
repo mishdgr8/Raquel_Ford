@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Article, Category, ArticleStatus, ContentBlock } from "@/lib/types";
+import { Article, Category, Tag, ArticleStatus, ContentBlock } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
 import { categoryService } from "@/lib/services/categories";
+import { tagService } from "@/lib/services/tags";
 import { mediaService } from "@/lib/services/media";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/Button";
@@ -11,10 +12,11 @@ import { Input } from "../ui/Input";
 import Image from "next/image";
 import styles from "./ArticleEditor.module.css";
 import { slugify } from "@/lib/utils";
-import { Save, ChevronLeft, Eye, Edit3, Upload, X } from "lucide-react";
+import { Save, ChevronLeft, Eye, Edit3, Upload, X, Images } from "lucide-react";
 import { BlockEditor } from "./BlockEditor";
 import { ArticleRenderer } from "../common/ArticleRenderer";
 import { clsx } from "clsx";
+import { MediaLibraryModal } from "./MediaLibraryModal";
 
 interface ArticleEditorProps {
     articleId?: string;
@@ -25,9 +27,11 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [allTags, setAllTags] = useState<Tag[]>([]);
     const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [mode, setMode] = useState<'edit' | 'preview'>('edit');
     const [uploadingFeatured, setUploadingFeatured] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
     const featuredInputRef = useRef<HTMLInputElement>(null);
 
     const [form, setForm] = useState<Partial<Article>>({
@@ -42,9 +46,11 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
     });
 
     const [tagInput, setTagInput] = useState("");
+    const [filteredSuggestions, setFilteredSuggestions] = useState<Tag[]>([]);
 
     useEffect(() => {
         categoryService.getCategories().then(setCategories);
+        tagService.getTags().then(setAllTags);
     }, []);
 
     const [createdId, setCreatedId] = useState<string | null>(null);
@@ -343,20 +349,34 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                         <button onClick={() => featuredInputRef.current?.click()}>
                                             <Upload size={14} /> Replace
                                         </button>
+                                        <button onClick={() => setShowLibrary(true)}>
+                                            <Images size={14} /> Library
+                                        </button>
                                         <button onClick={() => setForm(prev => ({ ...prev, featuredImage: "" }))}>
                                             <X size={14} /> Remove
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                <button
-                                    className={styles.featuredUploadBtn}
-                                    onClick={() => featuredInputRef.current?.click()}
-                                    disabled={uploadingFeatured}
-                                >
-                                    <Upload size={20} />
-                                    <span>{uploadingFeatured ? "Uploading..." : "Upload Image"}</span>
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        className={styles.featuredUploadBtn}
+                                        onClick={() => featuredInputRef.current?.click()}
+                                        disabled={uploadingFeatured}
+                                        style={{ flex: 1 }}
+                                    >
+                                        <Upload size={20} />
+                                        <span>{uploadingFeatured ? "Uploading..." : "Upload Image"}</span>
+                                    </button>
+                                    <button
+                                        className={styles.featuredUploadBtn}
+                                        onClick={() => setShowLibrary(true)}
+                                        style={{ flex: 1, backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                                    >
+                                        <Images size={20} />
+                                        <span>Library</span>
+                                    </button>
+                                </div>
                             )}
 
                             <Input
@@ -391,18 +411,51 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                     className={styles.tagInput}
                                     placeholder="Add tag (press Enter or comma)"
                                     value={tagInput}
-                                    onChange={(e) => setTagInput(e.target.value)}
-                                    onKeyDown={(e) => {
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setTagInput(val);
+                                        if (val.trim()) {
+                                            const filtered = allTags.filter(t =>
+                                                t.name.toLowerCase().includes(val.toLowerCase()) &&
+                                                !(form.tags || []).includes(t.name)
+                                            );
+                                            setFilteredSuggestions(filtered);
+                                        } else {
+                                            setFilteredSuggestions([]);
+                                        }
+                                    }}
+                                    onKeyDown={async (e) => {
                                         if (e.key === 'Enter' || e.key === ',') {
                                             e.preventDefault();
                                             const tag = tagInput.trim().replace(/,$/, '');
                                             if (tag && !(form.tags || []).includes(tag)) {
                                                 setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
                                                 setTagInput("");
+                                                setFilteredSuggestions([]);
+                                                // Also add to global tags if it doesn't exist
+                                                await tagService.createTag(tag);
+                                                tagService.getTags().then(setAllTags);
                                             }
                                         }
                                     }}
                                 />
+                                {filteredSuggestions.length > 0 && (
+                                    <div className={styles.tagSuggestions}>
+                                        {filteredSuggestions.map(tag => (
+                                            <button
+                                                key={tag.id}
+                                                className={styles.suggestionItem}
+                                                onClick={async () => {
+                                                    setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag.name] }));
+                                                    setTagInput("");
+                                                    setFilteredSuggestions([]);
+                                                }}
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                                 <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
                                     Tags help categorize your content and improve SEO ranking.
                                 </p>
@@ -446,6 +499,13 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                     </div>
                 </div>
             )}
+            {/* Media Library Modal */}
+            <MediaLibraryModal
+                isOpen={showLibrary}
+                onClose={() => setShowLibrary(false)}
+                onSelect={(url) => setForm(prev => ({ ...prev, featuredImage: url }))}
+                title="Select Featured Image"
+            />
         </div>
     );
 }

@@ -193,9 +193,31 @@
     color: #1d4ed8;
 }
 
-.archived {
+.badge.archived {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.tagsListInline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    max-width: 200px;
+}
+
+.tagBadgeSmall {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
     background: #f1f5f9;
-    color: #64748b;
+    color: #475569;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.tagMore {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
 }
 
 /* Pin / Editor's Pick */

@@ -3,8 +3,8 @@
     flex-direction: column;
     gap: 4rem;
     background: #ffffff;
-    padding: 3rem 0;
-    /* Remove horizontal padding */
+    padding: 0 0 3rem 0;
+    /* Removed top padding */
     border-left: 1px solid var(--border);
     width: 400px;
     flex-shrink: 0;
@@ -30,7 +30,8 @@
     letter-spacing: 0.1em;
     padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0;
+    /* Adjusted for alignment */
 }
 
 .latestArticles {

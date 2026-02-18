@@ -201,6 +201,7 @@ export default function ArticleListPage() {
                             <th>Title</th>
                             <th>Category</th>
                             <th>Status</th>
+                            <th>Tags</th>
                             <th style={{ width: '40px' }}>⭐</th>
                             <th>Date</th>
                             <th>Actions</th>
@@ -226,6 +227,16 @@ export default function ArticleListPage() {
                                     <span className={`${styles.badge} ${styles[article.status]}`}>
                                         {article.status}
                                     </span>
+                                </td>
+                                <td>
+                                    <div className={styles.tagsListInline}>
+                                        {(article.tags || []).slice(0, 3).map((tag, i) => (
+                                            <span key={i} className={styles.tagBadgeSmall}>{tag}</span>
+                                        ))}
+                                        {(article.tags || []).length > 3 && (
+                                            <span className={styles.tagMore}>+{(article.tags || []).length - 3}</span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td>
                                     <button

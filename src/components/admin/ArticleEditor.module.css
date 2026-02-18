@@ -471,3 +471,38 @@
 .tagInput:focus {
     border-color: #94a3b8;
 }
+
+.tagSuggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin-top: 4px;
+    z-index: 50;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.suggestionItem {
+    width: 100%;
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.suggestionItem:last-child {
+    border-bottom: none;
+}
+
+.suggestionItem:hover {
+    background: #f1f5f9;
+}

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import styles from "./BlockEditor.module.css";
 import { mediaService } from "@/lib/services/media";
+import { MediaLibraryModal } from "./MediaLibraryModal";
 
 // ─── Embed Helpers ──────────────────────────────────
 function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | null; id: string | null } {
@@ -47,7 +48,7 @@ function isEmbedUrl(text: string): boolean {
 }
 
 // ─── Gallery Block Editor ────────────────────────────
-function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
+export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
     block: ContentBlock;
     onUpdate: (data: any) => void;
     onDelete: () => void;
@@ -58,6 +59,7 @@ function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, i
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
     const images: { url: string; alt: string }[] = block.data.images || [];
     const columns: number = block.data.columns || 3;
 
@@ -130,6 +132,15 @@ function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, i
                         if (e.target.files && e.target.files.length > 0) handleUpload(e.target.files);
                         e.target.value = '';
                     }}
+                />
+
+                <MediaLibraryModal
+                    isOpen={showLibrary}
+                    onClose={() => setShowLibrary(false)}
+                    onSelect={(url) => {
+                        onUpdate({ ...block.data, images: [...images, { url, alt: '' }] });
+                    }}
+                    title="Add to Gallery"
                 />
 
                 {images.length > 0 && (
@@ -213,6 +224,18 @@ function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, i
                             <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
                                 Select multiple files at once · JPG, PNG, GIF, WebP
                             </span>
+                            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowLibrary(true); }}
+                                    style={{
+                                        padding: '0.4rem 0.75rem', borderRadius: '4px', border: '1px solid #e2e8f0',
+                                        background: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                        fontSize: '0.8rem', fontWeight: 600, color: '#334155'
+                                    }}
+                                >
+                                    <Images size={14} /> From Library
+                                </button>
+                            </div>
                         </>
                     )}
                 </div>
@@ -465,6 +488,7 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
+    const [showLibrary, setShowLibrary] = useState(false);
 
     const handleUpload = async (file: File) => {
         setUploading(true);
@@ -497,6 +521,13 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                 <input type="file" ref={fileInputRef} accept="image/*" style={{ display: "none" }}
                     onChange={(e) => { if (e.target.files?.[0]) handleUpload(e.target.files[0]); e.target.value = ""; }} />
 
+                <MediaLibraryModal
+                    isOpen={showLibrary}
+                    onClose={() => setShowLibrary(false)}
+                    onSelect={(url) => onUpdate({ ...block.data, url })}
+                    title="Select Image"
+                />
+
                 {block.data.url ? (
                     <div className={styles.imagePreview}>
                         <Image
@@ -520,6 +551,18 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                                 <Upload size={32} />
                                 <p>Click to upload or drag an image</p>
                                 <span>JPG, PNG, GIF, WebP</span>
+                                <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setShowLibrary(true); }}
+                                        style={{
+                                            padding: '0.4rem 0.75rem', borderRadius: '4px', border: '1px solid #e2e8f0',
+                                            background: 'white', display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                            fontSize: '0.8rem', fontWeight: 600, color: '#334155'
+                                        }}
+                                    >
+                                        <Images size={14} /> From Library
+                                    </button>
+                                </div>
                             </>
                         )}
                     </div>

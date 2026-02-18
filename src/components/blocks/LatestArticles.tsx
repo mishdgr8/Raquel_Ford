@@ -31,7 +31,6 @@ export function LatestArticles({ config }: LatestArticlesProps) {
                     <div>
                         <div className={styles.header}>
                             <h2 className={styles.title}>{config.title || "LATEST STORIES"}</h2>
-                            <div className={styles.line} />
                         </div>
 
                         <div className={styles.grid}>
