@@ -16,14 +16,16 @@ export function CategoryBar({ categories }: CategoryBarProps) {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Filter and sort main categories alphabetically
-    const mainCategories = categories
-        .filter(cat => cat.isMain)
-        .sort((a, b) => a.name.localeCompare(b.name));
+    // Strictly ordered main categories as requested
+    const targetOrder = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
 
-    // Filter and sort secondary categories alphabetically
+    const mainCategories = targetOrder
+        .map(name => categories.find(cat => cat.name.toLowerCase() === name))
+        .filter((cat): cat is Category => cat !== undefined);
+
+    // Any other categories go to secondary
     const secondaryCategories = categories
-        .filter(cat => !cat.isMain)
+        .filter(cat => !targetOrder.includes(cat.name.toLowerCase()))
         .sort((a, b) => a.name.localeCompare(b.name));
 
     return (

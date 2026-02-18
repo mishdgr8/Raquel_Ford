@@ -49,14 +49,16 @@ export function IGReels({ config }: IGReelsProps) {
                 ) : manualReels.length > 0 ? (
                     manualReels.map((url, i) => (
                         <div key={i} className={styles.reelPlaceholder}>
-                            <iframe
-                                src={`${url.split('?')[0]}embed`}
-                                className={styles.reelIframe}
-                                frameBorder="0"
-                                scrolling="no"
-                                allowTransparency={true}
-                                allow="autoplay"
-                            />
+                            <div className={styles.iframeWrapper}>
+                                <iframe
+                                    src={`${url.split('?')[0]}embed`}
+                                    className={styles.reelIframe}
+                                    frameBorder="0"
+                                    scrolling="no"
+                                    allowTransparency={true}
+                                    allow="autoplay"
+                                />
+                            </div>
                         </div>
                     ))
                 ) : feeds.length > 0 ? (
