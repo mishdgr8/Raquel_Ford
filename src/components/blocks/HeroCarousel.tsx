@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./HeroCarousel.module.css";
-import { articleService } from "@/lib/services/articles";
-import { Article } from "@/lib/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { clsx } from "clsx";
@@ -16,7 +14,7 @@ interface HeroCarouselProps {
         autoplay?: boolean;
     };
 }
-
+import { categoryService } from "@/lib/services/categories";
 import { Category } from "@/lib/types";
 
 const HERO_IMAGES: Record<string, string> = {
