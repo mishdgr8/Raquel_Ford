@@ -18,6 +18,7 @@ import { categoryService } from "@/lib/services/categories";
 import { Category } from "@/lib/types";
 
 const HERO_IMAGES: Record<string, string> = {
+    'beauty': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771432494672_Screenshot%202026-02-18%20at%2017.12.07.jpg?alt=media&token=ab35822e-a7a7-4131-8db3-898cf8109c25',
     'fashion': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771422242914_fashion.png?alt=media&token=98e8a617-d7b9-41de-be33-7665bcdbd12d',
     'food': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420467268_food.png?alt=media&token=1f8d4cee-82a9-40a0-b5fd-f24a7baa238a',
     'living': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420421988_living.jpg?alt=media&token=3425673a-2bb9-4842-8b1e-9356f301f8a4',
