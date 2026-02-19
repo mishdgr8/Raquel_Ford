@@ -1,7 +1,12 @@
 import { articleService } from "@/lib/services/articles";
-import { ArticleEditor } from "@/components/admin/ArticleEditor";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { serializeFirestoreData } from "@/lib/utils";
+
+const ArticleEditor = dynamic(
+    () => import("@/components/admin/ArticleEditor").then(m => ({ default: m.ArticleEditor })),
+    { loading: () => <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--muted-foreground)' }}>Loading editor...</div> }
+);
 
 interface EditArticlePageProps {
     params: { id: string };

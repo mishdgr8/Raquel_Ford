@@ -1,6 +1,6 @@
 .categoryBar {
-    background: var(--background);
-    border-bottom: 1px solid var(--border);
+    background: #FFD447;
+    border-bottom: 1px solid rgba(17, 0, 28, 0.1);
     padding: 0.75rem 0;
     position: sticky;
     top: 80px;
@@ -21,17 +21,19 @@
 
 .link {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.2rem;
     text-transform: uppercase;
-    color: var(--muted-foreground);
-    transition: color 0.3s ease;
+    color: #11001C;
+    opacity: 0.8;
+    transition: all 0.3s ease;
 }
 
 .link:hover,
 .active {
-    color: var(--primary);
+    opacity: 1;
+    color: #11001C;
 }
 
 .dropdown {
@@ -62,12 +64,12 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background: var(--background);
-    border: 1px solid var(--border);
+    background: #FFD447;
+    border: 1px solid rgba(17, 0, 28, 0.1);
     padding: 1rem 0;
     min-width: 200px;
     z-index: 1000;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(17, 0, 28, 0.1);
     padding-top: 0.75rem;
     margin-top: 0;
 }
@@ -76,32 +78,28 @@
     display: block;
     padding: 0.75rem 1.5rem;
     font-family: var(--font-sans);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15rem;
     text-transform: uppercase;
-    color: var(--muted-foreground);
+    color: #11001C;
+    opacity: 0.7;
     transition: all 0.3s ease;
 }
 
 .dropdownLink:hover {
-    color: var(--primary);
-    background: var(--muted);
+    opacity: 1;
+    background: rgba(17, 0, 28, 0.05);
     padding-left: 2rem;
 }
 
 @media (max-width: 1024px) {
     .container {
-        gap: 1.5rem;
-        overflow-x: auto;
-        justify-content: flex-start;
+        gap: 1rem;
+        justify-content: center;
         padding: 0 1rem;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    .container::-webkit-scrollbar {
-        display: none;
+        flex-wrap: wrap;
+        /* Allow wrapping if needed, but we aim for single line 3 items + More */
     }
 
     .categoryBar {
@@ -109,7 +107,12 @@
     }
 
     .dropdown {
-        display: none;
-        /* Hide dropdown on mobile, let them scroll */
+        display: flex;
+        /* Show dropdown */
+    }
+
+    .dropdownTrigger {
+        font-size: 0.75rem;
+        /* Match other mobile links if needed */
     }
 }

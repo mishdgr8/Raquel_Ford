@@ -1,0 +1,82 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+    text-align: center;
+}
+
+.title {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 500;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.section {
+    margin-bottom: 4rem;
+    text-align: left;
+}
+
+.sectionTitle {
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    color: var(--primary);
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+.content {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--foreground);
+}
+
+.content p {
+    margin-bottom: 1.5rem;
+}
+
+.highlight {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.ctaButton {
+    display: inline-block;
+    background: var(--primary);
+    color: var(--background);
+    padding: 1rem 2rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    border: 1px solid var(--primary);
+}
+
+.ctaButton:hover {
+    background: transparent;
+    color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 2rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.25rem;
+    }
+
+    .container {
+        padding: 3rem 1.5rem;
+    }
+}

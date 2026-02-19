@@ -15,7 +15,9 @@ import {
     ChevronRight,
     Menu,
     X,
-    Palette
+    Palette,
+    BarChart3,
+    MessageCircle
 } from "lucide-react";
 import clsx from "clsx";
 import styles from "./AdminLayout.module.css";
@@ -24,11 +26,11 @@ const sidebarLinks = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/articles", label: "Articles", icon: FileText },
     { href: "/admin/categories", label: "Categories", icon: FolderTree },
-    { href: "/admin/templates", label: "Page Builder", icon: Palette },
     { href: "/admin/media", label: "Media Library", icon: ImageIcon },
+    { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/admin/templates", label: "Page Builder", icon: Palette },
     { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
     { href: "/admin/settings", label: "Site Settings", icon: Settings },
-    { href: "/admin/setup", label: "System Setup", icon: LayoutDashboard },
 ];
 
 export default function AdminLayout({

@@ -19,6 +19,115 @@ export default function WordPressImportPage() {
     const [useProxy, setUseProxy] = useState(true);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+    // XML Import
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const parseXmlFile = (xmlText: string) => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const items = Array.from(xmlDoc.querySelectorAll("item"));
+
+        // 1. Build a map of attachment IDs to URLs for featured images
+        const attachmentMap = new Map<string, string>();
+        items.forEach(item => {
+            const postType = item.querySelector("post_type")?.textContent;
+            const postId = item.querySelector("post_id")?.textContent;
+            const attachmentUrl = item.querySelector("attachment_url")?.textContent;
+
+            if (postType === "attachment" && postId && attachmentUrl) {
+                attachmentMap.set(postId, attachmentUrl);
+            }
+        });
+
+        const parsedPosts: WordPressPost[] = [];
+
+        items.forEach(item => {
+            const postType = item.querySelector("post_type")?.textContent;
+            if (postType !== "post") return;
+
+            const title = item.querySelector("title")?.textContent || "Untitled";
+            const link = item.querySelector("link")?.textContent || "";
+            // pubDate is standard RSS, wp:post_date is WP specific. Prefer wp:post_date
+            const postDate = item.querySelector("post_date")?.textContent || item.querySelector("pubDate")?.textContent || new Date().toISOString();
+            const slug = item.querySelector("post_name")?.textContent || "";
+            const status = item.querySelector("status")?.textContent || "draft";
+
+            // Content is in content:encoded namespace
+            const contentEncoded = item.getElementsByTagNameNS("*", "encoded")[0]?.textContent || "";
+            const excerptEncoded = item.getElementsByTagNameNS("*", "encoded")[1]?.textContent || ""; // Often excerpt is the second encoded block, but let's be safer
+
+            // Actually, in WP XML, content:encoded is usually first, excerpt:encoded second. 
+            // Better to find by tag name directly if namespaces are tricky with simple DOMParser
+            // querySelector("content\\:encoded") might not work.
+            // Let's iterate child nodes to be safe or use getElementsByTagName
+
+            const content = item.getElementsByTagName("content:encoded")[0]?.textContent || "";
+            const excerpt = item.getElementsByTagName("excerpt:encoded")[0]?.textContent || "";
+
+            const postId = parseInt(item.querySelector("post_id")?.textContent || "0");
+
+            // Featured Image
+            let featuredImageUrl = "";
+            const metaNodes = Array.from(item.querySelectorAll("postmeta"));
+            const thumbnailMeta = metaNodes.find(meta =>
+                meta.querySelector("meta_key")?.textContent === "_thumbnail_id"
+            );
+
+            if (thumbnailMeta) {
+                const thumbnailId = thumbnailMeta.querySelector("meta_value")?.textContent;
+                if (thumbnailId && attachmentMap.has(thumbnailId)) {
+                    featuredImageUrl = attachmentMap.get(thumbnailId) || "";
+                }
+            }
+
+            parsedPosts.push({
+                id: postId,
+                title: { rendered: title },
+                slug: slug,
+                excerpt: { rendered: excerpt },
+                content: { rendered: content },
+                date: postDate,
+                status: status,
+                jetpack_featured_media_url: featuredImageUrl
+            });
+        });
+
+        return parsedPosts;
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setLoading(true);
+        setError(null);
+        setSuccessMsg(null);
+        setPosts([]);
+        setImported({});
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const xmlText = event.target?.result as string;
+                const parsed = parseXmlFile(xmlText);
+                if (parsed.length === 0) {
+                    setError("No posts found in the XML file.");
+                } else {
+                    setPosts(parsed);
+                    setSuccessMsg(`Parsed ${parsed.length} posts from XML.`);
+                }
+            } catch (err: any) {
+                setError("Failed to parse XML file: " + err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        reader.onerror = () => {
+            setError("Failed to read file.");
+            setLoading(false);
+        };
+        reader.readAsText(file);
+    };
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -143,6 +252,51 @@ export default function WordPressImportPage() {
                 >
                     {loading ? "Fetching..." : "Fetch Posts"}
                 </button>
+            </div>
+
+            {/* OR Seperator */}
+            <div style={{ textAlign: 'center', margin: '1rem 0', position: 'relative' }}>
+                <hr style={{ border: 'none', borderTop: '1px solid #eee' }} />
+                <span style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: '#fff',
+                    padding: '0 1rem',
+                    color: '#888',
+                    fontSize: '0.9rem'
+                }}>OR</span>
+            </div>
+
+            {/* XML Upload */}
+            <div style={{ marginBottom: "2rem" }}>
+                <label
+                    style={{
+                        display: "block",
+                        marginBottom: "0.5rem",
+                        fontWeight: 500,
+                    }}
+                >
+                    Upload WordPress XML File (Limit 100MB)
+                </label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <input
+                        type="file"
+                        accept=".xml"
+                        onChange={handleFileUpload}
+                        ref={fileInputRef}
+                        style={{
+                            padding: "0.8rem",
+                            border: "1px solid #ddd",
+                            borderRadius: "4px",
+                            flex: 1
+                        }}
+                    />
+                </div>
+                <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#666' }}>
+                    Upload an exported XML file from WordPress (Tools &gt; Export). This processes partially in your browser.
+                </p>
             </div>
 
             {/* Proxy toggle */}

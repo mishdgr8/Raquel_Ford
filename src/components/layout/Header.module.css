@@ -6,7 +6,6 @@
     z-index: 1000;
     transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
     background: var(--background);
-    /* Solid background for visibility */
     border-bottom: 1px solid transparent;
 }
 
@@ -20,7 +19,6 @@
     align-items: center;
     justify-content: space-between;
     height: 100px;
-    /* Taller header for premium feel */
     transition: height 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
@@ -30,41 +28,53 @@
 
 .logo {
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 500;
     letter-spacing: 0.3em;
-    /* Wide tracking for high-end look */
     text-transform: uppercase;
     color: var(--primary);
     transition: letter-spacing 0.5s ease;
+    flex-shrink: 0;
 }
 
 .scrolled .logo {
-    font-size: 1.75rem;
+    font-size: 2rem;
     letter-spacing: 0.2em;
+}
+
+/* Right Aligned Group */
+/* Right Aligned Group */
+.navGroup {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    /* Reduced from 2rem */
 }
 
 .desktopNav {
     display: flex;
     align-items: center;
-    gap: 2.5rem;
+    gap: 1.5rem;
 }
 
 .navLink {
     font-family: var(--font-sans);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--foreground);
     position: relative;
     padding: 0.5rem 0;
+    line-height: 1;
+    /* Ensure vertical alignment */
 }
 
 .navLink::after {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: -4px;
+    /* Move underline slightly down */
     left: 0;
     width: 0;
     height: 1px;
@@ -76,16 +86,61 @@
     width: 100%;
 }
 
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Search */
+.searchWrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+    /* Removed absolute positioning context for child if strictly flow-based, 
+       but relative is fine for z-index or if we revert. 
+       Key change is in searchInput below. */
+}
+
+.searchInput {
+    width: 0;
+    opacity: 0;
+    border: none;
+    border-bottom: 1px solid var(--foreground);
+    background: transparent;
+    padding: 0;
+    /* padding 0 when closed to avoid jump */
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--foreground);
+    outline: none;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    /* Removed absolute positioning so it pushes content smoothly */
+    margin-right: 0;
+}
+
+.searchOpen .searchInput {
+    width: 200px;
+    opacity: 1;
+    padding: 0.5rem 0;
+    padding-right: 0.5rem;
+    /* Space between text and icon if needed */
+    margin-right: 0.5rem;
+}
+
 .iconButton {
     background: none;
     border: none;
     color: var(--foreground);
     cursor: pointer;
     padding: 0.5rem;
+    /* Keep padding for click area */
     display: flex;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
+    z-index: 2;
+    line-height: 1;
 }
 
 .iconButton:hover {
@@ -124,15 +179,15 @@
 }
 
 .mobileNavLink {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    font-weight: 700;
     color: var(--primary);
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
 }
 
-/* Mobile Nav */
+/* Mobile Nav Query */
 @media (max-width: 1024px) {
     .desktopNav {
         display: none;

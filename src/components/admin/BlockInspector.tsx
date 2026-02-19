@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BlockInstance, Category } from "@/lib/types";
 import { categoryService } from "@/lib/services/categories";
+import { mediaService } from "@/lib/services/media";
 import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import styles from "./BlockInspector.module.css";
+import { MediaLibraryModal } from "./MediaLibraryModal";
+import { Images } from "lucide-react";
 
 interface BlockInspectorProps {
     block: BlockInstance;
@@ -13,6 +19,9 @@ interface BlockInspectorProps {
 
 export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
     const [categories, setCategories] = useState<Category[]>([]);
+    const [uploading, setUploading] = useState(false);
+    const [showLibrary, setShowLibrary] = useState<{ open: boolean; target: 'cover' | number }>({ open: false, target: 'cover' });
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         categoryService.getCategories().then(setCategories);
@@ -153,6 +162,43 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                                 placeholder="@raquelford"
                             />
                         </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Manual Reel URLs (Plan B)</label>
+                            <div className={styles.listContainer}>
+                                {(block.configJson.reelUrls || []).map((url: string, index: number) => (
+                                    <div key={index} className={styles.listItem}>
+                                        <Input
+                                            value={url}
+                                            onChange={(e) => {
+                                                const newUrls = [...(block.configJson.reelUrls || [])];
+                                                newUrls[index] = e.target.value;
+                                                handleChange('reelUrls', newUrls);
+                                            }}
+                                            placeholder="https://www.instagram.com/reels/..."
+                                        />
+                                        <Button
+                                            onClick={() => {
+                                                const newUrls = (block.configJson.reelUrls || []).filter((_: any, i: number) => i !== index);
+                                                handleChange('reelUrls', newUrls);
+                                            }}
+                                            style={{ padding: '0 0.5rem', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}
+                                        >
+                                            <Trash2 size={16} />
+                                        </Button>
+                                    </div>
+                                ))}
+                                <button
+                                    className={styles.addBtn}
+                                    onClick={() => handleChange('reelUrls', [...(block.configJson.reelUrls || []), ""])}
+                                >
+                                    <Plus size={14} />
+                                    Add Reel URL
+                                </button>
+                            </div>
+                            <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                Use these if you don&apos;t have an API token yet. The reels will be embedded directly.
+                            </p>
+                        </div>
                     </>
                 );
             case 'MagazinePromo':
@@ -175,10 +221,182 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                             />
                         </div>
                         <div className={styles.fieldGroup}>
-                            <label>Link URL</label>
+                            <label>Cover Image</label>
+                            <input
+                                type="file"
+                                ref={coverInputRef}
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setUploading(true);
+                                    try {
+                                        const result = await mediaService.uploadMedia(file, 'magazine');
+                                        handleChange('coverImage', result.url);
+                                    } catch (err) {
+                                        console.error('Cover upload failed:', err);
+                                        alert('Upload failed');
+                                    } finally {
+                                        setUploading(false);
+                                        e.target.value = '';
+                                    }
+                                }}
+                            />
+                            {block.configJson.coverImage ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                    <div style={{
+                                        position: 'relative',
+                                        width: '80px',
+                                        height: '107px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #e2e8f0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <Image
+                                            src={block.configJson.coverImage}
+                                            alt="Cover preview"
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowLibrary({ open: true, target: 'cover' })}
+                                            style={{
+                                                padding: '4px 10px', fontSize: '0.8rem', fontWeight: 600,
+                                                background: '#f1f5f9', border: '1px solid #e2e8f0',
+                                                borderRadius: '4px', cursor: 'pointer',
+                                            }}
+                                        >
+                                            <Images size={12} style={{ marginRight: '4px' }} />
+                                            Library
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChange('coverImage', '')}
+                                            style={{
+                                                padding: '4px 10px', fontSize: '0.8rem', fontWeight: 600,
+                                                background: '#fef2f2', border: '1px solid #fecaca',
+                                                borderRadius: '4px', cursor: 'pointer', color: '#dc2626',
+                                            }}
+                                        >Remove</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => coverInputRef.current?.click()}
+                                        disabled={uploading}
+                                        style={{
+                                            display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                                            padding: '0.75rem 1rem', border: '2px dashed #cbd5e1', borderRadius: '6px',
+                                            background: '#fafbfc', color: '#64748b', cursor: 'pointer',
+                                            fontSize: '0.85rem', fontWeight: 500,
+                                        }}
+                                    >
+                                        {uploading ? 'Uploading...' : '📷 Upload'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowLibrary({ open: true, target: 'cover' })}
+                                        style={{
+                                            display: 'flex', flex: 1, alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                                            padding: '0.75rem 1rem', border: '1px solid #e2e8f0', borderRadius: '6px',
+                                            background: '#fff', color: '#0f172a', cursor: 'pointer',
+                                            fontSize: '0.85rem', fontWeight: 500,
+                                        }}
+                                    >
+                                        <Images size={20} />
+                                        <span>Library</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className={styles.fieldGroup}>
+                            <label>Preview Images (Min 3)</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                                {[0, 1, 2].map((idx) => (
+                                    <div key={idx} style={{ position: 'relative' }}>
+                                        <input
+                                            type="file"
+                                            id={`preview-${idx}`}
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                setUploading(true);
+                                                try {
+                                                    const result = await mediaService.uploadMedia(file, 'magazine');
+                                                    const newPreviews = [...(block.configJson.previewImages || [])];
+                                                    newPreviews[idx] = result.url;
+                                                    handleChange('previewImages', newPreviews);
+                                                } catch (err) {
+                                                    console.error('Preview upload failed:', err);
+                                                    alert('Upload failed');
+                                                } finally {
+                                                    setUploading(true); // Keep uploading state for a bit to show feedback
+                                                    setTimeout(() => setUploading(false), 500);
+                                                    e.target.value = '';
+                                                }
+                                            }}
+                                        />
+                                        <div
+                                            onClick={() => setShowLibrary({ open: true, target: idx })}
+                                            style={{
+                                                aspectRatio: '3/4',
+                                                background: '#f8fafc',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                overflow: 'hidden',
+                                                position: 'relative'
+                                            }}
+                                        >
+                                            {block.configJson.previewImages?.[idx] ? (
+                                                <Image
+                                                    src={block.configJson.previewImages[idx]}
+                                                    alt={`Preview ${idx + 1}`}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '1.5rem', color: '#cbd5e1' }}>+</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <MediaLibraryModal
+                            isOpen={showLibrary.open}
+                            onClose={() => setShowLibrary({ ...showLibrary, open: false })}
+                            onSelect={(url) => {
+                                if (showLibrary.target === 'cover') {
+                                    handleChange('coverImage', url);
+                                } else {
+                                    const newPreviews = [...(block.configJson.previewImages || [])];
+                                    newPreviews[showLibrary.target] = url;
+                                    handleChange('previewImages', newPreviews);
+                                }
+                            }}
+                            title={`Select ${showLibrary.target === 'cover' ? 'Cover' : 'Preview'} Image`}
+                        />
+
+                        <div className={styles.fieldGroup}>
+                            <label>Download URL</label>
                             <Input
-                                value={block.configJson.link || ""}
-                                onChange={(e) => handleChange('link', e.target.value)}
+                                value={block.configJson.downloadUrl || ""}
+                                onChange={(e) => handleChange('downloadUrl', e.target.value)}
+                                placeholder="https://..."
                             />
                         </div>
                     </>

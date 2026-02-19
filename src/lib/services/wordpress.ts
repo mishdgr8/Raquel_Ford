@@ -116,21 +116,16 @@ export const wordPressService = {
         }
 
         if (!html?.trim()) {
-            if (html?.trim()) {
-                blocks.push({
-                    id: `block-${Date.now()}`,
-                    type: "text",
-                    data: { html },
-                });
-            }
             return blocks;
         }
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-        const children = Array.from(doc.body.children);
 
-        if (children.length === 0) {
+        // Use childNodes to capture text nodes as well as elements
+        const nodes = Array.from(doc.body.childNodes);
+
+        if (nodes.length === 0) {
             blocks.push({
                 id: `block-${Date.now()}`,
                 type: "text",
@@ -139,42 +134,55 @@ export const wordPressService = {
             return blocks;
         }
 
-        children.forEach((child, index) => {
+        nodes.forEach((node, index) => {
             const id = `block-${Date.now()}-${index}`;
 
-            if (
-                child.tagName === "P" ||
-                child.tagName === "BLOCKQUOTE" ||
-                child.tagName.startsWith("H")
-            ) {
-                blocks.push({ id, type: "text", data: { html: child.outerHTML || "" } });
-            } else if (child.tagName === "FIGURE" && child.querySelector("img")) {
-                const img = child.querySelector("img")!;
-                blocks.push({
-                    id,
-                    type: "image",
-                    data: {
-                        url: img.src || "",
-                        alt: img.alt || "",
-                        caption: child.querySelector("figcaption")?.textContent || null,
-                    },
-                });
-            } else if (child.tagName === "IMG") {
-                const img = child as HTMLImageElement;
-                blocks.push({
-                    id,
-                    type: "image",
-                    data: { url: img.src || "", alt: img.alt || "" },
-                });
-            } else if (child.tagName === "FIGURE" && child.querySelector("video")) {
-                const video = child.querySelector("video") as HTMLVideoElement;
-                blocks.push({
-                    id,
-                    type: "video",
-                    data: { url: video?.src || "" },
-                });
-            } else {
-                blocks.push({ id, type: "text", data: { html: child.outerHTML || "" } });
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent?.trim();
+                // Only add non-empty text nodes
+                if (text) {
+                    // Wrap loose text in p tags for consistency if needed, or structured html
+                    // Simple wrapping preserves it as a block
+                    blocks.push({
+                        id,
+                        type: "text",
+                        data: { html: `<p>${node.textContent}</p>` }
+                    });
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement;
+                const tagName = element.tagName;
+
+                if (tagName === "FIGURE" && element.querySelector("img")) {
+                    const img = element.querySelector("img")!;
+                    blocks.push({
+                        id,
+                        type: "image",
+                        data: {
+                            url: img.src || "",
+                            alt: img.alt || "",
+                            caption: element.querySelector("figcaption")?.textContent || null,
+                        },
+                    });
+                } else if (tagName === "IMG") {
+                    const img = element as HTMLImageElement;
+                    blocks.push({
+                        id,
+                        type: "image",
+                        data: { url: img.src || "", alt: img.alt || "" },
+                    });
+                } else if (tagName === "FIGURE" && element.querySelector("video")) {
+                    const video = element.querySelector("video") as HTMLVideoElement;
+                    blocks.push({
+                        id,
+                        type: "video",
+                        data: { url: video?.src || "" },
+                    });
+                } else {
+                    // For all other elements (P, H1-6, DIV, BLOCKQUOTE, UL, OL, etc.)
+                    // keep their outerHTML as a text block
+                    blocks.push({ id, type: "text", data: { html: element.outerHTML || "" } });
+                }
             }
         });
 

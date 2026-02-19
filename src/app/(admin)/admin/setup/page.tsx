@@ -12,6 +12,7 @@ import { db } from "@/lib/firebase";
 export default function SetupPage() {
     const [status, setStatus] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [igToken, setIgToken] = useState("");
 
     const log = (msg: string) => setStatus(prev => [...prev, msg]);
 
@@ -106,7 +107,7 @@ export default function SetupPage() {
                     { blockType: 'PostGrid', configJson: { title: "Editor's Pick", count: 4, categoryId: "lifestyle" } },
                     { blockType: 'IGReels', configJson: { title: "Follow us @raquelford" } },
                     { blockType: 'MagazinePromo', configJson: { title: "The Summer Issue", description: "Download our latest digital magazine." } },
-                    { blockType: 'NewsletterSignup', configJson: { title: "Stay in the loop", description: "Get our weekly digest directly in your inbox." } }
+                    { blockType: 'BrandBanner', configJson: { title: "WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE" } }
                 ]
             };
 
@@ -122,16 +123,58 @@ export default function SetupPage() {
         }
     };
 
+    const saveIgToken = async () => {
+        if (!igToken) {
+            log("❌ Please enter a token.");
+            return;
+        }
+        setLoading(true);
+        try {
+            await setDoc(doc(db, "settings", "instagram"), {
+                accessToken: igToken,
+                updatedAt: serverTimestamp(),
+            });
+            log("✅ Instagram Access Token saved to Firestore.");
+        } catch (err: any) {
+            log(`❌ Error saving token: ${err.message}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>System Setup</h1>
-            <p className={styles.description}>
-                This utility will seed initial content (categories, sample posts, and home layout) to help you get started.
-            </p>
 
-            <Button onClick={seedData} disabled={loading} className={styles.button}>
-                {loading ? "Seeding..." : "Seed Initial Content"}
-            </Button>
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>Content Seeding</h2>
+                <p className={styles.description}>
+                    This utility will seed initial content (categories, sample posts, and home layout) to help you get started.
+                </p>
+                <Button onClick={seedData} disabled={loading} className={styles.button}>
+                    {loading ? "Seeding..." : "Seed Initial Content"}
+                </Button>
+            </section>
+
+            <section className={styles.section} style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #eee' }}>
+                <h2 className={styles.sectionTitle}>Instagram Integration</h2>
+                <p className={styles.description}>
+                    Paste your Instagram Long-Lived Access Token here to connect the Reels section.
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                    <input
+                        type="password"
+                        value={igToken}
+                        onChange={(e) => setIgToken(e.target.value)}
+                        placeholder="Paste IG Access Token"
+                        className={styles.input}
+                        style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+                    />
+                    <Button onClick={saveIgToken} disabled={loading || !igToken}>
+                        Save Token
+                    </Button>
+                </div>
+            </section>
 
             <div className={styles.console}>
                 {status.map((line, i) => (

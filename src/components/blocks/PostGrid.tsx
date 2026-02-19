@@ -30,20 +30,60 @@ export function PostGrid({ config }: PostGridProps) {
     const loadArticles = async (isInitial: boolean = false) => {
         setLoading(true);
         try {
-            const result = await articleService.getPublishedArticles(
-                config.categoryId,
-                count,
-                isInitial ? null : lastDoc
+            let accumulatedArticles: Article[] = [];
+            let currentLastDoc = isInitial ? null : lastDoc;
+            let fetches = 0;
+            const maxFetches = 5; // Safety break
+            let hasMoreData = true;
+
+            // Get current slugs to avoid duplicates
+            const currentSlugs = new Set(
+                isInitial ? [] : articles.map(a => a.slug)
             );
 
-            if (isInitial) {
-                setArticles(result.articles);
-            } else {
-                setArticles(prev => [...prev, ...result.articles]);
+            while (accumulatedArticles.length < count && fetches < maxFetches && hasMoreData) {
+                const result = await articleService.getPublishedArticles(
+                    config.categoryId,
+                    count, // Fetch batch size
+                    currentLastDoc
+                );
+
+                if (result.articles.length === 0) {
+                    hasMoreData = false;
+                    break;
+                }
+
+                // Filter for new unique articles from this batch
+                const newUnique = result.articles.filter(a => {
+                    if (currentSlugs.has(a.slug)) return false;
+                    currentSlugs.add(a.slug);
+                    return true;
+                });
+
+                accumulatedArticles = [...accumulatedArticles, ...newUnique];
+                currentLastDoc = result.lastDoc;
+
+                // If we got fewer than requested from DB, we hit the end
+                if (result.articles.length < count) {
+                    hasMoreData = false;
+                }
+
+                fetches++;
             }
 
-            setLastDoc(result.lastDoc);
-            setHasMore(result.articles.length === count);
+            if (isInitial) {
+                setArticles(accumulatedArticles);
+            } else {
+                setArticles(prev => [...prev, ...accumulatedArticles]);
+            }
+
+            setLastDoc(currentLastDoc);
+            setHasMore(hasMoreData && accumulatedArticles.length > 0);
+
+            if (fetches >= maxFetches && accumulatedArticles.length < count) {
+                console.warn("PostGrid: Max fetches reached, might have more duplicates hidden.");
+            }
+
         } catch (error) {
             console.error("Failed to load articles", error);
         } finally {

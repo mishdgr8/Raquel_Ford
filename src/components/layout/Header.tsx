@@ -12,6 +12,7 @@ import { CategoryBar } from "./CategoryBar";
 
 export function Header() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [scrolled, setScrolled] = useState(false);
 
@@ -31,18 +32,46 @@ export function Header() {
                 <Link href="/" className={styles.logo}>
                     RAQUEL FORD
                 </Link>
-                <Link href="/about" className={styles.navLink}>ABOUT</Link>
-                <Link href="/articles" className={styles.navLink}>STORIES</Link>
-                <Link href="/contact" className={styles.navLink}>CONTACT</Link>
 
-                {/* Mobile Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button className={styles.iconButton}>
-                        <Search size={20} />
-                    </button>
-                    <button className={styles.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
-                        {isOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+                <div className={styles.navGroup}>
+                    {/* Desktop Nav */}
+                    <nav className={styles.desktopNav}>
+                        <Link href="/about" className={styles.navLink}>ABOUT</Link>
+                        <Link href="/articles" className={styles.navLink}>STORIES</Link>
+                        <Link href="/contact" className={styles.navLink}>CONTACT</Link>
+                    </nav>
+
+                    {/* Search & Mobile Toggle */}
+                    <div className={styles.actions}>
+                        <div className={clsx(styles.searchWrapper, isSearchOpen && styles.searchOpen)}>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const q = formData.get('q');
+                                    if (q) window.location.href = `/search?q=${encodeURIComponent(q.toString())}`;
+                                }}
+                            >
+                                <input
+                                    name="q"
+                                    placeholder="SEARCH..."
+                                    className={styles.searchInput}
+                                    autoFocus={isSearchOpen}
+                                />
+                            </form>
+                            <button
+                                className={styles.iconButton}
+                                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                type="button"
+                            >
+                                {isSearchOpen ? <X size={20} /> : <Search size={20} />}
+                            </button>
+                        </div>
+
+                        <button className={styles.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
                 </div>
             </div>
 

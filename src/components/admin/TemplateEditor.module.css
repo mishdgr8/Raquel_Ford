@@ -1,7 +1,11 @@
 .container {
-    height: 100vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    margin: 0;
+    transition: all 0.3s ease;
+    overflow-x: hidden;
 }
 
 .header {
@@ -12,12 +16,25 @@
     justify-content: space-between;
     align-items: center;
     z-index: 30;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .headerInfo {
     display: flex;
     align-items: center;
     gap: 2rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+    }
+
+    .headerInfo {
+        gap: 1rem;
+    }
 }
 
 .nameInput {
@@ -28,6 +45,7 @@
     outline: none;
     padding: 0.5rem 0;
     width: 300px;
+    max-width: 100%;
 }
 
 .meta {
@@ -79,20 +97,44 @@
 }
 
 .layout {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 0;
+    display: flex;
+    flex-direction: column;
     flex: 1;
     overflow: hidden;
-    transition: all 0.3s ease;
+    overflow-x: hidden;
+    background: #f8fafc;
+    width: 100%;
+    max-width: 100%;
 }
 
-.withPreview {
-    grid-template-columns: 350px 1fr 340px;
+.mainEditor {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    height: 60vh;
+    /* Fixed height for the editor part to make room for preview */
+    border-bottom: 1px solid var(--border);
+    transition: height 0.3s ease;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .mainEditor {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
+        height: auto;
+        flex: none;
+        overflow: visible;
+        gap: 1rem;
+    }
+}
+
+.mainEditor.fullHeight {
+    height: 100%;
 }
 
 .builder {
-    border-right: 1px solid var(--border);
     padding: 1.5rem;
     overflow-y: auto;
     background: #f8fafc;
@@ -216,20 +258,38 @@
 }
 
 .previewContainer {
-    background: #e2e8f0;
-    padding: 2rem;
+    background: #cbd5e1;
+    padding: 3rem 2rem;
     overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (max-width: 1400px) {
+    .previewContainer {
+        padding: 2rem 1rem;
+    }
 }
 
 .previewDevice {
     width: 100%;
+    /* Default to 100% for mobile */
     max-width: 1280px;
     background: white;
     box-shadow: var(--shadow-lg);
     border-radius: 8px;
     min-height: 100%;
+}
+
+@media (min-width: 1024px) {
+    .previewDevice {
+        width: 80%;
+    }
 }
 
 .previewContent {
@@ -243,6 +303,14 @@
     flex-direction: column;
     width: 340px;
     z-index: 20;
+}
+
+@media (max-width: 1024px) {
+    .inspector {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border);
+    }
 }
 
 .inspectorHeader {

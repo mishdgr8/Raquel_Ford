@@ -1,3 +1,6 @@
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
 export interface InstagramMedia {
     id: string;
     media_type: 'IMAGE' | 'VIDEO' | 'CAROUSEL_ALBUM';
@@ -9,10 +12,21 @@ export interface InstagramMedia {
 }
 
 export async function fetchInstagramMedia(limit: number = 10): Promise<InstagramMedia[]> {
-    const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+    let accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
 
     if (!accessToken) {
-        console.warn("INSTAGRAM_ACCESS_TOKEN is not defined in environment variables.");
+        try {
+            const settingsDoc = await getDoc(doc(db, "settings", "instagram"));
+            if (settingsDoc.exists()) {
+                accessToken = settingsDoc.data().accessToken;
+            }
+        } catch (error) {
+            console.error("Error fetching Instagram token from Firestore:", error);
+        }
+    }
+
+    if (!accessToken) {
+        console.warn("INSTAGRAM_ACCESS_TOKEN is not defined in environment variables or Firestore.");
         return [];
     }
 

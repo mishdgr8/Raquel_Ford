@@ -7,6 +7,8 @@ import { PostGrid } from "./PostGrid";
 import { IGReels } from "./IGReels";
 import { MagazinePromo } from "./MagazinePromo";
 import { EditorsPick } from "./EditorsPick";
+import { BrandBanner } from "./BrandBanner";
+import { SimpleBanner } from "./SimpleBanner";
 
 interface BlockRendererProps {
     blocks: BlockInstance[];
@@ -25,6 +27,10 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                         return <LatestArticles key={block.id} config={block.configJson || {}} />;
                     case 'NewsletterSignup':
                         return <NewsletterSignup key={block.id} config={block.configJson || {}} />;
+                    case 'BrandBanner':
+                        return <BrandBanner key={block.id} config={block.configJson || {}} />;
+                    case 'SimpleBanner':
+                        return <SimpleBanner key={block.id} config={block.configJson || {}} />;
                     case 'PostGrid':
                         return <PostGrid key={block.id} config={block.configJson || {}} />;
                     case 'IGReels':

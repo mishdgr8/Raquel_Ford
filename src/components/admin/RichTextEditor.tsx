@@ -7,17 +7,21 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
     Bold, Italic, Underline as UnderlineIcon, Strikethrough,
     Heading1, Heading2, Heading3,
     List, ListOrdered, Quote,
     Link as LinkIcon, Image as ImageIcon,
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
-    Undo2, Redo2, Minus
+    Undo2, Redo2, Minus,
+    Video, Instagram, GalleryHorizontalEnd, MessageSquareQuote
 } from "lucide-react";
 import styles from "./RichTextEditor.module.css";
 import { mediaService } from "@/lib/services/media";
+import { StyledQuote } from "./extensions/StyledQuote";
+import { SecureEmbed } from "./extensions/SecureEmbed";
+import { ImageGallery } from "./extensions/ImageGallery";
 
 interface RichTextEditorProps {
     value: string;
@@ -32,7 +36,8 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         immediatelyRender: false,
         extensions: [
             StarterKit.configure({
-                heading: { levels: [1, 2, 3] },
+                heading: { levels: [1, 2, 3, 4, 5] },
+                blockquote: false, // We use StyledQuote instead
             }),
             Image.configure({
                 inline: true,
@@ -50,6 +55,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
             Placeholder.configure({
                 placeholder: placeholder || "Start writing your story...",
             }),
+            StyledQuote,
+            SecureEmbed,
+            ImageGallery,
         ],
         content: value || "",
         onUpdate: ({ editor }) => {
@@ -130,6 +138,44 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     }, [editor]);
 
     if (!editor) return null;
+
+    const handleQuote = () => {
+        const author = prompt("Quote author (optional):");
+        if (author === null) return;
+        const authorTitle = prompt("Author title / source (optional):") || '';
+        editor.chain().focus().setStyledQuote({ author, authorTitle }).run();
+    };
+
+    const handleEmbed = () => {
+        const url = prompt("Paste YouTube or Instagram URL:");
+        if (!url) return;
+        const success = editor.chain().focus().setEmbed({ url }).run();
+        if (!success) {
+            alert("Could not detect embed type. Please use a valid YouTube or Instagram URL.");
+        }
+    };
+
+    const handleGallery = async () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.multiple = true;
+        input.accept = 'image/*';
+        input.onchange = async (e: any) => {
+            const files = Array.from(e.target.files || []) as File[];
+            if (files.length === 0) return;
+            try {
+                const uploaded = await Promise.all(
+                    files.map(f => mediaService.uploadMedia(f, 'gallery'))
+                );
+                const images = uploaded.map((u, i) => ({ url: u.url, alt: files[i].name }));
+                editor.chain().focus().setGallery({ images }).run();
+            } catch (err) {
+                console.error('Gallery upload failed:', err);
+                alert('Failed to upload gallery images.');
+            }
+        };
+        input.click();
+    };
 
     const ToolbarButton = ({ onClick, isActive, title, children }: {
         onClick: () => void;
@@ -280,9 +326,16 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBlockquote().run()}
                         isActive={editor.isActive("blockquote")}
-                        title="Quote"
+                        title="Simple Quote"
                     >
                         <Quote size={16} />
+                    </ToolbarButton>
+                    <ToolbarButton
+                        onClick={handleQuote}
+                        isActive={editor.isActive("styledQuote")}
+                        title="Styled Quote Block"
+                    >
+                        <MessageSquareQuote size={16} />
                     </ToolbarButton>
                     <ToolbarButton
                         onClick={() => editor.chain().focus().setHorizontalRule().run()}
@@ -300,6 +353,12 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                     </ToolbarButton>
                     <ToolbarButton onClick={addImage} title="Upload Image">
                         <ImageIcon size={16} />
+                    </ToolbarButton>
+                    <ToolbarButton onClick={handleEmbed} title="Embed YouTube/Instagram">
+                        <Video size={16} />
+                    </ToolbarButton>
+                    <ToolbarButton onClick={handleGallery} title="Image Gallery">
+                        <GalleryHorizontalEnd size={16} />
                     </ToolbarButton>
                 </div>
             </div>

@@ -1,0 +1,87 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { articleService } from "@/lib/services/articles";
+import { Article } from "@/lib/types";
+import { PostCard } from "@/components/blocks/PostCard";
+import styles from "./SearchPage.module.css";
+import { Suspense } from "react";
+
+function SearchResults() {
+    const searchParams = useSearchParams();
+    const query = searchParams.get('q');
+    const [articles, setArticles] = useState<Article[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!query) {
+            setLoading(false);
+            return;
+        }
+
+        const performSearch = async () => {
+            setLoading(true);
+            try {
+                // Since Firestore lacks full-text search, we fetch all published articles
+                // and filter client-side. This is acceptable for small-medium datasets.
+                // For larger datasets, we'd need Algolia or similar.
+                const allArticles = await articleService.getAllPublishedArticles(); // Need to implement this or use existing with high limit
+
+                const lowerQuery = query.toLowerCase();
+                const filtered = allArticles.filter(article =>
+                    article.title.toLowerCase().includes(lowerQuery) ||
+                    article.excerpt?.toLowerCase().includes(lowerQuery)
+                );
+
+                // Deduplicate by slug
+                const uniqueArticles = Array.from(new Map(filtered.map(item => [item.slug, item])).values());
+
+                setArticles(uniqueArticles);
+            } catch (error) {
+                console.error("Search failed", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        performSearch();
+    }, [query]);
+
+    return (
+        <div className="container" style={{ padding: '8rem 0 4rem' }}>
+            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', marginBottom: '1rem' }}>
+                    {query ? `Search Results for "${query}"` : "Search"}
+                </h1>
+                <div style={{ width: '60px', height: '2px', background: 'var(--primary)', margin: '0 auto' }} />
+            </div>
+
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>
+            ) : articles.length > 0 ? (
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '2rem'
+                }}>
+                    {articles.map(article => (
+                        <PostCard key={article.id} article={article} variant="vertical" />
+                    ))}
+                </div>
+            ) : (
+                <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--muted-foreground)' }}>
+                    {query ? "No stories found matching your search." : "Enter a search term to find stories."}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={<div className="container" style={{ padding: '8rem 0' }}>Loading search...</div>}>
+            <SearchResults />
+        </Suspense>
+    );
+}

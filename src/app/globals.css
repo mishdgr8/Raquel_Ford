@@ -5,9 +5,9 @@
   --accent: #5d4037;
   /* Warm espresso accent */
   --accent-light: #8b6b61;
-  --gold: #c5a059;
-  /* Sophisticated gold */
-  --gold-light: #e6d5b8;
+  --gold: #9B0C95;
+  /* Brand Magenta highlight */
+  --gold-light: #fdf4ff;
 
   --background: #ffffff;
   --foreground: #111111;
@@ -22,14 +22,15 @@
   /* Sharp, high-fashion corners */
 
   /* Typography - Elite Serif & Clean Sans */
-  --font-serif: var(--font-vogue), "Cormorant Garamond", serif;
-  --font-display: var(--font-serif), "Playfair Display", serif;
+  /* Fallbacks for Rizoma L and Sohne 400 */
+  --font-serif: "Playfair Display", "Cormorant Garamond", serif;
+  --font-display: var(--font-serif);
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Professional Spacing */
-  --container-width: 1400px;
+  --container-width: 1440px;
   /* Slightly wider for immersive feel */
-  --section-padding: 4rem;
+  --section-padding: 2rem;
 
   /* Shadows - Minimalist */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -65,7 +66,7 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
@@ -78,7 +79,7 @@ a {
 }
 
 a:hover {
-  opacity: 0.7;
+  opacity: 1;
 }
 
 h1,
@@ -91,7 +92,6 @@ h6 {
   font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  text-transform: uppercase;
   margin-bottom: 1.5rem;
 }
 
@@ -114,6 +114,10 @@ h4 {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --section-padding: 3rem;
+  }
+
   h1 {
     font-size: 2.75rem;
   }
@@ -124,6 +128,28 @@ h4 {
 
   h3 {
     font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --section-padding: 2rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
   }
 }
 
@@ -173,7 +199,7 @@ h4 {
 .category-label {
   font-family: var(--font-sans);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--gold);
@@ -262,10 +288,6 @@ h4 {
   overflow: hidden;
 }
 
-.hover-scale-image {
-  transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
 .hover-scale-parent:hover .hover-scale-image {
-  transform: scale(1.05);
+  transform: none;
 }

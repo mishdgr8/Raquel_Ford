@@ -1,5 +1,6 @@
 .article {
-    padding-bottom: 10rem;
+    padding-bottom: 0;
+    background-color: #E8ECEF;
 }
 
 .header {
@@ -22,19 +23,28 @@
 }
 
 .category {
+    color: var(--foreground);
+    text-decoration: none;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.category:hover {
     color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .dot {
-    color: var(--border);
+    color: var(--muted-foreground);
+    font-weight: 400;
 }
 
 .title {
     font-family: var(--font-display);
-    font-size: 4.5rem;
+    font-size: 3rem;
     font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     max-width: 1000px;
     margin: 0 auto 3rem;
     text-transform: none;
@@ -51,10 +61,9 @@
 
 .heroImage {
     width: 100%;
-    height: auto;
-    max-height: 500px;
-    overflow: hidden;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
+    aspect-ratio: 16 / 9;
+    position: relative;
 }
 
 .heroImage img {
@@ -63,32 +72,139 @@
     object-fit: cover;
 }
 
-.content {
+.layout {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+.contentContainer {
+    flex: 1;
+    max-width: var(--container-width);
+    margin: 0 !important;
     padding: 0;
+    /* Remove container padding so image can span */
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    background: var(--muted);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+}
+
+.tag:hover {
+    color: var(--foreground);
+    background: #e2e8f0;
+}
+
+.content {
+    background: #E8ECEF;
+    min-width: 0;
+    /* Prevent grid blowout */
+}
+
+.contentInner {
+    padding: 0 3rem;
 }
 
 @media (max-width: 1024px) {
+    .layout {
+        grid-template-columns: 1fr 280px;
+        gap: 3rem;
+    }
+
     .title {
         font-size: 3.5rem;
+    }
+
+    .header {
+        padding: 5rem 0 3rem;
     }
 }
 
 @media (max-width: 768px) {
+    .layout {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .article {
+        padding-bottom: 2rem;
+    }
+
     .header {
-        padding-top: 100px;
-        padding-bottom: 4rem;
+        padding: 6rem 0 2rem;
+    }
+
+    .meta {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
     }
 
     .title {
-        font-size: 2.5rem;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .excerpt {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
     }
 
     .heroImage {
-        height: 60vh;
-        margin-bottom: 4rem;
+        max-height: 300px;
+        margin-bottom: 2rem;
     }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.75rem;
+    }
+
+    .excerpt {
+        font-size: 1rem;
+    }
+}
+
+/* Heading Capitalization Control */
+.content[data-heading-style="uppercase"] :global(h1),
+.content[data-heading-style="uppercase"] :global(h2),
+.content[data-heading-style="uppercase"] :global(h3),
+.content[data-heading-style="uppercase"] :global(h4),
+.content[data-heading-style="uppercase"] :global(h5),
+.content[data-heading-style="uppercase"] :global(h6) {
+    text-transform: uppercase;
+}
+
+.content[data-heading-style="sentence"] :global(h1),
+.content[data-heading-style="sentence"] :global(h2),
+.content[data-heading-style="sentence"] :global(h3),
+.content[data-heading-style="sentence"] :global(h4),
+.content[data-heading-style="sentence"] :global(h5),
+.content[data-heading-style="sentence"] :global(h6) {
+    text-transform: none;
+}
+
+.content[data-heading-style="title"] :global(h1),
+.content[data-heading-style="title"] :global(h2),
+.content[data-heading-style="title"] :global(h3),
+.content[data-heading-style="title"] :global(h4),
+.content[data-heading-style="title"] :global(h5),
+.content[data-heading-style="title"] :global(h6) {
+    text-transform: capitalize;
 }

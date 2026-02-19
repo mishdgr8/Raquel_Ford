@@ -34,11 +34,7 @@
     height: 100%;
     object-fit: cover;
     z-index: 0;
-    transition: transform 10s ease-out;
-}
-
-.hero:hover .heroImage {
-    transform: scale(1.05);
+    image-rendering: -webkit-optimize-contrast;
 }
 
 .imagePlaceholder {
@@ -58,7 +54,7 @@
     flex-direction: column;
     align-items: center;
     color: #fff;
-    margin-top: 100px;
+    margin-top: 60px;
 }
 
 .category {
@@ -79,23 +75,12 @@
     font-weight: 500;
     line-height: 1.05;
     letter-spacing: -0.02em;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3.5rem;
     color: #fff;
     text-transform: none;
     /* Keep case for titles */
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards 0.5s;
-}
-
-.excerpt {
-    font-family: var(--font-serif);
-    font-size: 1.25rem;
-    line-height: 1.6;
-    margin-bottom: 3.5rem;
-    color: rgba(255, 255, 255, 0.9);
-    max-width: 650px;
-    opacity: 0;
-    animation: fadeInUp 0.8s ease forwards 0.7s;
 }
 
 .cta {
@@ -122,59 +107,54 @@
     border-color: #fff;
 }
 
-.controls {
-    position: absolute;
-    bottom: 3rem;
-    left: 4rem;
-    right: 4rem;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.controlBtn {
-    background: transparent;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 1rem;
-    transition: opacity 0.3s ease;
-}
-
-.controlBtn:hover {
-    opacity: 0.5;
-}
-
-.dots {
-    display: flex;
-    gap: 1rem;
-}
-
-.dot {
-    width: 60px;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.4s ease;
-}
-
-.dotActive {
-    background: #fff;
-}
-
 @media (max-width: 768px) {
+    .hero {
+        min-height: 450px;
+        height: 60vh;
+    }
+
+    .content {
+        padding: 0 1.5rem;
+        margin-top: 60px;
+    }
+
     .title {
-        font-size: 3rem;
+        font-size: 2.5rem;
+    }
+
+    .category {
+        font-size: 0.75rem;
+        margin-bottom: 1.5rem;
     }
 
     .excerpt {
-        font-size: 1.125rem;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .cta {
+        padding: 1rem 2rem;
+        font-size: 0.75rem;
     }
 
     .controls {
-        left: 2rem;
-        right: 2rem;
+        left: 1.5rem;
+        right: 1.5rem;
+        bottom: 2rem;
+    }
+
+    .dot {
+        width: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: 380px;
+    }
+
+    .title {
+        font-size: 2rem;
     }
 }
 

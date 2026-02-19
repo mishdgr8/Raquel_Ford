@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./EditorsPick.module.css";
 import { Article } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
@@ -18,10 +19,13 @@ export function EditorsPick() {
 
         const fetchArticles = async () => {
             try {
-                // Fetching a few more to filter if needed, but for now just taking latest 4
-                // Or specific IDs if we knew them.
-                const result = await articleService.getPublishedArticles(undefined, 4);
-                setArticles(result.articles);
+                // Fetch articles marked as Editor's Pick
+                const result = await articleService.getEditorsPicks();
+
+                // If we don't have enough picks, fallback to latest published?
+                // For now, let's just set what we have.
+                // Optionally, we could fill the gaps with latest articles if needed.
+                setArticles(result);
             } catch (error) {
                 console.error("Failed to load Editors Pick", error);
             }
@@ -57,9 +61,11 @@ export function EditorsPick() {
                                 <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.innerCard}`}>
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
-                                            <img
+                                            <Image
                                                 src={article.featuredImage}
                                                 alt={article.title}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                                 className={styles.image}
                                             />
                                         )}
@@ -76,9 +82,11 @@ export function EditorsPick() {
                                 <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.outerCard}`}>
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
-                                            <img
+                                            <Image
                                                 src={article.featuredImage}
                                                 alt={article.title}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                                 className={styles.image}
                                             />
                                         )}

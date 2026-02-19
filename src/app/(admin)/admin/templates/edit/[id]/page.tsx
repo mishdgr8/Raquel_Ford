@@ -1,7 +1,12 @@
 import { templateService } from "@/lib/services/templates";
-import { TemplateEditor } from "@/components/admin/TemplateEditor";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { serializeFirestoreData } from "@/lib/utils";
+
+const TemplateEditor = dynamic(
+    () => import("@/components/admin/TemplateEditor").then(m => ({ default: m.TemplateEditor })),
+    { loading: () => <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--muted-foreground)' }}>Loading editor...</div> }
+);
 
 interface EditTemplatePageProps {
     params: { id: string };

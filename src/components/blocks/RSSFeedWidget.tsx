@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getRSSFeed } from "@/app/actions/rss";
 import { RSSItem } from "@/lib/services/rss";
+import Image from "next/image";
 import styles from "./RSSFeedWidget.module.css";
 
 interface RSSFeedWidgetProps {
@@ -34,9 +35,11 @@ export function RSSFeedWidget({ url, title, sourceName, limit = 5 }: RSSFeedWidg
                     <li key={index} className={styles.item}>
                         {item.imageUrl && (
                             <div className={styles.imageWrapper}>
-                                <img
+                                <Image
                                     src={item.imageUrl}
                                     alt={item.title}
+                                    fill
+                                    sizes="80px"
                                     className={styles.image}
                                 />
                             </div>

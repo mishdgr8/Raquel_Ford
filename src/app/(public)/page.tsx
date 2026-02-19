@@ -3,8 +3,8 @@ import { EditorsPick } from "@/components/blocks/EditorsPick";
 import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
 
-// Force dynamic rendering since we depend on database content
-export const dynamic = 'force-dynamic';
+// ISR: cache page and revalidate every 60 seconds
+export const revalidate = 60;
 
 export default async function HomePage() {
     const template = await templateService.getActiveTemplate('home');

@@ -27,11 +27,10 @@ export function LatestArticles({ config }: LatestArticlesProps) {
     return (
         <section className={styles.section}>
             <div className="container">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '4rem' }}>
+                <div className={styles.layoutGrid}>
                     <div>
                         <div className={styles.header}>
                             <h2 className={styles.title}>{config.title || "LATEST STORIES"}</h2>
-                            <div className={styles.line} />
                         </div>
 
                         <div className={styles.grid}>
