@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Sidebar } from "@/components/layout/Sidebar";
+import Script from "next/script";
 
 export default function PublicLayout({
     children,
@@ -14,6 +15,7 @@ export default function PublicLayout({
                 {children}
             </main>
             <Footer />
+            <Script async src="//www.instagram.com/embed.js" strategy="lazyOnload" />
         </div>
     );
 }
