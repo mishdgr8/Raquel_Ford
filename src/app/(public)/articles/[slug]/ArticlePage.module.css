@@ -74,13 +74,13 @@
 
 .layout {
     display: flex;
-    justify-content: flex-end;
     width: 100%;
+    max-width: var(--container-width);
+    margin: 0 auto;
 }
 
 .contentContainer {
     flex: 1;
-    max-width: var(--container-width);
     margin: 0 !important;
     padding: 0;
     /* Remove container padding so image can span */
@@ -124,6 +124,7 @@
 
 @media (max-width: 1024px) {
     .layout {
+        display: grid;
         grid-template-columns: 1fr 280px;
         gap: 3rem;
     }
