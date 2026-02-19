@@ -69,16 +69,17 @@ export const articleService = {
     },
 
     async getArticleBySlug(slug: string) {
-        const q = query(collection(db, ARTICLES_COLLECTION), where("slug", "==", slug));
+        // MATCH GRID LOGIC: Strict filter for published only, ordered by date
+        const q = query(
+            collection(db, ARTICLES_COLLECTION),
+            where("slug", "==", slug),
+            where("status", "==", "published"),
+            orderBy("publishedAt", "desc"),
+            limit(1)
+        );
         const snapshot = await getDocs(q);
+
         if (snapshot.empty) return null;
-
-        // Prioritize published article if duplicates exist
-        const published = snapshot.docs.find(doc => doc.data().status === 'published');
-        if (published) {
-            return { id: published.id, ...published.data() } as Article;
-        }
-
         return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Article;
     },
 
