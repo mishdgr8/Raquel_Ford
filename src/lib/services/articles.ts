@@ -69,9 +69,16 @@ export const articleService = {
     },
 
     async getArticleBySlug(slug: string) {
-        const q = query(collection(db, ARTICLES_COLLECTION), where("slug", "==", slug), limit(1));
+        const q = query(collection(db, ARTICLES_COLLECTION), where("slug", "==", slug));
         const snapshot = await getDocs(q);
         if (snapshot.empty) return null;
+
+        // Prioritize published article if duplicates exist
+        const published = snapshot.docs.find(doc => doc.data().status === 'published');
+        if (published) {
+            return { id: published.id, ...published.data() } as Article;
+        }
+
         return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Article;
     },
 
