@@ -95,16 +95,11 @@
 
 @media (max-width: 1024px) {
     .container {
-        gap: 1.5rem;
-        overflow-x: auto;
-        justify-content: flex-start;
+        gap: 1rem;
+        justify-content: center;
         padding: 0 1rem;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    .container::-webkit-scrollbar {
-        display: none;
+        flex-wrap: wrap;
+        /* Allow wrapping if needed, but we aim for single line 3 items + More */
     }
 
     .categoryBar {
@@ -112,7 +107,12 @@
     }
 
     .dropdown {
-        display: none;
-        /* Hide dropdown on mobile, let them scroll */
+        display: flex;
+        /* Show dropdown */
+    }
+
+    .dropdownTrigger {
+        font-size: 0.75rem;
+        /* Match other mobile links if needed */
     }
 }
