@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { articleService } from "@/lib/services/articles";
 import { notFound } from "next/navigation";
 import { formatDate, estimateReadingTime } from "@/lib/utils";
@@ -40,7 +41,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <header className={styles.header}>
                 <div className="container">
                     <div className={styles.meta}>
-                        <span className={styles.category}>{article.categoryId}</span>
+                        <Link href="/articles" className={styles.category}>STORIES</Link>
+                        <span className={styles.dot}>/</span>
+                        <Link href={`/category/${article.categoryId}`} className={styles.category}>
+                            {article.categoryId}
+                        </Link>
                         <span className={styles.dot}>•</span>
                         <span className={styles.date}>{formatDate(article.createdAt)}</span>
                         <span className={styles.dot}>•</span>

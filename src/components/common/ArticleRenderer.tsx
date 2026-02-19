@@ -32,6 +32,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                 key={block.id}
                                 className={styles.text}
                                 dangerouslySetInnerHTML={{ __html: block.data.text || block.data.html }}
+                                suppressHydrationWarning
                             />
                         );
                     case 'image':
@@ -84,7 +85,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                             return (
                                 <div key={block.id} style={{ margin: '2rem 0', textAlign: 'center' }}>
                                     <iframe
-                                        src={`https://www.instagram.com/p/${block.data.embedId}/embed`}
+                                        src={`https://www.instagram.com/p/${block.data.embedId}/embed/captioned`}
                                         style={{ width: '100%', maxWidth: '540px', height: '600px', border: 0 }}
                                         scrolling="no"
                                         loading="lazy"

@@ -62,9 +62,14 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
         try {
             // Build HTML from blocks for contentHtml
             const html = (form.contentJson?.blocks || []).map(b => {
-                if (b.type === 'text') return b.data.text || '';
+                if (b.type === 'text') return b.data.html || b.data.text || '';
                 if (b.type === 'image' && b.data.url) return `<figure><img src="${b.data.url}" alt="${b.data.caption || ''}" />${b.data.caption ? `<figcaption>${b.data.caption}</figcaption>` : ''}</figure>`;
                 if (b.type === 'divider') return '<hr />';
+                if (b.type === 'video') return `<video src="${b.data.url}" controls></video>`;
+                if (b.type === 'embed') {
+                    if (b.data.embedType === 'youtube') return `<iframe src="https://www.youtube.com/embed/${b.data.embedId}"></iframe>`;
+                    if (b.data.embedType === 'instagram') return `<iframe src="https://www.instagram.com/p/${b.data.embedId}/embed/captioned" style="width: 100%; max-width: 540px; height: 600px; border: 0;"></iframe>`;
+                }
                 return '';
             }).join('\n');
 

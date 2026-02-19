@@ -23,11 +23,20 @@
 }
 
 .category {
+    color: var(--foreground);
+    text-decoration: none;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.category:hover {
     color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .dot {
-    color: var(--border);
+    color: var(--muted-foreground);
+    font-weight: 400;
 }
 
 .title {
