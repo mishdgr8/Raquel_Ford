@@ -50,7 +50,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                         </div>
                         <span className={styles.mobileHidden}>•</span>
                         <div className={styles.metaGroup}>
-                            <span className={styles.date}>{formatDate(article.createdAt)}</span>
+                            <span className={styles.date}>{formatDate(article.publishedAt || article.createdAt)}</span>
                             <span className={styles.dot}>•</span>
                             <span className={styles.readingTime}>{estimateReadingTime(article.contentJson?.blocks || [])} min read</span>
                         </div>

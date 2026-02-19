@@ -23,11 +23,13 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
                     ) : (
                         <div className={styles.imagePlaceholder} />
                     )}
-                    <span className={styles.category}>{(article.categoryId || 'Uncategorized').toUpperCase()}</span>
                 </div>
-
                 <CardContent className={styles.content}>
-                    <p className={styles.date}>{formatDate(article.publishedAt)}</p>
+                    <div className={styles.metaRow}>
+                        <span className={styles.categoryText}>{(article.categoryId || 'Uncategorized').toUpperCase()}</span>
+                        <span className={styles.dot}>•</span>
+                        <p className={styles.date}>{formatDate(article.publishedAt || article.createdAt)}</p>
+                    </div>
                     <h3
                         className={styles.title}
                         dangerouslySetInnerHTML={{ __html: article.title }}
