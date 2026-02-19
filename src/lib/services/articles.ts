@@ -69,18 +69,30 @@ export const articleService = {
     },
 
     async getArticleBySlug(slug: string) {
-        // MATCH GRID LOGIC: Strict filter for published only, ordered by date
-        const q = query(
-            collection(db, ARTICLES_COLLECTION),
-            where("slug", "==", slug),
-            where("status", "==", "published"),
-            orderBy("publishedAt", "desc"),
-            limit(1)
-        );
+        // Query by slug only to avoid composite index requirements
+        const q = query(collection(db, ARTICLES_COLLECTION), where("slug", "==", slug));
         const snapshot = await getDocs(q);
 
         if (snapshot.empty) return null;
-        return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Article;
+
+        // In-memory filter: Prioritize published articles, sort by date desc
+        const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+
+        // 1. Filter for published
+        const publishedArticles = articles.filter(a => a.status === 'published');
+
+        // 2. If we have published ones, sort by date and take the newest
+        if (publishedArticles.length > 0) {
+            publishedArticles.sort((a, b) => {
+                const dateA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
+                const dateB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+                return dateB - dateA;
+            });
+            return publishedArticles[0];
+        }
+
+        // 3. Fallback: Return the first found (legacy behavior)
+        return articles[0];
     },
 
     // Admin CRUD
