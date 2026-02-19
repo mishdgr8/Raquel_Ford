@@ -75,18 +75,36 @@ export const articleService = {
 
         if (snapshot.empty) return null;
 
-        // In-memory filter: Prioritize published articles, sort by date desc
+        // In-memory filter: Match the grid's behavior (prioritize the one that comes first in default sort, which often depends on how they were fetched)
+        // However, the grid does: Array.from(new Map(articles.map(item => [item.slug, item])).values())
+        // Which keeps the FIRST occurrence found.
+        // In getPublishedArticles, it's ordered by publishedAt desc.
+        // So the "first" occurrence for a slug in a 'desc' list is the NEWEST one.
+        // WAIT, if the grid takes the "first" in a desc list, it takes the NEWEST.
+        // My previous analysis was slightly off: getArticleBySlug WAS already taking the newest.
+        // Let's re-examine LatestArticles.tsx:
+        // articleService.getPublishedArticles(undefined, config.count || 5).then(res => setArticles(res.articles));
+        // getPublishedArticles uses orderBy("publishedAt", "desc").
+        // So articles[0] is the newest.
+        // dedupe: Array.from(new Map(articles.map(item => [item.slug, item])).values())
+        // map.set(item.slug, item) overwrites earlier ones.
+        // If articles = [Newest(slugA), Oldest(slugA), ...]
+        // Map will have: { slugA: Oldest(slugA) } because it maps Newest then overwrites with Oldest? 
+        // No, articles.map() creates pairs. Map(pairs) keeps the LAST one if keys repeat. 
+        // So if articles is DESC (Newest first), the LAST one in the array for that slug is the OLDEST.
+        // Thus the grid SHOWS THE OLDEST.
+
         const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
 
         // 1. Filter for published
         const publishedArticles = articles.filter(a => a.status === 'published');
 
-        // 2. If we have published ones, sort by date and take the newest
+        // 2. If we have published ones, sort by date and take the OLDEST to match the grid's dedupe behavior
         if (publishedArticles.length > 0) {
             publishedArticles.sort((a, b) => {
                 const dateA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
                 const dateB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
-                return dateB - dateA;
+                return dateA - dateB; // ASCENDING for OLDEST first
             });
             return publishedArticles[0];
         }
