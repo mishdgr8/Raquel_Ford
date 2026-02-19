@@ -1,7 +1,7 @@
 .mobileRSS {
     display: none;
     padding: 0 1.5rem 3rem;
-    background: #fff;
+    background: var(--background);
 }
 
 .rssSection {
