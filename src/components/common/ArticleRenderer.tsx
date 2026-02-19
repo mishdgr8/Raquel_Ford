@@ -1,5 +1,6 @@
 import { ContentBlock } from "@/lib/types";
 import Image from "next/image";
+import { useEffect } from "react";
 import styles from "./ArticleRenderer.module.css";
 import { GalleryBlock } from "./GalleryBlock";
 
@@ -9,6 +10,13 @@ interface ArticleRendererProps {
 }
 
 export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
+    useEffect(() => {
+        // Trigger Instagram embed processing when content loads/changes
+        if (typeof window !== 'undefined' && (window as any).instgrm) {
+            (window as any).instgrm.Embeds.process();
+        }
+    }, [blocks, html]);
+
     // New format: render HTML directly
     if (html) {
         return (
@@ -82,11 +90,21 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                             );
                         }
                         if (block.data.embedType === 'instagram' && block.data.embedId) {
+                            // Helper to extract ID if a full URL is passed
+                            const getInstagramId = (idOrUrl: string) => {
+                                if (idOrUrl.includes('instagram.com/p/')) {
+                                    const match = idOrUrl.match(/instagram\.com\/p\/([^/?#]+)/);
+                                    return match ? match[1] : idOrUrl;
+                                }
+                                return idOrUrl;
+                            };
+                            const embedId = getInstagramId(block.data.embedId);
+
                             return (
                                 <div key={block.id} style={{ margin: '2rem 0', display: 'flex', justifyContent: 'center' }}>
                                     <blockquote
                                         className="instagram-media"
-                                        data-instgrm-permalink={`https://www.instagram.com/p/${block.data.embedId}/`}
+                                        data-instgrm-permalink={`https://www.instagram.com/p/${embedId}/`}
                                         data-instgrm-version="14"
                                         style={{
                                             background: '#FFF',
@@ -102,7 +120,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                     >
                                         <div style={{ padding: '16px' }}>
                                             <a
-                                                href={`https://www.instagram.com/p/${block.data.embedId}/`}
+                                                href={`https://www.instagram.com/p/${embedId}/`}
                                                 style={{
                                                     background: '#FFFFFF',
                                                     lineHeight: '0',
