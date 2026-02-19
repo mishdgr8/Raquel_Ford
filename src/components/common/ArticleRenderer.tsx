@@ -17,7 +17,95 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
         if (typeof window !== 'undefined' && (window as any).instgrm) {
             (window as any).instgrm.Embeds.process();
         }
+
+        // Auto-convert raw Instagram URLs in the DOM (for HTML content)
+        if (html) {
+            const container = document.querySelector(`.${styles.container}`);
+            if (container) {
+                const paragraphs = container.querySelectorAll('p');
+                let replaced = false;
+                paragraphs.forEach(p => {
+                    const text = p.textContent?.trim();
+                    if (text && (text.startsWith('https://www.instagram.com/p/') || text.startsWith('https://instagram.com/p/'))) {
+                        // Extract ID
+                        const match = text.match(/instagram\.com\/p\/([^/?#]+)/);
+                        if (match && match[1]) {
+                            const embedId = match[1];
+                            // Create embed HTML
+                            const quote = document.createElement('blockquote');
+                            quote.className = 'instagram-media';
+                            quote.setAttribute('data-instgrm-permalink', `https://www.instagram.com/p/${embedId}/`);
+                            quote.setAttribute('data-instgrm-version', '14');
+                            quote.style.background = '#FFF';
+                            quote.style.border = '0';
+                            quote.style.borderRadius = '3px';
+                            quote.style.boxShadow = '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)';
+                            quote.style.margin = '1px';
+                            quote.style.maxWidth = '540px';
+                            quote.style.minWidth = '326px';
+                            quote.style.padding = '0';
+                            quote.style.width = 'calc(100% - 2px)';
+
+                            p.replaceWith(quote);
+                            replaced = true;
+                        }
+                    }
+                });
+
+                if (replaced && (window as any).instgrm) {
+                    (window as any).instgrm.Embeds.process();
+                }
+            }
+        }
     }, [blocks, html]);
+
+    // Helper to render Instagram embed
+    const renderInstagramEmbed = (urlOrId: string) => {
+        let embedId = urlOrId;
+        if (urlOrId.includes('instagram.com/p/')) {
+            const match = urlOrId.match(/instagram\.com\/p\/([^/?#]+)/);
+            embedId = match ? match[1] : urlOrId;
+        }
+
+        return (
+            <div style={{ margin: '2rem 0', display: 'flex', justifyContent: 'center' }}>
+                <blockquote
+                    className="instagram-media"
+                    data-instgrm-permalink={`https://www.instagram.com/p/${embedId}/`}
+                    data-instgrm-version="14"
+                    style={{
+                        background: '#FFF',
+                        border: '0',
+                        borderRadius: '3px',
+                        boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)',
+                        margin: '1px',
+                        maxWidth: '540px',
+                        minWidth: '326px',
+                        padding: '0',
+                        width: 'calc(100% - 2px)'
+                    }}
+                >
+                    <div style={{ padding: '16px' }}>
+                        <a
+                            href={`https://www.instagram.com/p/${embedId}/`}
+                            style={{
+                                background: '#FFFFFF',
+                                lineHeight: '0',
+                                padding: '0 0',
+                                textAlign: 'center',
+                                textDecoration: 'none',
+                                width: '100%'
+                            }}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            View this post on Instagram
+                        </a>
+                    </div>
+                </blockquote>
+            </div>
+        );
+    };
 
     // New format: render HTML directly
     if (html) {
@@ -37,11 +125,22 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
             {blocks.map((block) => {
                 switch (block.type) {
                     case 'text':
+                        // Check if text is a raw Instagram URL
+                        const textContent = block.data.text || block.data.html || '';
+                        const cleanText = textContent.replace(/<[^>]*>/g, '').trim(); // Strip HTML tags
+                        if (cleanText.startsWith('https://www.instagram.com/p/') || cleanText.startsWith('https://instagram.com/p/')) {
+                            return (
+                                <div key={block.id}>
+                                    {renderInstagramEmbed(cleanText)}
+                                </div>
+                            );
+                        }
+
                         return (
                             <div
                                 key={block.id}
                                 className={styles.text}
-                                dangerouslySetInnerHTML={{ __html: block.data.text || block.data.html }}
+                                dangerouslySetInnerHTML={{ __html: textContent }}
                                 suppressHydrationWarning
                             />
                         );
