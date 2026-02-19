@@ -49,22 +49,18 @@ function SearchResults() {
     }, [query]);
 
     return (
-        <div className="container" style={{ padding: '8rem 0 4rem' }}>
-            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
-                <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '2.5rem', marginBottom: '1rem' }}>
+        <div className={`container ${styles.container}`}>
+            <div className={styles.heading}>
+                <h1 className={styles.title}>
                     {query ? `Search Results for "${query}"` : "Search"}
                 </h1>
-                <div style={{ width: '60px', height: '2px', background: 'var(--primary)', margin: '0 auto' }} />
+                <div className={styles.underline} />
             </div>
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>
             ) : articles.length > 0 ? (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                    gap: '2rem'
-                }}>
+                <div className={styles.grid}>
                     {articles.map(article => (
                         <PostCard key={article.id} article={article} variant="vertical" />
                     ))}

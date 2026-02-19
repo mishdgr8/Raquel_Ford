@@ -172,10 +172,40 @@
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
     z-index: 1050;
     transition: right 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    overflow-y: auto;
 }
 
 .mobileNavOpen {
     right: 0;
+}
+
+.mobileSearchForm {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+}
+
+.mobileSearchInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--foreground);
+    outline: none;
+    padding: 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.mobileSearchButton {
+    background: none;
+    border: none;
+    color: var(--foreground);
+    cursor: pointer;
+    padding: 0.5rem;
 }
 
 .mobileNavLink {
@@ -185,6 +215,7 @@
     color: var(--primary);
     text-transform: uppercase;
     letter-spacing: 0.15em;
+    text-decoration: none;
 }
 
 /* Mobile Nav Query */
@@ -198,6 +229,14 @@
     }
 
     .container {
-        height: 80px;
+        height: 60px;
+    }
+
+    .logo {
+        font-size: 1.5rem;
+    }
+
+    .searchWrapper {
+        display: none;
     }
 }

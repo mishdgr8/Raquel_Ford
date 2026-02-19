@@ -1,0 +1,15 @@
+.mobileRSS {
+    display: none;
+    padding: 0 1.5rem 3rem;
+    background: #fff;
+}
+
+.rssSection {
+    margin-top: 3rem;
+}
+
+@media (max-width: 1024px) {
+    .mobileRSS {
+        display: block;
+    }
+}

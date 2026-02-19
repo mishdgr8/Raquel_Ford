@@ -1,8 +1,9 @@
 .container {
-    padding: 8rem 0 4rem;
+    padding-top: 8rem;
+    padding-bottom: 4rem;
 }
 
-.header {
+.heading {
     margin-bottom: 3rem;
     text-align: center;
 }
@@ -13,7 +14,7 @@
     margin-bottom: 1rem;
 }
 
-.divider {
+.underline {
     width: 60px;
     height: 2px;
     background: var(--primary);
@@ -26,31 +27,18 @@
     gap: 2rem;
 }
 
-.loading,
-.empty {
-    text-align: center;
-    padding: 4rem;
-    color: var(--muted-foreground);
-    font-family: var(--font-sans);
-}
-
 @media (max-width: 768px) {
     .container {
-        padding: 6rem 0 2rem;
+        padding-top: 6rem;
+        padding-bottom: 2rem;
     }
 
     .title {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
 
     .grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 5rem 0 2rem;
+        gap: 2rem;
     }
 }

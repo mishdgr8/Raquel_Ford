@@ -41,15 +41,19 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <header className={styles.header}>
                 <div className="container">
                     <div className={styles.meta}>
-                        <Link href="/articles" className={styles.category}>STORIES</Link>
-                        <span className={styles.dot}>/</span>
-                        <Link href={`/category/${article.categoryId}`} className={styles.category}>
-                            {article.categoryId}
-                        </Link>
-                        <span className={styles.dot}>•</span>
-                        <span className={styles.date}>{formatDate(article.createdAt)}</span>
-                        <span className={styles.dot}>•</span>
-                        <span className={styles.readingTime}>{estimateReadingTime(article.contentJson?.blocks || [])} min read</span>
+                        <div className={styles.metaGroup}>
+                            <Link href="/articles" className={styles.category}>STORIES</Link>
+                            <span className={styles.dot}>/</span>
+                            <Link href={`/category/${article.categoryId}`} className={styles.category}>
+                                {article.categoryId}
+                            </Link>
+                        </div>
+                        <span className={styles.mobileHidden}>•</span>
+                        <div className={styles.metaGroup}>
+                            <span className={styles.date}>{formatDate(article.createdAt)}</span>
+                            <span className={styles.dot}>•</span>
+                            <span className={styles.readingTime}>{estimateReadingTime(article.contentJson?.blocks || [])} min read</span>
+                        </div>
                     </div>
                     <h1
                         className={styles.title}

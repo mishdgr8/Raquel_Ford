@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.vogue.com",
       },
+      {
+        protocol: "https",
+        hostname: "raquelford.wordpress.com",
+      },
     ],
   },
 };

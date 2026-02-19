@@ -2,6 +2,8 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer";
 import { EditorsPick } from "@/components/blocks/EditorsPick";
 import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
+import { RSSFeedWidget } from "@/components/blocks/RSSFeedWidget";
+import styles from "./HomePage.module.css";
 
 // ISR: cache page and revalidate every 60 seconds
 export const revalidate = 60;
@@ -22,5 +24,43 @@ export default async function HomePage() {
         );
     }
 
-    return <BlockRenderer blocks={template.blocks} />;
+    const firstBannerIndex = template.blocks.findIndex(
+        b => b.blockType === 'BrandBanner' || b.blockType === 'SimpleBanner'
+    );
+
+    let mainBlocks = template.blocks;
+    let bannerBlocks: typeof template.blocks = [];
+
+    if (firstBannerIndex !== -1) {
+        mainBlocks = template.blocks.slice(0, firstBannerIndex);
+        bannerBlocks = template.blocks.slice(firstBannerIndex);
+    }
+
+    return (
+        <>
+            <BlockRenderer blocks={mainBlocks} />
+
+            {/* Mobile-only RSS Feeds matching Sidebar content */}
+            <div className={styles.mobileRSS}>
+                <div className={styles.rssSection}>
+                    <RSSFeedWidget
+                        title="Trending in Fashion"
+                        url="https://www.vogue.com/feed/rss"
+                        sourceName="Vogue"
+                        limit={3}
+                    />
+                </div>
+                <div className={styles.rssSection}>
+                    <RSSFeedWidget
+                        title="World News"
+                        url="http://rss.cnn.com/rss/cnn_topstories.rss"
+                        sourceName="CNN"
+                        limit={3}
+                    />
+                </div>
+            </div>
+
+            <BlockRenderer blocks={bannerBlocks} />
+        </>
+    );
 }

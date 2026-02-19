@@ -79,6 +79,44 @@ export function Header() {
 
             {/* Mobile Nav Overlay */}
             <div className={clsx(styles.mobileNav, isOpen && styles.mobileNavOpen)}>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const q = formData.get('q');
+                        if (q) {
+                            window.location.href = `/search?q=${encodeURIComponent(q.toString())}`;
+                            setIsOpen(false);
+                        }
+                    }}
+                    className={styles.mobileSearchForm}
+                >
+                    <input
+                        name="q"
+                        placeholder="SEARCH..."
+                        className={styles.mobileSearchInput}
+                    />
+                    <button type="submit" className={styles.mobileSearchButton}>
+                        <Search size={20} />
+                    </button>
+                </form>
+
+                <Link
+                    href="/"
+                    className={styles.mobileNavLink}
+                    onClick={() => setIsOpen(false)}
+                >
+                    HOME
+                </Link>
+
+                <Link
+                    href="/articles"
+                    className={styles.mobileNavLink}
+                    onClick={() => setIsOpen(false)}
+                >
+                    STORIES
+                </Link>
+
                 {categories.map((cat) => (
                     <Link
                         key={cat.id}
