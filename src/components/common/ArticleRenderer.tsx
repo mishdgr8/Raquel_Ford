@@ -1,3 +1,5 @@
+"use client";
+
 import { ContentBlock } from "@/lib/types";
 import Image from "next/image";
 import { useEffect } from "react";
