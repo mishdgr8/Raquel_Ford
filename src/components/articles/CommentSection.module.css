@@ -130,12 +130,20 @@
 
 @media (max-width: 768px) {
     .container {
-        margin-top: 2rem;
-        padding-top: 2rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .form {
-        padding: 1.5rem;
+        padding: 1.25rem;
+    }
+
+    .input,
+    .textarea {
+        padding: 1rem;
+        font-size: 1rem;
     }
 
     .commentHeader {
@@ -146,5 +154,6 @@
 
     .submitBtn {
         width: 100%;
+        padding: 1.25rem;
     }
 }
