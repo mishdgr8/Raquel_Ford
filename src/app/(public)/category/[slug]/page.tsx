@@ -42,7 +42,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             </header>
 
             <div className="container">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '4rem' }}>
+                <div className={styles.contentGrid}>
                     <PostGrid config={{ categoryId: category.id, count: 12, columns: 2 }} />
                     <Sidebar />
                 </div>

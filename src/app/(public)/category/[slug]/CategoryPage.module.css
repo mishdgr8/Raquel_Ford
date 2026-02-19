@@ -41,6 +41,19 @@
     }
 }
 
+.contentGrid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 4rem;
+}
+
+@media (max-width: 1024px) {
+    .contentGrid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
 @media (max-width: 768px) {
     .header {
         padding: 5rem 0 2rem;
