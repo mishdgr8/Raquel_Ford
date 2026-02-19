@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { articleService } from "@/lib/services/articles";
+import { categoryService } from "@/lib/services/categories";
 import { notFound } from "next/navigation";
 import { formatDate, estimateReadingTime } from "@/lib/utils";
 import { ArticleRenderer } from "@/components/common/ArticleRenderer";
@@ -31,9 +32,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const article = await articleService.getArticleBySlug(slug);
+
+    // Fetch both article and categories to resolve names
+    const [article, allCategories] = await Promise.all([
+        articleService.getArticleBySlug(slug),
+        categoryService.getCategories()
+    ]);
 
     if (!article) return notFound();
+
+    const category = allCategories.find(c => c.id === article.categoryId || c.slug === article.categoryId);
+    const categoryName = category?.name || article.categoryId || 'Uncategorized';
 
     return (
         <article className={styles.article}>
@@ -44,8 +53,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                         <div className={styles.metaGroup}>
                             <Link href="/articles" className={styles.category}>STORIES</Link>
                             <span className={styles.dot}>/</span>
-                            <Link href={`/category/${article.categoryId}`} className={styles.category}>
-                                {article.categoryId}
+                            <Link href={`/category/${category?.slug || article.categoryId}`} className={styles.category}>
+                                {categoryName.toUpperCase()}
                             </Link>
                         </div>
                         <span className={styles.mobileHidden}>•</span>
