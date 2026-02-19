@@ -1,6 +1,6 @@
 .article {
     padding-bottom: 0;
-    background-color: #E8ECEF;
+    background-color: var(--background);
 }
 
 .header {
@@ -113,7 +113,7 @@
 }
 
 .content {
-    background: #E8ECEF;
+    background: var(--background);
     min-width: 0;
     /* Prevent grid blowout */
 }
