@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect } from "react";
 import styles from "./SocialShare.module.css";
 import { Share2, Twitter, Facebook, Link as LinkIcon, Check, Linkedin, Send, ExternalLink } from "lucide-react";
