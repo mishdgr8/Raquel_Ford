@@ -68,6 +68,10 @@
 }
 
 /* Bulk Actions Bar */
+.bulkBarContainer {
+    margin-bottom: 0;
+}
+
 .bulkBar {
     display: flex;
     align-items: center;
@@ -77,6 +81,31 @@
     border: 1px solid #e2e8f0;
     border-top: none;
     font-size: 0.875rem;
+}
+
+.selectAllBanner {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-top: none;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #1e40af;
+}
+
+.selectAllBtn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin-left: 0.25rem;
+}
+
+.selectAllBtn:hover {
+    color: #1d4ed8;
 }
 
 .bulkCount {

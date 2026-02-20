@@ -75,7 +75,10 @@ export default function ArticleListPage() {
         archived: articles.filter(a => a.status === 'archived').length,
     };
 
-    // Selection
+    // Selection helper
+    const allOnPageSelected = paginatedArticles.length > 0 &&
+        paginatedArticles.every(a => selectedIds.has(a.id!));
+
     const toggleSelect = (id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -86,11 +89,21 @@ export default function ArticleListPage() {
     };
 
     const toggleSelectAll = () => {
-        if (selectedIds.size === filteredArticles.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(filteredArticles.map(a => a.id!)));
-        }
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (allOnPageSelected) {
+                // Deselect only current page items
+                paginatedArticles.forEach(a => next.delete(a.id!));
+            } else {
+                // Select current page items
+                paginatedArticles.forEach(a => next.add(a.id!));
+            }
+            return next;
+        });
+    };
+
+    const selectEverything = () => {
+        setSelectedIds(new Set(filteredArticles.map(a => a.id!)));
     };
 
     // Bulk Actions
@@ -202,30 +215,49 @@ export default function ArticleListPage() {
 
             {/* Bulk Actions Bar */}
             {selectedIds.size > 0 && (
-                <div className={styles.bulkBar}>
-                    <span className={styles.bulkCount}>
-                        <CheckSquare size={16} />
-                        {selectedIds.size} selected
-                    </span>
-                    <select
-                        value={bulkAction}
-                        onChange={(e) => setBulkAction(e.target.value)}
-                        className={styles.bulkSelect}
-                    >
-                        <option value="">Bulk Actions</option>
-                        <option value="publish">Publish</option>
-                        <option value="draft">Move to Draft</option>
-                        <option value="archive">Archive (Soft Delete)</option>
-                        <option value="delete">Delete Permanently</option>
-                    </select>
-                    <Button
-                        variant="outline"
-                        onClick={handleBulkApply}
-                        disabled={!bulkAction}
-                        className={styles.bulkApplyBtn}
-                    >
-                        Apply
-                    </Button>
+                <div className={styles.bulkBarContainer}>
+                    <div className={styles.bulkBar}>
+                        <span className={styles.bulkCount}>
+                            <CheckSquare size={16} />
+                            {selectedIds.size} selected
+                        </span>
+                        <select
+                            value={bulkAction}
+                            onChange={(e) => setBulkAction(e.target.value)}
+                            className={styles.bulkSelect}
+                        >
+                            <option value="">Bulk Actions</option>
+                            <option value="publish">Publish</option>
+                            <option value="draft">Move to Draft</option>
+                            <option value="archive">Archive (Soft Delete)</option>
+                            <option value="delete">Delete Permanently</option>
+                        </select>
+                        <Button
+                            variant="outline"
+                            onClick={handleBulkApply}
+                            disabled={!bulkAction}
+                            className={styles.bulkApplyBtn}
+                        >
+                            Apply
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedIds(new Set())}
+                            style={{ marginLeft: 'auto', color: '#64748b' }}
+                        >
+                            Clear selection
+                        </Button>
+                    </div>
+
+                    {allOnPageSelected && selectedIds.size < filteredArticles.length && (
+                        <div className={styles.selectAllBanner}>
+                            <span>All {paginatedArticles.length} articles on this page are selected. </span>
+                            <button onClick={selectEverything} className={styles.selectAllBtn}>
+                                Select all {filteredArticles.length} articles in this view
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -237,7 +269,7 @@ export default function ArticleListPage() {
                             <th style={{ width: '40px' }}>
                                 <input
                                     type="checkbox"
-                                    checked={filteredArticles.length > 0 && selectedIds.size === filteredArticles.length}
+                                    checked={allOnPageSelected}
                                     onChange={toggleSelectAll}
                                     style={{ cursor: 'pointer' }}
                                 />
