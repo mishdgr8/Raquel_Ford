@@ -26,3 +26,26 @@ export async function postComment(articleId: string, authorName: string, content
         return { success: false, error: "Failed to post comment" };
     }
 }
+
+export async function getAllComments(): Promise<Comment[]> {
+    try {
+        return await commentService.getAllComments();
+    } catch (error) {
+        console.error("Error fetching all comments:", error);
+        return [];
+    }
+}
+
+export async function deleteComment(commentId: string) {
+    if (!commentId) return { success: false, error: "Missing comment ID" };
+
+    try {
+        await commentService.deleteComment(commentId);
+        // We revalidate the main layout or comments page
+        revalidatePath('/admin/comments');
+        return { success: true };
+    } catch (error) {
+        console.error("Error deleting comment:", error);
+        return { success: false, error: "Failed to delete comment" };
+    }
+}

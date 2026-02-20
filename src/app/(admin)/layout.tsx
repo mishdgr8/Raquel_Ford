@@ -27,6 +27,7 @@ const sidebarLinks = [
     { href: "/admin/articles", label: "Articles", icon: FileText },
     { href: "/admin/categories", label: "Categories", icon: FolderTree },
     { href: "/admin/media", label: "Media Library", icon: ImageIcon },
+    { href: "/admin/comments", label: "Comments", icon: MessageCircle },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/admin/templates", label: "Page Builder", icon: Palette },
     { href: "/admin/newsletter", label: "Newsletter", icon: Mail },

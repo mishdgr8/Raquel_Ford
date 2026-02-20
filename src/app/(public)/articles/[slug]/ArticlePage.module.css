@@ -86,8 +86,9 @@
     /* Remove container padding so image can span */
 }
 
-.tags {
+.topicsWrapper {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 4rem;
@@ -95,21 +96,29 @@
     border-top: 1px solid var(--border);
 }
 
-.tag {
-    font-size: 0.75rem;
-    font-weight: 600;
+.topicsLabel {
+    font-family: var(--font-serif);
+    font-size: 1rem;
     text-transform: uppercase;
-    color: var(--muted-foreground);
-    background: var(--muted);
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
     letter-spacing: 0.05em;
-    transition: all 0.2s;
+    color: var(--foreground);
+    margin-right: 0.5rem;
 }
 
-.tag:hover {
+.topicLink {
+    font-size: 0.75rem;
+    text-transform: uppercase;
     color: var(--foreground);
-    background: #e2e8f0;
+    background: transparent;
+    padding: 0.5rem 1rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+}
+
+.topicLink:hover {
+    border-color: var(--foreground);
 }
 
 .content {

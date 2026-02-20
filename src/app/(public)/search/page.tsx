@@ -1,6 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { deduplicateArticles } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
@@ -34,8 +36,12 @@ function SearchResults() {
                     article.excerpt?.toLowerCase().includes(lowerQuery)
                 );
 
-                // Deduplicate by slug
-                const uniqueArticles = Array.from(new Map(filtered.map(item => [item.slug, item])).values());
+                // Sort by date (newest first) and keep only unique slugs (first occurrence = newest)
+                const uniqueArticles = deduplicateArticles(filtered).sort((a, b) => {
+                    const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : new Date(a.publishedAt || 0).getTime();
+                    const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : new Date(b.publishedAt || 0).getTime();
+                    return timeB - timeA;
+                });
 
                 setArticles(uniqueArticles);
             } catch (error) {

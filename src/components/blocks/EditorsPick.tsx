@@ -20,11 +20,16 @@ export function EditorsPick() {
         const fetchArticles = async () => {
             try {
                 // Fetch articles marked as Editor's Pick
-                const result = await articleService.getEditorsPicks();
+                let result = await articleService.getEditorsPicks();
 
-                // If we don't have enough picks, fallback to latest published?
-                // For now, let's just set what we have.
-                // Optionally, we could fill the gaps with latest articles if needed.
+                // If we don't have enough picks, fallback to latest published to ensure 4 cards
+                if (result.length < 4) {
+                    const extra = await articleService.getPublishedArticles(undefined, 8); // fetch a bit more just in case
+                    const existingIds = new Set(result.map(a => a.id));
+                    const newArticles = extra.articles.filter(a => !existingIds.has(a.id));
+                    result = [...result, ...newArticles].slice(0, 4);
+                }
+
                 setArticles(result);
             } catch (error) {
                 console.error("Failed to load Editors Pick", error);

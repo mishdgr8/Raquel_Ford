@@ -1,7 +1,10 @@
 import {
     collection,
     getDocs,
+    getDoc,
     addDoc,
+    deleteDoc,
+    doc,
     query,
     where,
     orderBy,
@@ -15,7 +18,7 @@ export interface Comment {
     articleId: string;
     authorName: string;
     content: string;
-    createdAt: Timestamp;
+    createdAt: any; // Serialized date string
 }
 
 const COMMENTS_COLLECTION = "comments";
@@ -27,15 +30,19 @@ export const commentService = {
             where("articleId", "==", articleId)
         );
         const snapshot = await getDocs(q);
-        const comments = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        } as Comment));
+        const comments = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+            } as Comment;
+        });
 
         // Sort in memory to avoid needing a composite index
         return comments.sort((a, b) => {
-            const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-            const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            const timeA = new Date(a.createdAt).getTime();
+            const timeB = new Date(b.createdAt).getTime();
             return timeB - timeA; // Descending
         });
     },
@@ -48,5 +55,30 @@ export const commentService = {
             createdAt: serverTimestamp(),
         });
         return docRef.id;
+    },
+
+    async getAllComments(): Promise<Comment[]> {
+        const q = query(collection(db, COMMENTS_COLLECTION));
+        const snapshot = await getDocs(q);
+        const comments = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+            } as Comment;
+        });
+
+        // Sort in memory (newest first)
+        return comments.sort((a, b) => {
+            const timeA = new Date(a.createdAt).getTime();
+            const timeB = new Date(b.createdAt).getTime();
+            return timeB - timeA;
+        });
+    },
+
+    async deleteComment(commentId: string): Promise<void> {
+        const docRef = doc(db, COMMENTS_COLLECTION, commentId);
+        await deleteDoc(docRef);
     }
 };

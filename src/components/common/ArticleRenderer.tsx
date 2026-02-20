@@ -13,25 +13,28 @@ interface ArticleRendererProps {
 
 export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
     useEffect(() => {
-        // Trigger Instagram embed processing when content loads/changes
-        if (typeof window !== 'undefined' && (window as any).instgrm) {
-            (window as any).instgrm.Embeds.process();
+        // Trigger Instagram & Twitter embed processing when content loads/changes
+        if (typeof window !== 'undefined') {
+            if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
+            if ((window as any).twttr) (window as any).twttr.widgets.load();
         }
 
-        // Auto-convert raw Instagram URLs in the DOM (for HTML content)
+        // Auto-convert raw URLs in the DOM (for HTML content)
         if (html) {
             const container = document.querySelector(`.${styles.container}`);
             if (container) {
                 const paragraphs = container.querySelectorAll('p');
-                let replaced = false;
+                let replacedTokens = { ig: false, tw: false, tk: false, sp: false };
+
                 paragraphs.forEach(p => {
                     const text = p.textContent?.trim();
-                    if (text && (text.startsWith('https://www.instagram.com/p/') || text.startsWith('https://instagram.com/p/'))) {
-                        // Extract ID
+                    if (!text) return;
+
+                    // Instagram
+                    if (text.startsWith('https://www.instagram.com/p/') || text.startsWith('https://instagram.com/p/')) {
                         const match = text.match(/instagram\.com\/p\/([^/?#]+)/);
                         if (match && match[1]) {
                             const embedId = match[1];
-                            // Create embed HTML
                             const quote = document.createElement('blockquote');
                             quote.className = 'instagram-media';
                             quote.setAttribute('data-instgrm-permalink', `https://www.instagram.com/p/${embedId}/`);
@@ -47,13 +50,75 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                             quote.style.width = 'calc(100% - 2px)';
 
                             p.replaceWith(quote);
-                            replaced = true;
+                            replacedTokens.ig = true;
+                        }
+                    }
+                    // Twitter
+                    else if (text.startsWith('https://twitter.com/') || text.startsWith('https://x.com/')) {
+                        const match = text.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+                        if (match && match[1]) {
+                            const quote = document.createElement('blockquote');
+                            quote.className = 'twitter-tweet';
+                            quote.setAttribute('data-dnt', 'true');
+
+                            const a = document.createElement('a');
+                            a.href = text;
+                            quote.appendChild(a);
+
+                            p.replaceWith(quote);
+                            replacedTokens.tw = true;
+                        }
+                    }
+                    // TikTok
+                    else if (text.startsWith('https://www.tiktok.com/') || text.startsWith('https://tiktok.com/')) {
+                        const match = text.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/);
+                        if (match && match[1]) {
+                            const quote = document.createElement('blockquote');
+                            quote.className = 'tiktok-embed';
+                            quote.setAttribute('cite', text);
+                            quote.setAttribute('data-video-id', match[1]);
+                            quote.style.maxWidth = '605px';
+                            quote.style.minWidth = '325px';
+
+                            const section = document.createElement('section');
+                            const a = document.createElement('a');
+                            a.target = '_blank';
+                            a.title = 'TikTok';
+                            a.href = text;
+                            a.textContent = '@TikTok';
+
+                            section.appendChild(a);
+                            quote.appendChild(section);
+
+                            p.replaceWith(quote);
+                            replacedTokens.tk = true;
+                        }
+                    }
+                    // Spotify
+                    else if (text.startsWith('https://open.spotify.com/')) {
+                        const match = text.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+                        if (match && match[1] && match[2]) {
+                            const iframe = document.createElement('iframe');
+                            iframe.src = `https://open.spotify.com/embed/${match[1]}/${match[2]}`;
+                            iframe.width = '100%';
+                            iframe.height = '152';
+                            iframe.frameBorder = '0';
+                            iframe.allowFullscreen = true;
+                            iframe.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+                            iframe.loading = 'lazy';
+                            iframe.style.borderRadius = '12px';
+
+                            p.replaceWith(iframe);
+                            replacedTokens.sp = true;
                         }
                     }
                 });
 
-                if (replaced && (window as any).instgrm) {
+                if (replacedTokens.ig && (window as any).instgrm) {
                     (window as any).instgrm.Embeds.process();
+                }
+                if (replacedTokens.tw && (window as any).twttr) {
+                    (window as any).twttr.widgets.load();
                 }
             }
         }
@@ -236,6 +301,40 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                                 View this post on Instagram
                                             </a>
                                         </div>
+                                    </blockquote>
+                                </div>
+                            );
+                        }
+                        if (block.data.embedType === 'spotify' && block.data.embedId) {
+                            return (
+                                <div key={block.id} style={{ margin: '2rem 0' }}>
+                                    <iframe
+                                        src={`https://open.spotify.com/embed/${block.data.embedId}`}
+                                        width="100%"
+                                        height="152"
+                                        frameBorder="0"
+                                        allowFullScreen
+                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                        loading="lazy"
+                                        style={{ borderRadius: '12px' }}
+                                    />
+                                </div>
+                            );
+                        }
+                        if (block.data.embedType === 'twitter') {
+                            return (
+                                <div key={block.id} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
+                                    <blockquote className="twitter-tweet" data-dnt="true">
+                                        <a href={block.data.originalUrl}></a>
+                                    </blockquote>
+                                </div>
+                            );
+                        }
+                        if (block.data.embedType === 'tiktok') {
+                            return (
+                                <div key={block.id} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
+                                    <blockquote className="tiktok-embed" cite={block.data.originalUrl} data-video-id={block.data.embedId} style={{ maxWidth: '605px', minWidth: '325px' }}>
+                                        <section><a target="_blank" title="TikTok" href={block.data.originalUrl}>@TikTok</a></section>
                                     </blockquote>
                                 </div>
                             );

@@ -51,8 +51,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <div className="container">
                     <div className={styles.meta}>
                         <div className={styles.metaGroup}>
-                            <Link href="/articles" className={styles.category}>STORIES</Link>
-                            <span className={styles.dot}>/</span>
                             <Link href={`/category/${category?.slug || article.categoryId}`} className={styles.category}>
                                 {categoryName.toUpperCase()}
                             </Link>
@@ -96,11 +94,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                                 />
 
                                 {article.tags && article.tags.length > 0 && (
-                                    <div className={styles.tags}>
+                                    <div className={styles.topicsWrapper}>
+                                        <span className={styles.topicsLabel}>TOPICS:</span>
                                         {article.tags.map(tag => (
-                                            <span key={tag} className={styles.tag}>
-                                                #{tag}
-                                            </span>
+                                            <Link key={tag} href={`/tag/${encodeURIComponent(tag.toLowerCase())}`} className={styles.topicLink}>
+                                                {tag}
+                                            </Link>
                                         ))}
                                     </div>
                                 )}

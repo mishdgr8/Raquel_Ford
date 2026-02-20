@@ -16,10 +16,16 @@ export default function ArticleListPage() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FilterStatus>('all');
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [bulkAction, setBulkAction] = useState<string>('');
     const [showConfirm, setShowConfirm] = useState(false);
     const [pendingAction, setPendingAction] = useState<{ action: string; ids: string[] } | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter, searchQuery]);
 
     useEffect(() => {
         fetchArticles();
@@ -39,9 +45,27 @@ export default function ArticleListPage() {
     };
 
     // Filtered articles
-    const filteredArticles = filter === 'all'
+    let filtered = filter === 'all'
         ? articles
         : articles.filter(a => a.status === filter);
+
+    if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(a =>
+            (a.title || '').toLowerCase().includes(query) ||
+            (a.slug || '').toLowerCase().includes(query)
+        );
+    }
+
+    const filteredArticles = filtered;
+
+    // Pagination
+    const itemsPerPage = 30;
+    const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+    const paginatedArticles = filteredArticles.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
     // Counts per status
     const counts = {
@@ -126,7 +150,27 @@ export default function ArticleListPage() {
         <div className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>Articles</h1>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ position: 'relative' }}>
+                        <input
+                            type="text"
+                            placeholder="Search title or slug..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                padding: '0.5rem 1rem',
+                                paddingLeft: '2.2rem',
+                                borderRadius: '6px',
+                                border: '1px solid #e2e8f0',
+                                fontSize: '0.875rem',
+                                width: '220px',
+                                outline: 'none'
+                            }}
+                        />
+                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', display: 'flex' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </span>
+                    </div>
                     <Link href="/admin/articles/import">
                         <Button variant="outline" className={styles.addBtn}>
                             <ExternalLink size={16} />
@@ -208,7 +252,7 @@ export default function ArticleListPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredArticles.map((article) => (
+                        {paginatedArticles.map((article) => (
                             <tr key={article.id} className={selectedIds.has(article.id!) ? styles.selectedRow : ''}>
                                 <td>
                                     <input
@@ -261,9 +305,9 @@ export default function ArticleListPage() {
                                 </td>
                             </tr>
                         ))}
-                        {filteredArticles.length === 0 && (
+                        {paginatedArticles.length === 0 && (
                             <tr>
-                                <td colSpan={7} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                                <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                                     No articles found.
                                 </td>
                             </tr>
@@ -271,6 +315,28 @@ export default function ArticleListPage() {
                     </tbody>
                 </table>
             </div>
+
+            {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem', paddingBottom: '2rem' }}>
+                    <Button
+                        variant="outline"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    >
+                        Previous
+                    </Button>
+                    <span style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
 
             {/* Confirmation Modal */}
             <Modal

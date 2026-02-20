@@ -11,7 +11,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import Image from "next/image";
 import styles from "./ArticleEditor.module.css";
-import { slugify } from "@/lib/utils";
+import { slugify, generateExcerpt } from "@/lib/utils";
 import { Save, ChevronLeft, Eye, Edit3, Upload, X, Images } from "lucide-react";
 import { BlockEditor } from "./BlockEditor";
 import { ArticleRenderer } from "../common/ArticleRenderer";
@@ -69,6 +69,9 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 if (b.type === 'embed') {
                     if (b.data.embedType === 'youtube') return `<iframe src="https://www.youtube.com/embed/${b.data.embedId}"></iframe>`;
                     if (b.data.embedType === 'instagram') return `<iframe src="https://www.instagram.com/p/${b.data.embedId}/embed/captioned" style="width: 100%; max-width: 540px; height: 600px; border: 0;"></iframe>`;
+                    if (b.data.embedType === 'spotify') return `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/${b.data.embedId}" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+                    if (b.data.embedType === 'twitter') return `<blockquote class="twitter-tweet" data-dnt="true"><a href="${b.data.originalUrl}"></a></blockquote>`;
+                    if (b.data.embedType === 'tiktok') return `<blockquote class="tiktok-embed" cite="${b.data.originalUrl}" data-video-id="${b.data.embedId}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok" href="${b.data.originalUrl}">@TikTok</a> </section> </blockquote>`;
                 }
                 return '';
             }).join('\n');
@@ -77,10 +80,12 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
             const finalSlug = form.slug || slugify(form.title || 'untitled');
             setForm(prev => ({ ...prev, slug: finalSlug }));
 
+            const finalExcerpt = form.excerpt?.trim() ? form.excerpt.trim() : generateExcerpt(html);
+
             const dataToSave: any = {
                 title: form.title,
                 slug: finalSlug,
-                excerpt: form.excerpt,
+                excerpt: finalExcerpt,
                 categoryId: form.categoryId,
                 status: newStatus,
                 featuredImage: form.featuredImage,
@@ -419,7 +424,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         setTagInput(val);
-                                        if (val.trim()) {
+                                        if (val.trim().length >= 2) {
                                             const filtered = allTags.filter(t =>
                                                 t.name.toLowerCase().includes(val.toLowerCase()) &&
                                                 !(form.tags || []).includes(t.name)

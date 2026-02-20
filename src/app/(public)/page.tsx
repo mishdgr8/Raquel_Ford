@@ -38,7 +38,12 @@ export default async function HomePage() {
 
     return (
         <>
-            <BlockRenderer blocks={mainBlocks} />
+            {mainBlocks.length > 0 && <BlockRenderer blocks={[mainBlocks[0]]} />}
+
+            {/* Guarantee Editors Pick always renders on homepage below Hero */}
+            <EditorsPick />
+
+            {mainBlocks.length > 1 && <BlockRenderer blocks={mainBlocks.slice(1)} />}
 
             {/* Mobile-only RSS Feeds matching Sidebar content */}
             <div className={styles.mobileRSS}>

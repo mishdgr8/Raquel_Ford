@@ -34,16 +34,11 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
                     case 'PostGrid':
                         return <PostGrid key={block.id} config={block.configJson || {}} />;
                     case 'IGReels':
-                        return (
-                            <React.Fragment key={block.id}>
-                                <EditorsPick />
-                                <IGReels config={block.configJson || {}} />
-                            </React.Fragment>
-                        );
+                        return <IGReels key={block.id} config={block.configJson || {}} />;
                     case 'MagazinePromo':
                         return <MagazinePromo key={block.id} config={block.configJson || {}} />;
                     case 'EditorsPick':
-                        return <EditorsPick key={block.id} />;
+                        return null; // Now rendered explicitly in page.tsx to guarantee visibility
                     default:
                         return (
                             <div key={block.id} style={{ padding: '2rem', border: '1px dashed var(--border)', textAlign: 'center' }}>

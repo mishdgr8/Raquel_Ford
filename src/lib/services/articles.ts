@@ -21,7 +21,7 @@ const ARTICLES_COLLECTION = "articles";
 
 export const articleService = {
     // Public Fetch
-    async getPublishedArticles(categoryId?: string, count: number = 10, lastDoc?: any) {
+    async getPublishedArticles(categoryId?: string, count: number = 10, lastDoc?: any, tag?: string) {
         const constraints: any[] = [
             where("status", "==", "published"),
             orderBy("publishedAt", "desc"),
@@ -30,6 +30,10 @@ export const articleService = {
 
         if (categoryId) {
             constraints.unshift(where("categoryId", "==", categoryId));
+        }
+
+        if (tag) {
+            constraints.unshift(where("tags", "array-contains", tag));
         }
 
         if (lastDoc) {
@@ -56,16 +60,25 @@ export const articleService = {
     },
 
     async getEditorsPicks() {
-        // Simple query for now, fetching up to 4
         const q = query(
             collection(db, ARTICLES_COLLECTION),
             where("status", "==", "published"),
-            where("isEditorsPick", "==", true),
-            orderBy("publishedAt", "desc"),
-            limit(4)
+            where("isEditorsPick", "==", true)
         );
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+        const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+
+        return articles.sort((a, b) => {
+            const orderA = a.editorPickOrder || 0;
+            const orderB = b.editorPickOrder || 0;
+            if (orderA !== orderB) {
+                return orderB - orderA; // Highest order first (most recently pinned)
+            }
+            // Fallback to publishedAt
+            const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
+            const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+            return timeB - timeA;
+        }).slice(0, 4);
     },
 
     async getArticleBySlug(slug: string) {

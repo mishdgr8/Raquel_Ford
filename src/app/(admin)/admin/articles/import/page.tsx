@@ -5,6 +5,7 @@ import { wordPressService, WordPressPost } from "@/lib/services/wordpress";
 import { articleService } from "@/lib/services/articles";
 import { categoryService } from "@/lib/services/categories";
 import { Category } from "@/lib/types";
+import { generateExcerpt } from "@/lib/utils";
 import styles from "../ArticleList.module.css";
 
 export default function WordPressImportPage() {
@@ -62,7 +63,11 @@ export default function WordPressImportPage() {
             // Let's iterate child nodes to be safe or use getElementsByTagName
 
             const content = item.getElementsByTagName("content:encoded")[0]?.textContent || "";
-            const excerpt = item.getElementsByTagName("excerpt:encoded")[0]?.textContent || "";
+            let excerpt = item.getElementsByTagName("excerpt:encoded")[0]?.textContent || "";
+
+            if (!excerpt.trim()) {
+                excerpt = generateExcerpt(content);
+            }
 
             const postId = parseInt(item.querySelector("post_id")?.textContent || "0");
 

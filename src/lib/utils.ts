@@ -79,3 +79,50 @@ export function serializeFirestoreData(data: any): any {
 
     return data;
 }
+
+/**
+ * Generates a plain-text excerpt from HTML content
+ */
+export function generateExcerpt(html: string, length: number = 160): string {
+    if (!html) return "";
+
+    // Create a temporary element to strip HTML (works in browser)
+    // For server-side, simple regex replace
+    let text = html;
+    if (typeof window !== 'undefined') {
+        const temp = document.createElement("div");
+        temp.innerHTML = html;
+        text = temp.textContent || temp.innerText || "";
+    } else {
+        // Basic fallback for server-side stripping
+        text = html.replace(/<[^>]*>?/gm, '');
+    }
+
+    // Clean up whitespace
+    text = text.replace(/\s+/g, ' ').trim();
+
+    if (text.length <= length) return text;
+
+    // Truncate and add ellipsis, trying not to cut words in half
+    const truncated = text.substring(0, length);
+    const lastSpaceIndex = truncated.lastIndexOf(' ');
+
+    if (lastSpaceIndex > 0) {
+        return truncated.substring(0, lastSpaceIndex) + "...";
+    }
+    return truncated + "...";
+}
+
+/**
+ * Deduplicates an array of items (like articles) based on their slug.
+ * Prioritizes the first occurrence (i.e. the newest if the array is sorted newest-first).
+ */
+export function deduplicateArticles<T extends { slug?: string }>(items: T[]): T[] {
+    const seen = new Set<string>();
+    return items.filter(item => {
+        if (!item.slug) return true;
+        if (seen.has(item.slug)) return false;
+        seen.add(item.slug);
+        return true;
+    });
+}

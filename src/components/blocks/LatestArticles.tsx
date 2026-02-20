@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "./LatestArticles.module.css";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
+import { deduplicateArticles } from "@/lib/utils";
 import { PostCard } from "./PostCard";
 
 interface LatestArticlesProps {
@@ -35,7 +36,7 @@ export function LatestArticles({ config }: LatestArticlesProps) {
 
                         <div className={styles.grid}>
                             {/* Deduplicate articles by slug to prevent duplicate entries */}
-                            {Array.from(new Map(articles.map(item => [item.slug, item])).values()).slice(0, 5).map((article) => (
+                            {deduplicateArticles(articles).slice(0, 5).map((article) => (
                                 <PostCard key={article.id} article={article} variant="horizontal" />
                             ))}
                         </div>

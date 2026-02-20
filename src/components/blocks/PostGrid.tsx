@@ -5,6 +5,7 @@ import styles from "./PostGrid.module.css";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
 import { PostCard } from "./PostCard";
+import { deduplicateArticles } from "@/lib/utils";
 
 interface PostGridProps {
     config: {
@@ -12,6 +13,7 @@ interface PostGridProps {
         count?: number;
         columns?: number;
         categoryId?: string;
+        tag?: string;
     };
 }
 
@@ -45,7 +47,8 @@ export function PostGrid({ config }: PostGridProps) {
                 const result = await articleService.getPublishedArticles(
                     config.categoryId,
                     count, // Fetch batch size
-                    currentLastDoc
+                    currentLastDoc,
+                    config.tag
                 );
 
                 if (result.articles.length === 0) {
@@ -104,10 +107,10 @@ export function PostGrid({ config }: PostGridProps) {
 
                 <div
                     className={styles.grid}
-                    style={{ gridTemplateColumns: `repeat(${config.columns || 3}, 1fr)` }}
+                    style={{ gridTemplateColumns: `repeat(${config.columns || 3}, minmax(0, 1fr))` }}
                 >
                     {/* Deduplicate articles by slug to prevent duplicate entries */}
-                    {Array.from(new Map(articles.map(item => [item.slug, item])).values()).map((article) => (
+                    {deduplicateArticles(articles).map((article) => (
                         <PostCard key={article.id} article={article} variant="vertical" />
                     ))}
                 </div>

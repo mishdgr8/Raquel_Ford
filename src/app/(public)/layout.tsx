@@ -16,6 +16,8 @@ export default function PublicLayout({
             </main>
             <Footer />
             <Script async src="//www.instagram.com/embed.js" strategy="lazyOnload" />
+            <Script async src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
+            <Script async src="https://www.tiktok.com/embed.js" strategy="lazyOnload" />
         </div>
     );
 }

@@ -24,7 +24,7 @@ import { mediaService } from "@/lib/services/media";
 import { MediaLibraryModal } from "./MediaLibraryModal";
 
 // ─── Embed Helpers ──────────────────────────────────
-function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | null; id: string | null } {
+function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | 'twitter' | 'tiktok' | 'spotify' | null; id: string | null } {
     // YouTube
     const ytPatterns = [
         /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
@@ -37,6 +37,18 @@ function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | null; id
     // Instagram
     const igMatch = url.match(/instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/);
     if (igMatch) return { type: 'instagram', id: igMatch[1] };
+
+    // Twitter / X
+    const twMatch = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+    if (twMatch) return { type: 'twitter', id: twMatch[1] };
+
+    // TikTok
+    const tkMatch = url.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/);
+    if (tkMatch) return { type: 'tiktok', id: tkMatch[1] };
+
+    // Spotify
+    const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+    if (spMatch) return { type: 'spotify', id: `${spMatch[1]}/${spMatch[2]}` };
 
     return { type: null, id: null };
 }
@@ -283,7 +295,11 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
             <div className={styles.blockBody}>
                 <div className={styles.blockToolbar}>
                     <span className={styles.blockLabel}>
-                        {embedType === 'youtube' ? '▶ YOUTUBE' : embedType === 'instagram' ? '📷 INSTAGRAM' : '🔗 EMBED'}
+                        {embedType === 'youtube' ? '▶ YOUTUBE' :
+                            embedType === 'instagram' ? '📷 INSTAGRAM' :
+                                embedType === 'twitter' ? '🐦 X / TWITTER' :
+                                    embedType === 'tiktok' ? '🎵 TIKTOK' :
+                                        embedType === 'spotify' ? '🎧 SPOTIFY' : '🔗 EMBED'}
                     </span>
                     <button className={styles.deleteBtn} onClick={onDelete} title="Delete block"><Trash2 size={14} /></button>
                 </div>
@@ -316,6 +332,35 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                                     loading="lazy"
                                     title="Instagram embed"
                                 />
+                            </div>
+                        )}
+                        {embedType === 'spotify' && (
+                            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                                <iframe
+                                    src={`https://open.spotify.com/embed/${embedId}`}
+                                    width="100%"
+                                    height="152"
+                                    frameBorder="0"
+                                    allowFullScreen
+                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                    loading="lazy"
+                                    title="Spotify embed"
+                                    style={{ borderRadius: '12px' }}
+                                />
+                            </div>
+                        )}
+                        {embedType === 'twitter' && (
+                            <div style={{ textAlign: 'center', margin: '1rem auto', padding: '2rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#64748b' }}>
+                                🐦 <strong>X / Twitter Embed</strong><br />
+                                The tweet will be rendered dynamically via Twitter's widget on the public page.<br />
+                                <a href={block.data.originalUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem', color: '#3b82f6' }}>{block.data.originalUrl}</a>
+                            </div>
+                        )}
+                        {embedType === 'tiktok' && (
+                            <div style={{ textAlign: 'center', margin: '1rem auto', padding: '2rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#64748b' }}>
+                                🎵 <strong>TikTok Embed</strong><br />
+                                The video will be rendered dynamically via TikTok's widget on the public page.<br />
+                                <a href={block.data.originalUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem', color: '#3b82f6' }}>{block.data.originalUrl}</a>
                             </div>
                         )}
                     </div>
@@ -364,8 +409,9 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                                 Embed
                             </button>
                         </div>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                            Supports YouTube videos, Shorts, and Instagram posts/reels
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+                            Supports YouTube, Instagram, X/Twitter, TikTok, and Spotify URLs.<br />
+                            Try pasting an Embed link in a Text block—it'll auto-convert!
                         </span>
                     </div>
                 )}
