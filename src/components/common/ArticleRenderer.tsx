@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import styles from "./ArticleRenderer.module.css";
 import { GalleryBlock } from "./GalleryBlock";
+import { Tweet } from "react-tweet";
 
 interface ArticleRendererProps {
     blocks?: ContentBlock[];
@@ -13,18 +14,17 @@ interface ArticleRendererProps {
 
 export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
     useEffect(() => {
-        // Trigger Instagram & Twitter embed processing when content loads/changes
+        // Trigger Instagram embed processing when content loads/changes
         if (typeof window !== 'undefined') {
             if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
-            if ((window as any).twttr) (window as any).twttr.widgets.load();
         }
 
-        // Auto-convert raw URLs in the DOM (for HTML content)
+        // Handle native embeds for non-Twitter content (Instagram, TikTok, Spotify)
         if (html) {
             const container = document.querySelector(`.${styles.container}`);
             if (container) {
                 const paragraphs = container.querySelectorAll('p');
-                let replacedTokens = { ig: false, tw: false, tk: false, sp: false };
+                let replacedTokens = { ig: false, tk: false, sp: false };
 
                 paragraphs.forEach(p => {
                     const text = p.textContent?.trim();
@@ -51,22 +51,6 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
 
                             p.replaceWith(quote);
                             replacedTokens.ig = true;
-                        }
-                    }
-                    // Twitter
-                    else if (text.startsWith('https://twitter.com/') || text.startsWith('https://x.com/')) {
-                        const match = text.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
-                        if (match && match[1]) {
-                            const quote = document.createElement('blockquote');
-                            quote.className = 'twitter-tweet';
-                            quote.setAttribute('data-dnt', 'true');
-
-                            const a = document.createElement('a');
-                            a.href = text;
-                            quote.appendChild(a);
-
-                            p.replaceWith(quote);
-                            replacedTokens.tw = true;
                         }
                     }
                     // TikTok
@@ -116,9 +100,6 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
 
                 if (replacedTokens.ig && (window as any).instgrm) {
                     (window as any).instgrm.Embeds.process();
-                }
-                if (replacedTokens.tw && (window as any).twttr) {
-                    (window as any).twttr.widgets.load();
                 }
             }
         }
@@ -172,14 +153,51 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
         );
     };
 
-    // New format: render HTML directly
+    // Render HTML directly, splitting out Twitter embeds
     if (html) {
-        return (
-            <div
-                className={styles.container}
-                dangerouslySetInnerHTML={{ __html: html }}
-            />
-        );
+        // Regex to find paragraphs that contain ONLY a twitter/x URL OR a WordPress-style twitter blockquote
+        const twitterRegex = /<blockquote[^>]*class=["'][^"']*twitter-tweet[^"']*["'][^>]*>[\s\S]*?href=["']https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^"']*["'][\s\S]*?<\/blockquote>|<p>\s*(?:<a[^>]*href=["'])?https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^<"']*(?:["'][^>]*>.*?<\/a>)?\s*<\/p>/gi;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = twitterRegex.exec(html)) !== null) {
+            // Push the HTML before the tweet
+            if (match.index > lastIndex) {
+                parts.push(
+                    <div
+                        key={`html-${lastIndex}`}
+                        className={styles.container}
+                        dangerouslySetInnerHTML={{ __html: html.substring(lastIndex, match.index) }}
+                    />
+                );
+            }
+            // Push the tweet component
+            const tweetId = match[1] || match[2];
+            if (tweetId) {
+                parts.push(
+                    <div key={`tweet-${tweetId}`} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%' }}>
+                        <div className="light" style={{ width: '100%', maxWidth: '550px' }}>
+                            <Tweet id={tweetId} />
+                        </div>
+                    </div>
+                );
+            }
+            lastIndex = twitterRegex.lastIndex;
+        }
+
+        // Push remaining HTML
+        if (lastIndex < html.length) {
+            parts.push(
+                <div
+                    key={`html-${lastIndex}`}
+                    className={styles.container}
+                    dangerouslySetInnerHTML={{ __html: html.substring(lastIndex) }}
+                />
+            );
+        }
+
+        return <>{parts}</>;
     }
 
     // Legacy format: render blocks
@@ -190,9 +208,8 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
             {blocks.map((block) => {
                 switch (block.type) {
                     case 'text':
-                        // Check if text is a raw Instagram URL
                         const textContent = block.data.text || block.data.html || '';
-                        const cleanText = textContent.replace(/<[^>]*>/g, '').trim(); // Strip HTML tags
+                        const cleanText = textContent.replace(/<[^>]*>/g, '').trim();
                         if (cleanText.startsWith('https://www.instagram.com/p/') || cleanText.startsWith('https://instagram.com/p/')) {
                             return (
                                 <div key={block.id}>
@@ -256,52 +273,9 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                             );
                         }
                         if (block.data.embedType === 'instagram' && block.data.embedId) {
-                            // Helper to extract ID if a full URL is passed
-                            const getInstagramId = (idOrUrl: string) => {
-                                if (idOrUrl.includes('instagram.com/p/')) {
-                                    const match = idOrUrl.match(/instagram\.com\/p\/([^/?#]+)/);
-                                    return match ? match[1] : idOrUrl;
-                                }
-                                return idOrUrl;
-                            };
-                            const embedId = getInstagramId(block.data.embedId);
-
                             return (
-                                <div key={block.id} style={{ margin: '2rem 0', display: 'flex', justifyContent: 'center' }}>
-                                    <blockquote
-                                        className="instagram-media"
-                                        data-instgrm-permalink={`https://www.instagram.com/p/${embedId}/`}
-                                        data-instgrm-version="14"
-                                        style={{
-                                            background: '#FFF',
-                                            border: '0',
-                                            borderRadius: '3px',
-                                            boxShadow: '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)',
-                                            margin: '1px',
-                                            maxWidth: '540px',
-                                            minWidth: '326px',
-                                            padding: '0',
-                                            width: 'calc(100% - 2px)'
-                                        }}
-                                    >
-                                        <div style={{ padding: '16px' }}>
-                                            <a
-                                                href={`https://www.instagram.com/p/${embedId}/`}
-                                                style={{
-                                                    background: '#FFFFFF',
-                                                    lineHeight: '0',
-                                                    padding: '0 0',
-                                                    textAlign: 'center',
-                                                    textDecoration: 'none',
-                                                    width: '100%'
-                                                }}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                            >
-                                                View this post on Instagram
-                                            </a>
-                                        </div>
-                                    </blockquote>
+                                <div key={block.id}>
+                                    {renderInstagramEmbed(block.data.embedId)}
                                 </div>
                             );
                         }
@@ -321,12 +295,12 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                 </div>
                             );
                         }
-                        if (block.data.embedType === 'twitter') {
+                        if (block.data.embedType === 'twitter' && block.data.embedId) {
                             return (
-                                <div key={block.id} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
-                                    <blockquote className="twitter-tweet" data-dnt="true">
-                                        <a href={block.data.originalUrl}></a>
-                                    </blockquote>
+                                <div key={block.id} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%' }}>
+                                    <div className="light" style={{ width: '100%', maxWidth: '550px' }}>
+                                        <Tweet id={block.data.embedId} />
+                                    </div>
                                 </div>
                             );
                         }

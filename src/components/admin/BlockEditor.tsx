@@ -22,6 +22,7 @@ import {
 import styles from "./BlockEditor.module.css";
 import { mediaService } from "@/lib/services/media";
 import { MediaLibraryModal } from "./MediaLibraryModal";
+import { Tweet } from "react-tweet";
 
 // ─── Embed Helpers ──────────────────────────────────
 function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | 'twitter' | 'tiktok' | 'spotify' | null; id: string | null } {
@@ -350,10 +351,10 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                             </div>
                         )}
                         {embedType === 'twitter' && (
-                            <div style={{ textAlign: 'center', margin: '1rem auto', padding: '2rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#64748b' }}>
-                                🐦 <strong>X / Twitter Embed</strong><br />
-                                The tweet will be rendered dynamically via Twitter's widget on the public page.<br />
-                                <a href={block.data.originalUrl} target="_blank" rel="noreferrer" style={{ fontSize: '0.85rem', color: '#3b82f6' }}>{block.data.originalUrl}</a>
+                            <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0', width: '100%' }}>
+                                <div className="light" style={{ width: '100%', maxWidth: '550px' }}>
+                                    <Tweet id={embedId} />
+                                </div>
                             </div>
                         )}
                         {embedType === 'tiktok' && (
