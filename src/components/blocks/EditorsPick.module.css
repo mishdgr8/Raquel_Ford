@@ -139,13 +139,14 @@
     font-weight: 500;
     line-height: 1.1;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     margin: 0;
-    /* Removed fixed min-height to prevent gaps */
+    min-height: 4.4em;
+    /* reserve space for 4 lines @ 1.1 line-height = 4.4em */
 }
 
 /* Remove gradient pseudo-element since we moved gradient to .innerContent or keep for full coverage? Keep for image darkening. */
@@ -165,8 +166,8 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     text-align: left;
     display: -webkit-box;
-    -webkit-line-clamp: 7;
-    line-clamp: 7;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
