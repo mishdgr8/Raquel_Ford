@@ -3,6 +3,8 @@ import { PostGrid } from "@/components/blocks/PostGrid";
 import type { Metadata } from "next";
 import styles from "./TagPage.module.css";
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: { params: Promise<{ tag: string }> }): Promise<Metadata> {
     const { tag } = await params;
     const decodedTag = decodeURIComponent(tag);

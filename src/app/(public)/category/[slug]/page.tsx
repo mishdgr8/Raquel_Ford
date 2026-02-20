@@ -10,6 +10,8 @@ import { notFound } from "next/navigation";
 import { PostGrid } from "@/components/blocks/PostGrid";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
     const category = await categoryService.getCategoryBySlug(slug);

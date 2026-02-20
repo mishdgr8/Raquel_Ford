@@ -19,16 +19,37 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const { slug } = await params;
     const article = await articleService.getArticleBySlug(slug);
     if (!article) return { title: "Article Not Found" };
+
+    // Check if relative or absolute image url
+    const imageUrl = article.featuredImage || "/images/og-image.jpg";
+
     return {
         title: `${article.title} | Raquel Ford`,
         description: article.excerpt || `Read ${article.title} on Raquel Ford.`,
         openGraph: {
             title: article.title,
             description: article.excerpt || "",
-            images: article.featuredImage ? [{ url: article.featuredImage }] : [],
+            images: [
+                {
+                    url: imageUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: article.title
+                }
+            ],
+            type: "article",
+            publishedTime: article.publishedAt ? new Date(article.publishedAt as any).toISOString() : undefined,
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${article.title} | Raquel Ford`,
+            description: article.excerpt || "",
+            images: [imageUrl],
         },
     };
 }
+
+export const revalidate = 60;
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;

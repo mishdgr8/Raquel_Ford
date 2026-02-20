@@ -19,8 +19,30 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Raquel Ford | Admin Dashboard",
-  description: "Management portal for Raquel Ford Blog CMS.",
+  title: "Raquel Ford - Lifestyle Blog Magazine",
+  description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
+  openGraph: {
+    title: "Raquel Ford - Lifestyle Blog Magazine",
+    description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
+    url: "https://raquelford.com",
+    siteName: "Raquel Ford",
+    images: [
+      {
+        url: "/images/og-image.jpg", // Default OG Image
+        width: 1200,
+        height: 630,
+        alt: "Raquel Ford",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Raquel Ford - Lifestyle Blog Magazine",
+    description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
+    images: ["/images/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({

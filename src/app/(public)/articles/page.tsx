@@ -1,5 +1,7 @@
 import { PostGrid } from "@/components/blocks/PostGrid";
 
+export const revalidate = 60;
+
 export const metadata = {
     title: "All Articles | Raquel Ford",
     description: "Browse all our latest stories, news, and updates.",
