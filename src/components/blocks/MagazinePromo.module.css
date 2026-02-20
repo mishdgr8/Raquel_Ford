@@ -78,8 +78,7 @@
     grid-template-columns: 1fr 0.35fr;
     gap: 1.5rem;
     align-items: stretch;
-    height: 520px;
-    /* Increased height for better portrait display */
+    height: 600px;
 }
 
 .mainCover {
@@ -178,7 +177,7 @@
     box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .card {
         grid-template-columns: 1fr;
         padding: 3rem 2rem;
@@ -192,15 +191,19 @@
     }
 
     .mainCover {
-        aspect-ratio: 3/4;
+        aspect-ratio: 9/16;
         height: auto;
-        max-width: 500px;
+        width: 100%;
+        max-width: 450px;
         margin: 0 auto;
+        display: block;
+        /* Ensure it's not hidden */
     }
 
     .previewStack {
-        flex-direction: row;
-        height: 160px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        height: auto;
         gap: 1.5rem;
         width: 100%;
         max-width: 800px;
@@ -209,11 +212,13 @@
 
     .previewItem,
     .previewPlaceholder {
-        flex: 1;
+        width: 100%;
+        aspect-ratio: 9/16;
+        flex: none;
     }
 
     .content {
-        padding: 0 0 2rem 0;
+        padding: 0 0 2.5rem 0;
         align-items: center;
     }
 
@@ -238,8 +243,7 @@
     }
 
     .previewStack {
-        height: 120px;
-        gap: 1rem;
+        gap: 0.75rem;
     }
 
     .title {
