@@ -1,5 +1,4 @@
-import React from "react";
-import { BlockInstance } from "@/lib/types";
+import { BlockInstance, Category } from "@/lib/types";
 import { HeroCarousel } from "./HeroCarousel";
 import { LatestArticles } from "./LatestArticles";
 import { NewsletterSignup } from "./NewsletterSignup";
@@ -12,9 +11,10 @@ import { SimpleBanner } from "./SimpleBanner";
 
 interface BlockRendererProps {
     blocks: BlockInstance[];
+    initialCategories?: Category[];
 }
 
-export function BlockRenderer({ blocks }: BlockRendererProps) {
+export function BlockRenderer({ blocks, initialCategories }: BlockRendererProps) {
     if (!blocks || blocks.length === 0) return null;
 
     return (
@@ -22,7 +22,7 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
             {blocks.map((block) => {
                 switch (block.blockType) {
                     case 'HeroCarousel':
-                        return <HeroCarousel key={block.id} config={block.configJson || {}} />;
+                        return <HeroCarousel key={block.id} config={block.configJson || {}} initialCategories={initialCategories} />;
                     case 'LatestArticles':
                         return <LatestArticles key={block.id} config={block.configJson || {}} />;
                     case 'NewsletterSignup':

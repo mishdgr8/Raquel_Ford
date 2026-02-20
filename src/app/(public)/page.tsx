@@ -2,6 +2,7 @@ import { BlockRenderer } from "@/components/blocks/BlockRenderer";
 import { EditorsPick } from "@/components/blocks/EditorsPick";
 import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
+import { categoryService } from "@/lib/services/categories";
 import { RSSFeedWidget } from "@/components/blocks/RSSFeedWidget";
 import styles from "./HomePage.module.css";
 
@@ -9,7 +10,20 @@ import styles from "./HomePage.module.css";
 export const revalidate = 60;
 
 export default async function HomePage() {
-    const template = await templateService.getActiveTemplate('home');
+    const [template, allCategories] = await Promise.all([
+        templateService.getActiveTemplate('home'),
+        categoryService.getCategories()
+    ]);
+
+    // Filter for specific main categories for the hero slider
+    const targetNames = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
+    const initialCategories = allCategories
+        .filter(cat => targetNames.includes(cat.name.toLowerCase()))
+        .sort((a, b) => {
+            const indexA = targetNames.indexOf(a.name.toLowerCase());
+            const indexB = targetNames.indexOf(b.name.toLowerCase());
+            return indexA - indexB;
+        });
 
     if (!template || !template.blocks || template.blocks.length === 0) {
         return (
@@ -38,7 +52,12 @@ export default async function HomePage() {
 
     return (
         <>
-            {mainBlocks.length > 0 && <BlockRenderer blocks={[mainBlocks[0]]} />}
+            {mainBlocks.length > 0 && (
+                <BlockRenderer
+                    blocks={[mainBlocks[0]]}
+                    initialCategories={initialCategories}
+                />
+            )}
 
             {/* Guarantee Editors Pick always renders on homepage below Hero */}
             <EditorsPick />

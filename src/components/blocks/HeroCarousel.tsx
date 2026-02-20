@@ -6,6 +6,9 @@ import styles from "./HeroCarousel.module.css";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { clsx } from "clsx";
+import { motion, AnimatePresence } from "framer-motion";
+import { Category } from "@/lib/types";
+import { categoryService } from "@/lib/services/categories";
 
 interface HeroCarouselProps {
     config: {
@@ -13,9 +16,8 @@ interface HeroCarouselProps {
         count?: number;
         autoplay?: boolean;
     };
+    initialCategories?: Category[];
 }
-import { categoryService } from "@/lib/services/categories";
-import { Category } from "@/lib/types";
 
 const HERO_IMAGES: Record<string, string> = {
     'beauty': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771432494672_Screenshot%202026-02-18%20at%2017.12.07.jpg?alt=media&token=ab35822e-a7a7-4131-8db3-898cf8109c25',
@@ -26,11 +28,13 @@ const HERO_IMAGES: Record<string, string> = {
     'events': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771423579552_Screenshot%202026-02-18%20at%2015.03.34.jpg?alt=media&token=52486cc4-2e58-4337-8a6b-50b570a90ae5'
 };
 
-export function HeroCarousel({ config }: HeroCarouselProps) {
-    const [categories, setCategories] = useState<Category[]>([]);
+export function HeroCarousel({ config, initialCategories }: HeroCarouselProps) {
+    const [categories, setCategories] = useState<Category[]>(initialCategories || []);
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
+        if (initialCategories && initialCategories.length > 0) return;
+
         categoryService.getCategories().then((data) => {
             // Filter for specific main categories in the requested order
             const targetNames = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
@@ -44,7 +48,7 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
                 });
             setCategories(main);
         });
-    }, []);
+    }, [initialCategories]);
 
     // Auto-scroll logic
     useEffect(() => {
@@ -67,30 +71,59 @@ export function HeroCarousel({ config }: HeroCarouselProps) {
 
     return (
         <section className={styles.hero}>
-            <div className={styles.slide}>
-                <div className={styles.overlay} />
-                {displayImage ? (
-                    <Image
-                        src={displayImage}
-                        alt={current.name}
-                        fill
-                        priority
-                        unoptimized
-                        sizes="100vw"
-                        className={styles.heroImage}
-                    />
-                ) : (
-                    <div className={styles.imagePlaceholder} />
-                )}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
+                    className={styles.slide}
+                >
+                    <div className={styles.overlay} />
+                    {displayImage ? (
+                        <Image
+                            src={displayImage}
+                            alt={current.name}
+                            fill
+                            priority
+                            unoptimized
+                            sizes="100vw"
+                            className={styles.heroImage}
+                        />
+                    ) : (
+                        <div className={styles.imagePlaceholder} />
+                    )}
 
-                <div className={clsx("container", styles.content)}>
-                    <span className={styles.category}>EXPLORE CATEGORY</span>
-                    <h1 className={styles.title}>{current.name}</h1>
-                    <Link href={`/category/${current.slug}`} className={styles.cta}>
-                        VIEW STORIES
-                    </Link>
-                </div>
-            </div>
+                    <div className={clsx("container", styles.content)}>
+                        <motion.span
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.2, duration: 0.5 }}
+                            className={styles.category}
+                        >
+                            EXPLORE CATEGORY
+                        </motion.span>
+                        <motion.h1
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                            className={styles.title}
+                        >
+                            {current.name}
+                        </motion.h1>
+                        <motion.div
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.4, duration: 0.5 }}
+                        >
+                            <Link href={`/category/${current.slug}`} className={styles.cta}>
+                                VIEW STORIES
+                            </Link>
+                        </motion.div>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
         </section>
     );
 }
