@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "Raquel Ford",
     images: [
       {
-        url: "/images/og-image.jpg", // Default OG Image
+        url: "/og-image.png", // Using the new RF logo for sharing
         width: 1200,
         height: 630,
         alt: "Raquel Ford",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Raquel Ford: Beauty, Entertainment, Fashion, Lifestyle and More..",
     description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
-    images: ["/images/og-image.jpg"],
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [
