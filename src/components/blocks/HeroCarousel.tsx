@@ -71,7 +71,7 @@ export function HeroCarousel({ config, initialCategories }: HeroCarouselProps) {
 
     return (
         <section className={styles.hero}>
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 <motion.div
                     key={index}
                     initial={{ opacity: 0 }}
