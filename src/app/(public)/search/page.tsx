@@ -10,8 +10,6 @@ import { PostCard } from "@/components/blocks/PostCard";
 import styles from "./SearchPage.module.css";
 import { Suspense } from "react";
 
-export const revalidate = 60;
-
 function SearchResults() {
     const searchParams = useSearchParams();
     const query = searchParams.get('q');
