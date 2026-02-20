@@ -19,10 +19,10 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Raquel Ford - Lifestyle Blog Magazine",
+  title: "Raquel Ford: Beauty, Entertainment, Fashion, Lifestyle and More..",
   description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
   openGraph: {
-    title: "Raquel Ford - Lifestyle Blog Magazine",
+    title: "Raquel Ford: Beauty, Entertainment, Fashion, Lifestyle and More..",
     description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
     url: "https://raquelford.com",
     siteName: "Raquel Ford",
@@ -39,9 +39,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Raquel Ford - Lifestyle Blog Magazine",
+    title: "Raquel Ford: Beauty, Entertainment, Fashion, Lifestyle and More..",
     description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
     images: ["/images/og-image.jpg"],
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

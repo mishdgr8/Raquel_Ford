@@ -96,14 +96,6 @@ export function HeroCarousel({ config, initialCategories }: HeroCarouselProps) {
                     )}
 
                     <div className={clsx("container", styles.content)}>
-                        <motion.span
-                            initial={{ y: 10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.1, duration: 0.3 }}
-                            className={styles.category}
-                        >
-                            EXPLORE CATEGORY
-                        </motion.span>
                         <motion.h1
                             initial={{ y: 15, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
