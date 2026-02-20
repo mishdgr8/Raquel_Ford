@@ -102,9 +102,9 @@ export function SocialShare({ articleId, title, slug, excerpt }: SocialShareProp
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        initial={{ opacity: 0, y: 10, x: "-50%", scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
+                        exit={{ opacity: 0, y: 10, x: "-50%", scale: 0.95 }}
                         transition={{ duration: 0.2 }}
                         className={styles.menu}
                     >
