@@ -44,7 +44,7 @@
 .submitBtn {
     padding: 1rem 2rem;
     background: var(--primary);
-    color: #fff;
+    color: var(--background);
     border: none;
     font-family: var(--font-sans);
     font-size: 0.85rem;
