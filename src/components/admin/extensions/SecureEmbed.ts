@@ -83,7 +83,7 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
     parseHTML() {
         return [
             {
-                tag: 'div[data-type="secure-embed"]',
+                tag: 'tiptap-embed',
             },
         ];
     },
@@ -122,7 +122,7 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
         }
 
         return [
-            'div',
+            'tiptap-embed',
             mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
                 'data-type': 'secure-embed',
                 'data-embed-type': embedType,

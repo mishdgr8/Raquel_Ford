@@ -65,13 +65,12 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 if (b.type === 'text') return b.data.html || b.data.text || '';
                 if (b.type === 'image' && b.data.url) return `<figure><img src="${b.data.url}" alt="${b.data.caption || ''}" />${b.data.caption ? `<figcaption>${b.data.caption}</figcaption>` : ''}</figure>`;
                 if (b.type === 'divider') return '<hr />';
-                if (b.type === 'video') return `<video src="${b.data.url}" controls></video>`;
-                if (b.type === 'embed') {
-                    if (b.data.embedType === 'youtube') return `<iframe src="https://www.youtube.com/embed/${b.data.embedId}"></iframe>`;
-                    if (b.data.embedType === 'instagram') return `<iframe src="https://www.instagram.com/p/${b.data.embedId}/embed/captioned" style="width: 100%; max-width: 540px; height: 600px; border: 0;"></iframe>`;
-                    if (b.data.embedType === 'spotify') return `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/${b.data.embedId}" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-                    if (b.data.embedType === 'twitter') return `<blockquote class="twitter-tweet" data-dnt="true"><a href="${b.data.originalUrl}"></a></blockquote>`;
-                    if (b.data.embedType === 'tiktok') return `<blockquote class="tiktok-embed" cite="${b.data.originalUrl}" data-video-id="${b.data.embedId}" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="TikTok" href="${b.data.originalUrl}">@TikTok</a> </section> </blockquote>`;
+                if (b.type === 'gallery' && b.data.images && b.data.images.length > 0) {
+                    const imagesJson = JSON.stringify(b.data.images).replace(/"/g, '&quot;');
+                    return `<tiptap-gallery data-type="image-gallery" data-images="${imagesJson}" data-columns="${b.data.columns || 3}"></tiptap-gallery>`;
+                }
+                if (b.type === 'embed' && b.data.embedType && b.data.embedId) {
+                    return `<tiptap-embed data-type="secure-embed" data-embed-type="${b.data.embedType}" data-embed-id="${b.data.embedId}" data-original-url="${b.data.originalUrl || ''}"></tiptap-embed>`;
                 }
                 return '';
             }).join('\n');
@@ -277,10 +276,28 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                         <section className={styles.editorSection}>
                             <BlockEditor
                                 blocks={form.contentJson?.blocks || []}
-                                onChange={(blocks: ContentBlock[]) => setForm(prev => ({
-                                    ...prev,
-                                    contentJson: { blocks }
-                                }))}
+                                onChange={(blocks: ContentBlock[]) => {
+                                    // Generate preview HTML whenever blocks change
+                                    const previewHtml = blocks.map(b => {
+                                        if (b.type === 'text') return b.data.html || b.data.text || '';
+                                        if (b.type === 'image' && b.data.url) return `<figure><img src="${b.data.url}" alt="${b.data.caption || ''}" />${b.data.caption ? `<figcaption>${b.data.caption}</figcaption>` : ''}</figure>`;
+                                        if (b.type === 'divider') return '<hr />';
+                                        if (b.type === 'gallery' && b.data.images && b.data.images.length > 0) {
+                                            const imagesJson = JSON.stringify(b.data.images).replace(/"/g, '&quot;');
+                                            return `<tiptap-gallery data-type="image-gallery" data-images="${imagesJson}" data-columns="${b.data.columns || 3}"></tiptap-gallery>`;
+                                        }
+                                        if (b.type === 'embed' && b.data.embedType && b.data.embedId) {
+                                            return `<tiptap-embed data-type="secure-embed" data-embed-type="${b.data.embedType}" data-embed-id="${b.data.embedId}" data-original-url="${b.data.originalUrl || ''}"></tiptap-embed>`;
+                                        }
+                                        return '';
+                                    }).join('\n');
+
+                                    setForm(prev => ({
+                                        ...prev,
+                                        contentJson: { blocks },
+                                        contentHtml: previewHtml
+                                    }));
+                                }}
                             />
                         </section>
                     </div>

@@ -54,7 +54,7 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
     parseHTML() {
         return [
             {
-                tag: 'div[data-type="image-gallery"]',
+                tag: 'tiptap-gallery',
             },
         ];
     },
@@ -79,7 +79,7 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
         ]);
 
         return [
-            'div',
+            'tiptap-gallery',
             mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
                 'data-type': 'image-gallery',
                 'data-columns': columns,
