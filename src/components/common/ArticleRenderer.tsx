@@ -156,85 +156,84 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
     // Render HTML directly if it exists and is not just an empty paragraph, splitting out Twitter and Gallery embeds
     const isHtmlMeaningful = html && html.trim() !== '' && html.trim() !== '<p></p>';
     if (isHtmlMeaningful) {
-        // Regex to find Twitter embeds
+        // Helper to extract attributes from a tag string
+        const getAttr = (tagStr: string, attrName: string) => {
+            const regex = new RegExp(`${attrName}=["']([^"']*)["']`, 'i');
+            const match = tagStr.match(regex);
+            return match ? match[1] : null;
+        };
+
+        // Regexes for our custom components
         const twitterRegex = /<blockquote[^>]*class=["'][^"']*twitter-tweet[^"']*["'][^>]*>[\s\S]*?href=["']https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^"']*["'][\s\S]*?<\/blockquote>|<p>\s*(?:<a[^>]*href=["'])?https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^<"']*(?:["'][^>]*>.*?<\/a>)?\s*<\/p>/gi;
+        const galleryRegex = /<tiptap-gallery[^>]*>[\s\S]*?<\/tiptap-gallery>/gi;
+        const embedRegex = /<tiptap-embed[^>]*>[\s\S]*?<\/tiptap-embed>/gi;
 
-        // Regex for Gallery - now using custom tag for perfect reliability
-        const galleryRegex = /<tiptap-gallery([^>]*)>[\s\S]*?<\/tiptap-gallery>/gi;
+        // Splitting strategy: Find all occurrences and sort them by index
+        const matches: { index: number; length: number; content: React.ReactNode; type: string }[] = [];
 
-        // Regex for Secure Embed - also using custom tag
-        const embedRegex = /<tiptap-embed([^>]*)>[\s\S]*?<\/tiptap-embed>/gi;
-
-        // Combine regexes
-        const combinedRegex = new RegExp(`${twitterRegex.source}|${galleryRegex.source}|${embedRegex.source}`, 'gi');
-
-        const parts = [];
-        let lastIndex = 0;
-        let match;
-
-        while ((match = combinedRegex.exec(html)) !== null) {
-            // Push the HTML before the match
-            if (match.index > lastIndex) {
-                parts.push(
-                    <div
-                        key={`html-${lastIndex}`}
-                        className={styles.container}
-                        dangerouslySetInnerHTML={{ __html: html.substring(lastIndex, match.index) }}
-                    />
-                );
-            }
-
-            // Check which match we hit
-            const fullMatch = match[0];
-            if (fullMatch.includes('twitter-tweet') || fullMatch.includes('twitter.com') || fullMatch.includes('x.com')) {
-                // Twitter match
-                const tweetId = match[1] || match[2];
-                if (tweetId) {
-                    parts.push(
-                        <div key={`tweet-${tweetId}`} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%' }}>
+        // 1. Find Twitter embeds
+        let m;
+        while ((m = twitterRegex.exec(html)) !== null) {
+            const tweetId = m[1] || m[2];
+            if (tweetId) {
+                matches.push({
+                    index: m.index,
+                    length: m[0].length,
+                    type: 'twitter',
+                    content: (
+                        <div key={`tweet-${m.index}`} style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0', width: '100%' }}>
                             <div className="light" style={{ width: '100%', maxWidth: '550px' }}>
                                 <Tweet id={tweetId} />
                             </div>
                         </div>
-                    );
-                }
-            } else if (fullMatch.startsWith('<tiptap-gallery')) {
-                // Gallery match - attributes are in capture group 3
-                const attrString = match[3] || "";
-                const imagesMatch = attrString.match(/data-images="([^"]*)"/);
-                const columnsMatch = attrString.match(/data-columns="([^"]*)"/);
+                    )
+                });
+            }
+        }
 
-                const imagesAttr = imagesMatch ? imagesMatch[1] : null;
-                const columnsAttr = columnsMatch ? columnsMatch[1] : null;
+        // 2. Find Galleries
+        galleryRegex.lastIndex = 0; // Reset
+        while ((m = galleryRegex.exec(html)) !== null) {
+            const tagStr = m[0];
+            const imagesAttr = getAttr(tagStr, 'data-images');
+            const columnsAttr = getAttr(tagStr, 'data-columns');
 
-                if (imagesAttr) {
-                    try {
-                        const decodedImagesString = imagesAttr.replace(/&quot;/g, '"');
-                        const images = JSON.parse(decodedImagesString);
-                        const columns = columnsAttr ? parseInt(columnsAttr, 10) : 3;
+            if (imagesAttr) {
+                try {
+                    const decodedImagesString = imagesAttr.replace(/&quot;/g, '"');
+                    const images = JSON.parse(decodedImagesString);
+                    const columns = columnsAttr ? parseInt(columnsAttr, 10) : 3;
 
-                        parts.push(
-                            <div key={`gallery-${match.index}`} style={{ margin: '2rem 0', width: '100%' }}>
+                    matches.push({
+                        index: m.index,
+                        length: m[0].length,
+                        type: 'gallery',
+                        content: (
+                            <div key={`gallery-${m.index}`} style={{ margin: '2rem 0', width: '100%' }}>
                                 <GalleryBlock images={images} columns={columns} />
                             </div>
-                        );
-                    } catch (e) {
-                        console.error("Failed to parse gallery images", e);
-                        parts.push(<div key={`err-gallery-${match.index}`} dangerouslySetInnerHTML={{ __html: fullMatch }} />);
-                    }
+                        )
+                    });
+                } catch (e) {
+                    console.error("Failed to parse gallery images", e);
                 }
-            } else if (fullMatch.startsWith('<tiptap-embed')) {
-                // Secure Embed match - attributes are in capture group 4
-                const attrString = match[4] || "";
-                const typeMatch = attrString.match(/data-embed-type="([^"]*)"/);
-                const idMatch = attrString.match(/data-embed-id="([^"]*)"/);
+            }
+        }
 
-                const embedType = typeMatch ? typeMatch[1] : null;
-                const embedId = idMatch ? idMatch[1] : null;
+        // 3. Find Secure Embeds
+        embedRegex.lastIndex = 0; // Reset
+        while ((m = embedRegex.exec(html)) !== null) {
+            const tagStr = m[0];
+            const embedType = getAttr(tagStr, 'data-embed-type');
+            const embedId = getAttr(tagStr, 'data-embed-id');
 
-                if (embedType && embedId) {
-                    parts.push(
-                        <div key={`embed-${match.index}`} style={{ margin: '2rem 0', width: '100%' }}>
+            if (embedType && embedId) {
+                matches.push({
+                    index: m.index,
+                    length: m[0].length,
+                    type: 'embed',
+                    content: (
+                        <div key={`embed-${m.index}`} style={{ margin: '2rem 0', width: '100%' }}>
                             {embedType === 'youtube' ? (
                                 <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '0.5rem' }}>
                                     <iframe
@@ -250,12 +249,35 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                 renderInstagramEmbed(`https://www.instagram.com/p/${embedId}/`)
                             )}
                         </div>
-                    );
-                } else {
-                    parts.push(<div key={`err-embed-${match.index}`} dangerouslySetInnerHTML={{ __html: fullMatch }} />);
-                }
+                    )
+                });
             }
-            lastIndex = combinedRegex.lastIndex;
+        }
+
+        // Sort matches by index
+        matches.sort((a, b) => a.index - b.index);
+
+        const parts = [];
+        let lastIndex = 0;
+
+        for (const match of matches) {
+            // Check if this match overlaps with previous one (rare but possible with overlapping regexes)
+            if (match.index < lastIndex) continue;
+
+            // Push the HTML before the match
+            if (match.index > lastIndex) {
+                parts.push(
+                    <div
+                        key={`html-${lastIndex}`}
+                        className={styles.container}
+                        dangerouslySetInnerHTML={{ __html: html.substring(lastIndex, match.index) }}
+                    />
+                );
+            }
+
+            // Push the React component
+            parts.push(match.content);
+            lastIndex = match.index + match.length;
         }
 
         // Push remaining HTML
@@ -271,6 +293,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
 
         return <>{parts}</>;
     }
+
 
     // Legacy format: render blocks
     if (!blocks || blocks.length === 0) return null;
