@@ -71,8 +71,10 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
     isLast: boolean;
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const replaceFileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [showLibrary, setShowLibrary] = useState(false);
+    const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
     const images: { url: string; alt: string }[] = block.data.images || [];
     const columns: number = block.data.columns || 3;
 
@@ -90,6 +92,24 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
             alert('Some images failed to upload');
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleReplaceUpload = async (file: File) => {
+        if (replaceIndex === null) return;
+        setUploading(true);
+        try {
+            const result = await mediaService.uploadMedia(file, 'uploads');
+            const newImage = { url: result.url, alt: file.name.replace(/\.[^.]+$/, '') };
+            const next = [...images];
+            next[replaceIndex] = newImage;
+            onUpdate({ ...block.data, images: next });
+        } catch (err) {
+            console.error('Image replace upload failed:', err);
+            alert('Failed to upload image');
+        } finally {
+            setUploading(false);
+            setReplaceIndex(null);
         }
     };
 
@@ -147,13 +167,34 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                     }}
                 />
 
+                <input
+                    type="file"
+                    ref={replaceFileInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                        if (e.target.files?.[0]) handleReplaceUpload(e.target.files[0]);
+                        e.target.value = '';
+                    }}
+                />
+
                 <MediaLibraryModal
                     isOpen={showLibrary}
-                    onClose={() => setShowLibrary(false)}
-                    onSelect={(url) => {
-                        onUpdate({ ...block.data, images: [...images, { url, alt: '' }] });
+                    onClose={() => {
+                        setShowLibrary(false);
+                        if (replaceIndex !== null) setReplaceIndex(null);
                     }}
-                    title="Add to Gallery"
+                    onSelect={(url) => {
+                        if (replaceIndex !== null) {
+                            const next = [...images];
+                            next[replaceIndex] = { url, alt: '' };
+                            onUpdate({ ...block.data, images: next });
+                            setReplaceIndex(null);
+                        } else {
+                            onUpdate({ ...block.data, images: [...images, { url, alt: '' }] });
+                        }
+                    }}
+                    title={replaceIndex !== null ? "Replace Image" : "Add to Gallery"}
                 />
 
                 {images.length > 0 && (
@@ -201,6 +242,36 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                                             title="Move right"
                                         >→</button>
                                     )}
+                                    <div style={{ position: 'relative', display: 'flex' }}
+                                        onMouseEnter={(e) => {
+                                            const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
+                                            if (menu) menu.style.display = 'flex';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
+                                            if (menu) menu.style.display = 'none';
+                                        }}
+                                    >
+                                        <button
+                                            style={{
+                                                width: '22px', height: '22px', borderRadius: '50%',
+                                                background: 'rgba(59, 130, 246, 0.85)', color: 'white',
+                                                border: 'none', cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                marginRight: '2px'
+                                            }}
+                                            title="Replace image"
+                                        ><Upload size={10} /></button>
+                                        <div className="replaceMenu" style={{
+                                            display: 'none', position: 'absolute', top: '100%', right: 0,
+                                            background: 'white', borderRadius: '6px', padding: '4px',
+                                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 20, flexDirection: 'column',
+                                            gap: '2px', minWidth: '100px'
+                                        }}>
+                                            <button onClick={() => { setReplaceIndex(i); setShowLibrary(true); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Images size={10} /> Library</button>
+                                            <button onClick={() => { setReplaceIndex(i); replaceFileInputRef.current?.click(); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Upload size={10} /> Upload</button>
+                                        </div>
+                                    </div>
                                     <button
                                         onClick={() => removeImage(i)}
                                         style={{

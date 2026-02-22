@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { X, Search, Check, Loader2 } from "lucide-react";
+import { X, Search, Check, Loader2, Upload } from "lucide-react";
 import { mediaService } from "@/lib/services/media";
 import { Media } from "@/lib/types";
 import styles from "./MediaLibraryModal.module.css";
@@ -21,6 +21,8 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -47,6 +49,39 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
         }
     };
 
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const result = await mediaService.uploadMedia(file, "library");
+            // The result from uploadMedia lacks some Media properties like name/size/extension, causing a type error.
+            // We cast it or construct a temporary object that satisfies the type enough for display in the grid.
+            const newMediaItem: Media = {
+                id: result.id,
+                url: result.url,
+                path: result.path,
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                extension: file.name.split('.').pop() || '',
+                createdAt: new Date().toISOString()
+            };
+            setMedia(prev => [newMediaItem, ...prev]);
+            setSelectedUrl(result.url);
+            // Optionally auto-insert here, but auto-select provides better context
+        } catch (err) {
+            console.error("Upload failed in modal:", err);
+            alert("Upload failed. Please try again.");
+        } finally {
+            setUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
+    };
+
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -68,6 +103,23 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
                             className={styles.searchInput}
                         />
                     </div>
+
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={handleUpload}
+                    />
+                    <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                        {uploading ? <Loader2 size={16} className={styles.spinner} /> : <Upload size={16} />}
+                        {uploading ? 'Uploading...' : 'Upload'}
+                    </Button>
                 </div>
 
                 <div className={styles.content}>
