@@ -314,6 +314,25 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                                         title="Remove image"
                                     ><X size={12} /></button>
                                 </div>
+                                <input
+                                    type="text"
+                                    value={img.alt || ""}
+                                    onChange={(e) => {
+                                        const newImages = [...images];
+                                        newImages[i] = { ...newImages[i], alt: e.target.value };
+                                        onUpdate({ ...block.data, images: newImages });
+                                    }}
+                                    placeholder="Enter caption..."
+                                    style={{
+                                        width: '100%',
+                                        marginTop: '0.25rem',
+                                        padding: '0.25rem 0.5rem',
+                                        fontSize: '0.75rem',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '4px',
+                                        background: 'rgba(255,255,255,0.8)',
+                                    }}
+                                />
                             </div>
                         ))}
                     </div>
