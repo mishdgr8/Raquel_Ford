@@ -513,7 +513,10 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                 </div>
                             )}
                             <div className={styles.previewContent}>
-                                <ArticleRenderer blocks={form.contentJson?.blocks || []} />
+                                <ArticleRenderer
+                                    html={form.contentHtml}
+                                    blocks={form.contentJson?.blocks || []}
+                                />
                             </div>
                         </article>
                     </div>

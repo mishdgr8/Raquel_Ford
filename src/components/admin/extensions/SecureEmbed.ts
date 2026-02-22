@@ -88,8 +88,8 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
         ];
     },
 
-    renderHTML({ HTMLAttributes }) {
-        const { embedType, embedId, originalUrl, ...rest } = HTMLAttributes;
+    renderHTML({ node, HTMLAttributes }) {
+        const { embedType, embedId, originalUrl } = node.attrs;
         let embedContent: any[] = [];
 
         if (embedType === 'youtube' && embedId) {
@@ -123,7 +123,7 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
 
         return [
             'div',
-            mergeAttributes(this.options.HTMLAttributes, rest, {
+            mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
                 'data-type': 'secure-embed',
                 'data-embed-type': embedType,
                 'data-embed-id': embedId,

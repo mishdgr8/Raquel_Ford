@@ -153,8 +153,9 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
         );
     };
 
-    // Render HTML directly, splitting out Twitter embeds
-    if (html) {
+    // Render HTML directly if it exists and is not just an empty paragraph, splitting out Twitter embeds
+    const isHtmlMeaningful = html && html.trim() !== '' && html.trim() !== '<p></p>';
+    if (isHtmlMeaningful) {
         // Regex to find paragraphs that contain ONLY a twitter/x URL OR a WordPress-style twitter blockquote
         const twitterRegex = /<blockquote[^>]*class=["'][^"']*twitter-tweet[^"']*["'][^>]*>[\s\S]*?href=["']https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^"']*["'][\s\S]*?<\/blockquote>|<p>\s*(?:<a[^>]*href=["'])?https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^<"']*(?:["'][^>]*>.*?<\/a>)?\s*<\/p>/gi;
         const parts = [];

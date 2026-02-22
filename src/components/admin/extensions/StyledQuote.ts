@@ -82,11 +82,11 @@ export const StyledQuote = Node.create<StyledQuoteOptions>({
         ];
     },
 
-    renderHTML({ HTMLAttributes }) {
-        const { author, authorTitle, textColor, bgColor, borderColor, ...rest } = HTMLAttributes;
+    renderHTML({ node, HTMLAttributes }) {
+        const { author, authorTitle, textColor, bgColor, borderColor } = node.attrs;
         return [
             'blockquote',
-            mergeAttributes(this.options.HTMLAttributes, rest, {
+            mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
                 'data-type': 'styled-quote',
                 'data-author': author || '',
                 'data-author-title': authorTitle || '',

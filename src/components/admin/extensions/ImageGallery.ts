@@ -59,14 +59,14 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
         ];
     },
 
-    renderHTML({ HTMLAttributes }) {
-        const { images, columns, ...rest } = HTMLAttributes;
+    renderHTML({ node, HTMLAttributes }) {
+        const { images, columns } = node.attrs;
         const imgArray = typeof images === 'string' ? JSON.parse(images) : (images || []);
 
         const imageElements = imgArray.map((img: { url: string; alt?: string }) => [
             'div',
             {
-                style: 'overflow: hidden; border-radius: 0.5rem; cursor: pointer; aspect-ratio: 1; position: relative;',
+                style: 'overflow: hidden; border-radius: 0.5rem; cursor: pointer; position: relative; break-inside: avoid; margin-bottom: 0.5rem;',
                 'data-gallery-item': '',
             },
             ['img', {
@@ -74,19 +74,18 @@ export const ImageGallery = Node.create<ImageGalleryOptions>({
                 alt: img.alt || '',
                 loading: 'lazy',
                 decoding: 'async',
-                style: 'width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;',
+                style: 'width: 100%; height: auto; object-fit: cover; transition: transform 0.3s ease; display: block;',
             }],
         ]);
 
         return [
             'div',
-            mergeAttributes(this.options.HTMLAttributes, rest, {
+            mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
                 'data-type': 'image-gallery',
                 'data-columns': columns,
                 style: `
-                    display: grid;
-                    grid-template-columns: repeat(${columns}, 1fr);
-                    gap: 0.75rem;
+                    column-count: ${columns};
+                    column-gap: 0.75rem;
                     margin: 2rem 0;
                 `.replace(/\s+/g, ' ').trim(),
             }),
