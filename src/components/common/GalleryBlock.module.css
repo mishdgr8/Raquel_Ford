@@ -138,3 +138,28 @@
         gap: 0.5rem;
     }
 }
+
+.caption {
+    font-size: 0.8rem;
+    color: #4b5563;
+    text-align: center;
+    padding: 0.5rem 0.25rem;
+    line-height: 1.2;
+    background: #f8fafc;
+}
+
+.lightboxCaption {
+    position: absolute;
+    bottom: 3.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    font-size: 0.95rem;
+    text-align: center;
+    max-width: 80%;
+    z-index: 1010;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}

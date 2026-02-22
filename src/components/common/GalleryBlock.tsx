@@ -61,6 +61,10 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                             sizes="(max-width: 768px) 100vw, 33vw"
                             style={{ width: '100%', height: 'auto', display: 'block' }}
                         />
+                        {/* Render caption if it exists and is not just empty space */}
+                        {img.alt && img.alt.trim().length > 0 && (
+                            <div className={styles.caption}>{img.alt}</div>
+                        )}
                     </button>
                 ))}
             </div>
@@ -101,6 +105,11 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                             sizes="100vw"
                             priority
                         />
+                        {images[lightboxIndex].alt && images[lightboxIndex].alt.trim().length > 0 && (
+                            <div className={styles.lightboxCaption}>
+                                {images[lightboxIndex].alt}
+                            </div>
+                        )}
                     </div>
 
                     <button

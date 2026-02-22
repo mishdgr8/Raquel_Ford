@@ -403,11 +403,51 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
 
                         <div className={styles.fieldGroup}>
                             <label>Download URL</label>
-                            <Input
-                                value={block.configJson.downloadUrl || ""}
-                                onChange={(e) => handleChange('downloadUrl', e.target.value)}
-                                placeholder="https://..."
-                            />
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <Input
+                                    value={block.configJson.downloadUrl || ""}
+                                    onChange={(e) => handleChange('downloadUrl', e.target.value)}
+                                    placeholder="https://..."
+                                    style={{ flex: 1 }}
+                                />
+                                <input
+                                    type="file"
+                                    id="magazine-pdf-upload"
+                                    accept="application/pdf"
+                                    style={{ display: 'none' }}
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        setUploading(true);
+                                        try {
+                                            const result = await mediaService.uploadMedia(file, 'magazine');
+                                            handleChange('downloadUrl', result.url);
+                                        } catch (err) {
+                                            console.error('PDF upload failed:', err);
+                                            alert('Failed to upload PDF');
+                                        } finally {
+                                            setUploading(false);
+                                            e.target.value = '';
+                                        }
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('magazine-pdf-upload')?.click()}
+                                    style={{
+                                        padding: '0 1rem',
+                                        background: '#f1f5f9',
+                                        border: '1px solid #e2e8f0',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    Upload PDF
+                                </button>
+                            </div>
                         </div>
                     </>
                 );
