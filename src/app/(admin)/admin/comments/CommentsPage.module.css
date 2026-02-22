@@ -61,6 +61,39 @@
     cursor: not-allowed;
 }
 
+.bulkBarContainer {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bulkBar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bulkCount {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.checkboxCell {
+    width: 40px;
+}
+
+.checkboxCell input {
+    cursor: pointer;
+}
+
 .emptyState {
     padding: 3rem;
     text-align: center;

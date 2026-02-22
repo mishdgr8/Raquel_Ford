@@ -49,3 +49,17 @@ export async function deleteComment(commentId: string) {
         return { success: false, error: "Failed to delete comment" };
     }
 }
+
+export async function bulkDeleteComments(commentIds: string[]) {
+    if (!commentIds || commentIds.length === 0) return { success: false, error: "No comment IDs provided" };
+
+    try {
+        const promises = commentIds.map(id => commentService.deleteComment(id));
+        await Promise.all(promises);
+        revalidatePath('/admin/comments');
+        return { success: true };
+    } catch (error) {
+        console.error("Error bulk deleting comments:", error);
+        return { success: false, error: "Failed to delete comments" };
+    }
+}

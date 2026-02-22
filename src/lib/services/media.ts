@@ -76,6 +76,15 @@ export const mediaService = {
         // 2. Delete from Firestore
         const docRef = doc(db, MEDIA_COLLECTION, id);
         await deleteDoc(docRef);
+    },
+
+    async bulkDeleteMedia(items: Pick<Media, 'id' | 'path'>[]) {
+        const promises = items.map(async (item) => {
+            if (item.id && item.path) {
+                return this.deleteMedia(item.id, item.path);
+            }
+        });
+        await Promise.all(promises);
     }
 };
 
