@@ -22,17 +22,21 @@ export default function MediaLibraryPage() {
     }, []);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploading(true);
         try {
-            await mediaService.uploadMedia(file);
-            mediaService.getMedia().then(setMedia);
+            const uploadPromises = Array.from(files).map(file => mediaService.uploadMedia(file));
+            await Promise.all(uploadPromises);
+            const updatedMedia = await mediaService.getMedia();
+            setMedia(updatedMedia);
         } catch (err) {
-            console.error(err);
+            console.error("Batch upload failed:", err);
+            alert("Some files failed to upload. Please try again.");
         } finally {
             setUploading(false);
+            e.target.value = ''; // Reset input so same files can be uploaded again if needed
         }
     };
 
@@ -89,7 +93,7 @@ export default function MediaLibraryPage() {
                 <label className={styles.uploadBtn}>
                     <Upload size={18} />
                     <span>{uploading ? "Uploading..." : "Upload File"}</span>
-                    <input type="file" hidden onChange={handleUpload} disabled={uploading} />
+                    <input type="file" multiple hidden onChange={handleUpload} disabled={uploading} />
                 </label>
             </header>
 
