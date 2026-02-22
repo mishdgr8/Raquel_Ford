@@ -130,7 +130,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, onSelectMultiple,
                         type="file"
                         ref={fileInputRef}
                         accept="image/*"
-                        multiple={multiSelect}
+                        multiple={true}
                         style={{ display: "none" }}
                         onChange={handleUpload}
                     />

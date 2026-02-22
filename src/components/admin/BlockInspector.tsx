@@ -325,22 +325,32 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                                             type="file"
                                             id={`preview-${idx}`}
                                             accept="image/*"
+                                            multiple
                                             style={{ display: 'none' }}
                                             onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
+                                                const files = Array.from(e.target.files || []);
+                                                if (files.length === 0) return;
+
                                                 setUploading(true);
                                                 try {
-                                                    const result = await mediaService.uploadMedia(file, 'magazine');
+                                                    const uploadPromises = files.map(f => mediaService.uploadMedia(f, 'magazine'));
+                                                    const results = await Promise.all(uploadPromises);
+
                                                     const newPreviews = [...(block.configJson.previewImages || [])];
-                                                    newPreviews[idx] = result.url;
+
+                                                    // Start assigning from the clicked slot index, up to the 3 available slots
+                                                    results.forEach((res, i) => {
+                                                        if (idx + i < 3) {
+                                                            newPreviews[idx + i] = res.url;
+                                                        }
+                                                    });
+
                                                     handleChange('previewImages', newPreviews);
                                                 } catch (err) {
-                                                    console.error('Preview upload failed:', err);
-                                                    alert('Upload failed');
+                                                    console.error('Preview batch upload failed:', err);
+                                                    alert('Batch upload failed');
                                                 } finally {
-                                                    setUploading(true); // Keep uploading state for a bit to show feedback
-                                                    setTimeout(() => setUploading(false), 500);
+                                                    setUploading(false);
                                                     e.target.value = '';
                                                 }
                                             }}

@@ -110,10 +110,13 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         fileInputRef.current?.click();
     }, []);
 
-    const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            handleImageUpload(file);
+    const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        try {
+            await Promise.all(files.map(file => handleImageUpload(file)));
+        } finally {
             e.target.value = "";
         }
     }, [handleImageUpload]);
@@ -200,6 +203,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 accept="image/*"
+                multiple
                 style={{ display: "none" }}
             />
 

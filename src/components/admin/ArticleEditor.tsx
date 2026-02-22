@@ -340,10 +340,20 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                 type="file"
                                 ref={featuredInputRef}
                                 accept="image/*"
+                                multiple
                                 style={{ display: "none" }}
-                                onChange={(e) => {
-                                    if (e.target.files?.[0]) handleFeaturedUpload(e.target.files[0]);
-                                    e.target.value = "";
+                                onChange={async (e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    if (files.length === 0) return;
+
+                                    try {
+                                        const uploadPromises = files.map(file => handleFeaturedUpload(file));
+                                        await Promise.all(uploadPromises);
+                                    } catch (err) {
+                                        console.error("Featured image batch upload error:", err);
+                                    } finally {
+                                        e.target.value = "";
+                                    }
                                 }}
                             />
 

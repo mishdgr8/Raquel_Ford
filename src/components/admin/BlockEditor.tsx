@@ -171,10 +171,36 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                     type="file"
                     ref={replaceFileInputRef}
                     accept="image/*"
+                    multiple={replaceIndex === null} // Allow multiple if adding, single if replacing
                     style={{ display: 'none' }}
-                    onChange={(e) => {
-                        if (e.target.files?.[0]) handleReplaceUpload(e.target.files[0]);
-                        e.target.value = '';
+                    onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length === 0) return;
+
+                        setUploading(true);
+                        try {
+                            const uploaded = await Promise.all(
+                                files.map(f => mediaService.uploadMedia(f, 'gallery'))
+                            );
+                            const newImages = uploaded.map((u, i) => ({ url: u.url, alt: files[i].name }));
+
+                            if (replaceIndex !== null) {
+                                // Replace single image
+                                const updatedImages = [...images];
+                                updatedImages[replaceIndex] = newImages[0];
+                                onUpdate({ ...block.data, images: updatedImages });
+                            } else {
+                                // Append to gallery
+                                onUpdate({ ...block.data, images: [...images, ...newImages] });
+                            }
+                        } catch (err) {
+                            console.error('Gallery upload failed:', err);
+                            alert('Failed to upload images.');
+                        } finally {
+                            setUploading(false);
+                            if (replaceIndex !== null) setReplaceIndex(null);
+                        }
+                        e.target.value = ''; // Clear the input
                     }}
                 />
 
@@ -613,11 +639,17 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
     const [uploading, setUploading] = useState(false);
     const [showLibrary, setShowLibrary] = useState(false);
 
-    const handleUpload = async (file: File) => {
+    const handleUpload = async (files: File[]) => {
+        if (files.length === 0) return;
         setUploading(true);
         try {
-            const result = await mediaService.uploadMedia(file, "uploads");
-            onUpdate({ ...block.data, url: result.url });
+            const uploadPromises = files.map(file => mediaService.uploadMedia(file, "uploads"));
+            const results = await Promise.all(uploadPromises);
+            // Only update the active image block with the first uploaded image,
+            // the rest simply go to the library silently.
+            if (results.length > 0) {
+                onUpdate({ ...block.data, url: results[0].url });
+            }
         } catch (err) {
             console.error("Upload failed:", err);
             alert("Image upload failed");
@@ -641,8 +673,12 @@ function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                     <button className={styles.deleteBtn} onClick={onDelete} title="Delete block"><Trash2 size={14} /></button>
                 </div>
 
-                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: "none" }}
-                    onChange={(e) => { if (e.target.files?.[0]) handleUpload(e.target.files[0]); e.target.value = ""; }} />
+                <input type="file" ref={fileInputRef} accept="image/*" multiple style={{ display: "none" }}
+                    onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) handleUpload(files);
+                        e.target.value = "";
+                    }} />
 
                 <MediaLibraryModal
                     isOpen={showLibrary}
