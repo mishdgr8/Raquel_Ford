@@ -1,7 +1,6 @@
 .grid {
-    display: grid;
-    grid-template-columns: repeat(var(--gallery-cols, 3), 1fr);
-    gap: 0.75rem;
+    column-count: var(--gallery-cols, 3);
+    column-gap: 0.75rem;
     margin: 2rem 0;
 }
 
@@ -9,11 +8,14 @@
     overflow: hidden;
     border-radius: 0.5rem;
     cursor: pointer;
-    aspect-ratio: 1;
     position: relative;
     border: none;
     padding: 0;
+    margin-bottom: 0.75rem;
     background: none;
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
 }
 
 .item img {

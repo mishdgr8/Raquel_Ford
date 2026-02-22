@@ -296,14 +296,15 @@
 
 .galleryImageContainer {
     position: relative;
-    aspect-ratio: 1;
     border-radius: 6px;
     overflow: hidden;
     border: 1px solid #e2e8f0;
 }
 
 .galleryImage {
-    object-fit: cover;
+    width: 100%;
+    height: auto !important;
+    display: block;
 }
 
 /* ─── Image Block ──────────────────────────────────── */

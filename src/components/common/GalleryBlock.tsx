@@ -56,8 +56,10 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                         <Image
                             src={img.url}
                             alt={img.alt || `Gallery image ${i + 1}`}
-                            fill
+                            width={0}
+                            height={0}
                             sizes="(max-width: 768px) 100vw, 33vw"
+                            style={{ width: '100%', height: 'auto', display: 'block' }}
                         />
                     </button>
                 ))}

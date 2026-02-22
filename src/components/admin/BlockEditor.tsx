@@ -204,17 +204,17 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
 
                 {images.length > 0 && (
                     <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: `repeat(${Math.min(columns, 4)}, 1fr)`,
-                        gap: '0.5rem',
+                        columnCount: Math.min(columns, 4),
+                        columnGap: '0.5rem',
                         padding: '0.75rem 1rem',
                     }}>
                         {images.map((img, i) => (
-                            <div key={i} className={styles.galleryImageContainer}>
+                            <div key={i} className={styles.galleryImageContainer} style={{ breakInside: 'avoid', marginBottom: '0.5rem' }}>
                                 <Image
                                     src={img.url}
                                     alt={img.alt || ""}
-                                    fill
+                                    width={0}
+                                    height={0}
                                     className={styles.galleryImage}
                                     sizes="(max-width: 768px) 50vw, 200px"
                                 />
