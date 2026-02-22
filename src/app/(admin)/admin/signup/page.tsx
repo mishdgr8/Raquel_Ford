@@ -31,10 +31,10 @@ export default function AdminSignupPage() {
             const userCredential = await authService.signUp(email, password);
             const user = userCredential.user;
 
-            // Automatically grant admin rights to new signups for now to unblock
+            // Require manual approval from the database for admin rights
             await setDoc(doc(db, "users", user.uid), {
                 email: user.email,
-                isAdmin: true,
+                isAdmin: false,
                 createdAt: serverTimestamp()
             });
 
