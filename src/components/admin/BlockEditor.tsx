@@ -190,10 +190,15 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                             next[replaceIndex] = { url, alt: '' };
                             onUpdate({ ...block.data, images: next });
                             setReplaceIndex(null);
-                        } else {
-                            onUpdate({ ...block.data, images: [...images, { url, alt: '' }] });
                         }
                     }}
+                    onSelectMultiple={(urls) => {
+                        if (replaceIndex === null) {
+                            const newImages = urls.map(url => ({ url, alt: '' }));
+                            onUpdate({ ...block.data, images: [...images, ...newImages] });
+                        }
+                    }}
+                    multiSelect={replaceIndex === null}
                     title={replaceIndex !== null ? "Replace Image" : "Add to Gallery"}
                 />
 

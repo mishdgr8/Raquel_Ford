@@ -12,21 +12,26 @@ import { Input } from "../ui/Input";
 interface MediaLibraryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelect: (url: string) => void;
+    onSelect?: (url: string) => void;
+    onSelectMultiple?: (urls: string[]) => void;
     title?: string;
+    multiSelect?: boolean;
 }
 
-export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Library" }: MediaLibraryModalProps) {
+export function MediaLibraryModal({ isOpen, onClose, onSelect, onSelectMultiple, title = "Media Library", multiSelect = false }: MediaLibraryModalProps) {
     const [media, setMedia] = useState<Media[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
+    const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
             setLoading(true);
+            setSelectedUrl(null);
+            setSelectedUrls([]);
             mediaService.getMedia().then(items => {
                 setMedia(items);
                 setLoading(false);
@@ -43,34 +48,51 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
     );
 
     const handleConfirm = () => {
-        if (selectedUrl) {
+        if (multiSelect && onSelectMultiple) {
+            if (selectedUrls.length > 0) {
+                onSelectMultiple(selectedUrls);
+                onClose();
+            }
+        } else if (onSelect && selectedUrl) {
             onSelect(selectedUrl);
             onClose();
         }
     };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploading(true);
         try {
-            const result = await mediaService.uploadMedia(file, "library");
-            // The result from uploadMedia lacks some Media properties like name/size/extension, causing a type error.
-            // We cast it or construct a temporary object that satisfies the type enough for display in the grid.
-            const newMediaItem: Media = {
-                id: result.id,
-                url: result.url,
-                path: result.path,
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                extension: file.name.split('.').pop() || '',
-                createdAt: new Date().toISOString()
-            };
-            setMedia(prev => [newMediaItem, ...prev]);
-            setSelectedUrl(result.url);
-            // Optionally auto-insert here, but auto-select provides better context
+            const uploadedItems: Media[] = [];
+
+            // Allow multiple uploads if multiSelect is true
+            const filesArray = multiSelect ? Array.from(files) : [files[0]];
+
+            for (const file of filesArray) {
+                const result = await mediaService.uploadMedia(file, "library");
+                const newMediaItem: Media = {
+                    id: result.id,
+                    url: result.url,
+                    path: result.path,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    extension: file.name.split('.').pop() || '',
+                    createdAt: new Date().toISOString()
+                };
+                uploadedItems.push(newMediaItem);
+            }
+
+            setMedia(prev => [...uploadedItems, ...prev]);
+
+            if (multiSelect) {
+                // Auto-select all newly uploaded items
+                setSelectedUrls(prev => [...prev, ...uploadedItems.map(item => item.url)]);
+            } else {
+                setSelectedUrl(uploadedItems[0].url);
+            }
         } catch (err) {
             console.error("Upload failed in modal:", err);
             alert("Upload failed. Please try again.");
@@ -108,6 +130,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
                         type="file"
                         ref={fileInputRef}
                         accept="image/*"
+                        multiple={multiSelect}
                         style={{ display: "none" }}
                         onChange={handleUpload}
                     />
@@ -134,49 +157,70 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, title = "Media Li
                         </div>
                     ) : (
                         <div className={styles.grid}>
-                            {filteredMedia.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className={`${styles.item} ${selectedUrl === item.url ? styles.selected : ""}`}
-                                    onClick={() => setSelectedUrl(item.url)}
-                                    onDoubleClick={() => {
-                                        onSelect(item.url);
-                                        onClose();
-                                    }}
-                                >
-                                    <div className={styles.imageWrapper}>
-                                        <Image
-                                            src={item.url}
-                                            alt={item.altText || item.name}
-                                            fill
-                                            className={styles.image}
-                                            sizes="200px"
-                                        />
-                                        {selectedUrl === item.url && (
-                                            <div className={styles.checkOverlay}>
-                                                <Check size={24} color="white" />
-                                            </div>
-                                        )}
+                            {filteredMedia.map((item) => {
+                                const isSelected = multiSelect
+                                    ? selectedUrls.includes(item.url)
+                                    : selectedUrl === item.url;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className={`${styles.item} ${isSelected ? styles.selected : ""}`}
+                                        onClick={() => {
+                                            if (multiSelect) {
+                                                setSelectedUrls(prev =>
+                                                    prev.includes(item.url)
+                                                        ? prev.filter(u => u !== item.url)
+                                                        : [...prev, item.url]
+                                                );
+                                            } else {
+                                                setSelectedUrl(item.url);
+                                            }
+                                        }}
+                                        onDoubleClick={() => {
+                                            if (!multiSelect && onSelect) {
+                                                onSelect(item.url);
+                                                onClose();
+                                            }
+                                        }}
+                                    >
+                                        <div className={styles.imageWrapper}>
+                                            <Image
+                                                src={item.url}
+                                                alt={item.altText || item.name}
+                                                fill
+                                                className={styles.image}
+                                                sizes="200px"
+                                            />
+                                            {isSelected && (
+                                                <div className={styles.checkOverlay}>
+                                                    <Check size={24} color="white" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <span className={styles.itemName} title={item.name}>{item.name}</span>
                                     </div>
-                                    <span className={styles.itemName} title={item.name}>{item.name}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
 
                 <footer className={styles.footer}>
                     <div className={styles.footerInfo}>
-                        {selectedUrl ? "1 image selected" : "Select an image"}
+                        {multiSelect
+                            ? (selectedUrls.length > 0 ? `${selectedUrls.length} images selected` : "Select images")
+                            : (selectedUrl ? "1 image selected" : "Select an image")
+                        }
                     </div>
                     <div className={styles.footerActions}>
                         <Button variant="outline" onClick={onClose}>Cancel</Button>
                         <Button
                             onClick={handleConfirm}
-                            disabled={!selectedUrl}
+                            disabled={multiSelect ? selectedUrls.length === 0 : !selectedUrl}
                             style={{ backgroundColor: 'black', color: 'white' }}
                         >
-                            Insert Image
+                            {multiSelect ? 'Insert Selected' : 'Insert Image'}
                         </Button>
                     </div>
                 </footer>
