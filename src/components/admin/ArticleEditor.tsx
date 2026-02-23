@@ -82,18 +82,26 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
             const finalExcerpt = form.excerpt?.trim() ? form.excerpt.trim() : generateExcerpt(html);
 
             const dataToSave: any = {
-                title: form.title,
+                title: form.title || "",
                 slug: finalSlug,
-                excerpt: finalExcerpt,
-                categoryId: form.categoryId,
+                excerpt: finalExcerpt || "",
+                categoryId: form.categoryId || "",
                 status: newStatus,
-                featuredImage: form.featuredImage,
+                featuredImage: form.featuredImage || "",
                 isEditorsPick: form.isEditorsPick || false,
-                contentHtml: html,
-                contentJson: form.contentJson,
+                contentHtml: html || "",
+                contentJson: form.contentJson || { blocks: [] },
                 tags: form.tags || [],
                 tagSlugs: (form.tags || []).map(tag => slugify(tag)),
+                headingStyle: form.headingStyle || 'none',
             };
+
+            // Firestore rejects undefined values, so strip them out just in case
+            Object.keys(dataToSave).forEach(key => {
+                if (dataToSave[key] === undefined) {
+                    delete dataToSave[key];
+                }
+            });
 
             if (newStatus === 'published') {
                 // If there's a manual date, use it. Otherwise, if it wasn't published before, set to now.
@@ -111,16 +119,36 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 dataToSave.publishedAt = form.publishedAt;
             }
 
+            // Firestore rejects undefined values completely, even nested ones.
+            // We recursively strip out undefined values to ensure successful saves.
+            const removeUndefined = (obj: any): any => {
+                if (obj === null || obj === undefined) return obj;
+                if (obj instanceof Date) return obj;
+                if (Array.isArray(obj)) return obj.map(removeUndefined);
+                if (typeof obj === 'object') {
+                    const result: any = {};
+                    for (const key in obj) {
+                        if (obj[key] !== undefined) {
+                            result[key] = removeUndefined(obj[key]);
+                        }
+                    }
+                    return result;
+                }
+                return obj;
+            };
+
+            const finalDataToSave = removeUndefined(dataToSave);
+
             setForm(prev => ({ ...prev, status: newStatus }));
 
             const targetId = articleId || initialData?.id || createdId;
 
             if (targetId) {
-                await articleService.updateArticle(targetId, dataToSave);
+                await articleService.updateArticle(targetId, finalDataToSave);
                 setNotification({ type: 'success', message: `Article ${newStatus === 'published' ? 'posted' : 'saved'} successfully` });
                 setTimeout(() => setNotification(null), 3000);
             } else {
-                const id = await articleService.createArticle(dataToSave as Article);
+                const id = await articleService.createArticle(finalDataToSave as Article);
                 setCreatedId(id);
                 router.push(`/admin/articles/edit/${id}`);
             }
