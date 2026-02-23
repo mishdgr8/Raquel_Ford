@@ -3,7 +3,7 @@ import Link from "next/link";
 import { articleService } from "@/lib/services/articles";
 import { categoryService } from "@/lib/services/categories";
 import { notFound } from "next/navigation";
-import { formatDate, estimateReadingTime } from "@/lib/utils";
+import { formatDate, estimateReadingTime, slugify } from "@/lib/utils";
 import { ArticleRenderer } from "@/components/common/ArticleRenderer";
 import styles from "./ArticlePage.module.css";
 import clsx from "clsx";
@@ -118,7 +118,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                                     <div className={styles.topicsWrapper}>
                                         <span className={styles.topicsLabel}>TOPICS:</span>
                                         {article.tags.map(tag => (
-                                            <Link key={tag} href={`/tag/${encodeURIComponent(tag.toLowerCase())}`} className={styles.topicLink}>
+                                            <Link key={tag} href={`/search?q=${encodeURIComponent(tag.toLowerCase())}`} className={styles.topicLink}>
                                                 {tag}
                                             </Link>
                                         ))}

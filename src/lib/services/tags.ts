@@ -23,6 +23,13 @@ export const tagService = {
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Tag));
     },
 
+    async getTagBySlug(slug: string) {
+        const q = query(collection(db, TAGS_COLLECTION), where("slug", "==", slug), limit(1));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) return null;
+        return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Tag;
+    },
+
     async createTag(name: string) {
         const slug = slugify(name);
 

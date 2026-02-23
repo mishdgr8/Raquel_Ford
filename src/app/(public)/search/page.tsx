@@ -33,7 +33,9 @@ function SearchResults() {
                 const lowerQuery = query.toLowerCase();
                 const filtered = allArticles.filter(article =>
                     article.title.toLowerCase().includes(lowerQuery) ||
-                    article.excerpt?.toLowerCase().includes(lowerQuery)
+                    article.excerpt?.toLowerCase().includes(lowerQuery) ||
+                    (article.tags && article.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) ||
+                    (article.tagSlugs && article.tagSlugs.some(slug => slug.toLowerCase().includes(lowerQuery)))
                 );
 
                 // Sort by date (newest first) and keep only unique slugs (first occurrence = newest)

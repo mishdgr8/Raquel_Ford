@@ -56,6 +56,7 @@ export interface Article {
     editorPickOrder?: number;
     headingStyle?: HeadingStyle;
     tags?: string[];
+    tagSlugs?: string[];
     createdAt: any;
     updatedAt: any;
 }

@@ -33,7 +33,7 @@ export const articleService = {
         }
 
         if (tag) {
-            constraints.unshift(where("tags", "array-contains", tag));
+            constraints.unshift(where("tagSlugs", "array-contains", tag));
         }
 
         if (lastDoc) {

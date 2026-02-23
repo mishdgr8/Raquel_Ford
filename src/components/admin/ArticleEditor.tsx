@@ -92,6 +92,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 contentHtml: html,
                 contentJson: form.contentJson,
                 tags: form.tags || [],
+                tagSlugs: (form.tags || []).map(tag => slugify(tag)),
             };
 
             if (newStatus === 'published') {
@@ -444,55 +445,57 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                         </span>
                                     ))}
                                 </div>
-                                <input
-                                    className={styles.tagInput}
-                                    placeholder="Add tag (press Enter or comma)"
-                                    value={tagInput}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setTagInput(val);
-                                        if (val.trim().length >= 2) {
-                                            const filtered = allTags.filter(t =>
-                                                t.name.toLowerCase().includes(val.toLowerCase()) &&
-                                                !(form.tags || []).includes(t.name)
-                                            );
-                                            setFilteredSuggestions(filtered);
-                                        } else {
-                                            setFilteredSuggestions([]);
-                                        }
-                                    }}
-                                    onKeyDown={async (e) => {
-                                        if (e.key === 'Enter' || e.key === ',') {
-                                            e.preventDefault();
-                                            const tag = tagInput.trim().replace(/,$/, '');
-                                            if (tag && !(form.tags || []).includes(tag)) {
-                                                setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
-                                                setTagInput("");
+                                <div className={styles.inputContainer}>
+                                    <input
+                                        className={styles.tagInput}
+                                        placeholder="Add tag (press Enter or comma)"
+                                        value={tagInput}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setTagInput(val);
+                                            if (val.trim().length >= 2) {
+                                                const filtered = allTags.filter(t =>
+                                                    t.name.toLowerCase().includes(val.toLowerCase()) &&
+                                                    !(form.tags || []).includes(t.name)
+                                                );
+                                                setFilteredSuggestions(filtered);
+                                            } else {
                                                 setFilteredSuggestions([]);
-                                                // Also add to global tags if it doesn't exist
-                                                await tagService.createTag(tag);
-                                                tagService.getTags().then(setAllTags);
                                             }
-                                        }
-                                    }}
-                                />
-                                {filteredSuggestions.length > 0 && (
-                                    <div className={styles.tagSuggestions}>
-                                        {filteredSuggestions.map(tag => (
-                                            <button
-                                                key={tag.id}
-                                                className={styles.suggestionItem}
-                                                onClick={async () => {
-                                                    setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag.name] }));
+                                        }}
+                                        onKeyDown={async (e) => {
+                                            if (e.key === 'Enter' || e.key === ',') {
+                                                e.preventDefault();
+                                                const tag = tagInput.trim().replace(/,$/, '');
+                                                if (tag && !(form.tags || []).includes(tag)) {
+                                                    setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
                                                     setTagInput("");
                                                     setFilteredSuggestions([]);
-                                                }}
-                                            >
-                                                {tag.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                                                    // Also add to global tags if it doesn't exist
+                                                    await tagService.createTag(tag);
+                                                    tagService.getTags().then(setAllTags);
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    {filteredSuggestions.length > 0 && (
+                                        <div className={styles.tagSuggestions}>
+                                            {filteredSuggestions.map(tag => (
+                                                <button
+                                                    key={tag.id}
+                                                    className={styles.suggestionItem}
+                                                    onClick={async () => {
+                                                        setForm(prev => ({ ...prev, tags: [...(prev.tags || []), tag.name] }));
+                                                        setTagInput("");
+                                                        setFilteredSuggestions([]);
+                                                    }}
+                                                >
+                                                    {tag.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                                 <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' }}>
                                     Tags help categorize your content and improve SEO ranking.
                                 </p>
