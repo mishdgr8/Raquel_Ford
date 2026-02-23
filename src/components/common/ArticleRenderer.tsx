@@ -156,17 +156,39 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
     // Render HTML directly if it exists and is not just an empty paragraph, splitting out Twitter and Gallery embeds
     const isHtmlMeaningful = html && html.trim() !== '' && html.trim() !== '<p></p>';
     if (isHtmlMeaningful) {
-        // Helper to extract attributes from a tag string
+        // Helper to extract attributes from a tag string accurately
         const getAttr = (tagStr: string, attrName: string) => {
-            const regex = new RegExp(`${attrName}=["']([^"']*)["']`, 'i');
+            // Match the attribute name, then either " or ' as the delimiter, then capturing until the same delimiter
+            const regex = new RegExp(`${attrName}=(['"])([\\s\\S]*?)\\1`, 'i');
             const match = tagStr.match(regex);
-            return match ? match[1] : null;
+            return match ? match[2] : null;
         };
 
-        // Regexes for our custom components
+        // Helper to decode HTML entities
+        const decodeHtmlEntities = (text: string) => {
+            if (!text) return '';
+            // Simple replace for common ones, plus a more robust way if window is available
+            const basicDecoded = text
+                .replace(/&quot;/g, '"')
+                .replace(/&apos;/g, "'")
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>');
+
+            if (typeof window === 'undefined') return basicDecoded;
+
+            try {
+                const doc = new DOMParser().parseFromString(text, 'text/html');
+                return doc.documentElement.textContent || basicDecoded;
+            } catch (e) {
+                return basicDecoded;
+            }
+        };
+
+        // Regexes for our custom components - improved to handle self-closing tags
         const twitterRegex = /<blockquote[^>]*class=["'][^"']*twitter-tweet[^"']*["'][^>]*>[\s\S]*?href=["']https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^"']*["'][\s\S]*?<\/blockquote>|<p>\s*(?:<a[^>]*href=["'])?https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^<"']*(?:["'][^>]*>.*?<\/a>)?\s*<\/p>/gi;
-        const galleryRegex = /<tiptap-gallery[^>]*>[\s\S]*?<\/tiptap-gallery>/gi;
-        const embedRegex = /<tiptap-embed[^>]*>[\s\S]*?<\/tiptap-embed>/gi;
+        const galleryRegex = /<tiptap-gallery[^>]*?(?:\/>|>[\s\S]*?<\/tiptap-gallery>)/gi;
+        const embedRegex = /<tiptap-embed[^>]*?(?:\/>|>[\s\S]*?<\/tiptap-embed>)/gi;
 
         // Splitting strategy: Find all occurrences and sort them by index
         const matches: { index: number; length: number; content: React.ReactNode; type: string }[] = [];
@@ -200,7 +222,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
 
             if (imagesAttr) {
                 try {
-                    const decodedImagesString = imagesAttr.replace(/&quot;/g, '"');
+                    const decodedImagesString = decodeHtmlEntities(imagesAttr);
                     const images = JSON.parse(decodedImagesString);
                     const columns = columnsAttr ? parseInt(columnsAttr, 10) : 3;
 
@@ -215,7 +237,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                         )
                     });
                 } catch (e) {
-                    console.error("Failed to parse gallery images", e);
+                    console.error("ArticleRenderer: Failed to parse gallery images", e, { imagesAttr });
                 }
             }
         }
