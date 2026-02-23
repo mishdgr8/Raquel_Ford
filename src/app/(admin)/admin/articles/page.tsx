@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { articleService } from "@/lib/services/articles";
 import { Article, ArticleStatus } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
@@ -12,18 +13,55 @@ import { formatDate } from "@/lib/utils";
 
 type FilterStatus = 'all' | ArticleStatus;
 
-export default function ArticleListPage() {
+function ArticleListContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Initialize state from URL params if available
+    const initialPage = parseInt(searchParams.get('page') || '1', 10);
+    const initialFilter = (searchParams.get('filter') as FilterStatus) || 'all';
+
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<FilterStatus>('all');
+    const [filter, setFilter] = useState<FilterStatus>(initialFilter);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [bulkAction, setBulkAction] = useState<string>('');
     const [showConfirm, setShowConfirm] = useState(false);
     const [pendingAction, setPendingAction] = useState<{ action: string; ids: string[] } | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(initialPage);
 
+    // Sync state changes back to URL
     useEffect(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (currentPage !== 1) {
+            params.set('page', currentPage.toString());
+        } else {
+            params.delete('page');
+        }
+
+        if (filter !== 'all') {
+            params.set('filter', filter);
+        } else {
+            params.delete('filter');
+        }
+
+        const newUrl = `?${params.toString()}`;
+        // Push state without jumping to the top of the page
+        router.replace(newUrl, { scroll: false });
+    }, [currentPage, filter, router, searchParams]);
+
+    const isFirstRender = useRef(true);
+
+    // Reset pagination to 1 when search or filter changes
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        // We only want to trigger this IF the filter or query was changed directly 
+        // by the user AFTER initial load.
         setCurrentPage(1);
     }, [filter, searchQuery]);
 
@@ -396,5 +434,13 @@ export default function ArticleListPage() {
                 </div>
             </Modal>
         </div>
+    );
+}
+
+export default function ArticleListPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: '2rem' }}>Loading articles...</div>}>
+            <ArticleListContent />
+        </Suspense>
     );
 }
