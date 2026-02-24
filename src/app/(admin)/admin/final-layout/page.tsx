@@ -29,7 +29,7 @@ export default function FinalUpdatePage() {
                     await updateDoc(doc(db, "blocks", blockDoc.id), {
                         configJson: {
                             ...data.configJson,
-                            buttonText: "CONTACT ME",
+                            buttonText: "CONTACT US",
                             buttonLink: "mailto:momentswithraquel@gmail.com"
                         }
                     });
