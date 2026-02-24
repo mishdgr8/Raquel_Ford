@@ -66,9 +66,12 @@ export const revalidate = 60;
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
 
+    // In Next.js App Router, dynamic params are not always automatically decoded
+    const decodedSlug = decodeURIComponent(slug);
+
     // Fetch both article and categories to resolve names
     const [article, allCategories] = await Promise.all([
-        articleService.getArticleBySlug(slug),
+        articleService.getArticleBySlug(decodedSlug),
         categoryService.getCategories()
     ]);
 

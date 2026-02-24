@@ -75,8 +75,9 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 return '';
             }).join('\n');
 
-            // Ensure slug is never empty
-            const finalSlug = form.slug || slugify(form.title || 'untitled');
+            // Ensure slug is never empty and always strictly formatted
+            const rawSlug = form.slug?.trim() || form.title || 'untitled';
+            const finalSlug = slugify(rawSlug);
             setForm(prev => ({ ...prev, slug: finalSlug }));
 
             const finalExcerpt = form.excerpt?.trim() ? form.excerpt.trim() : generateExcerpt(html);
