@@ -38,7 +38,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                 }
             ],
             type: "article",
-            publishedTime: article.publishedAt ? new Date(article.publishedAt as any).toISOString() : undefined,
+            publishedTime: (() => {
+                if (!article.publishedAt) return undefined;
+                try {
+                    // Check if it's a Firestore Timestamp object
+                    if (typeof article.publishedAt === 'object' && 'seconds' in article.publishedAt) {
+                        return new Date(article.publishedAt.seconds * 1000).toISOString();
+                    }
+                    // Otherwise try standard parsing
+                    return new Date(article.publishedAt as any).toISOString();
+                } catch (e) {
+                    return undefined;
+                }
+            })(),
         },
         twitter: {
             card: "summary_large_image",

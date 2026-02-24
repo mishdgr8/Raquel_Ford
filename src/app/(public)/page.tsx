@@ -23,7 +23,16 @@ export default async function HomePage() {
             const indexA = targetNames.indexOf(a.name.toLowerCase());
             const indexB = targetNames.indexOf(b.name.toLowerCase());
             return indexA - indexB;
-        });
+        })
+        .map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            slug: cat.slug,
+            description: cat.description || undefined,
+            image: cat.image || undefined,
+            order: cat.order,
+            isMain: cat.isMain || false
+        }));
 
     if (!template || !template.blocks || template.blocks.length === 0) {
         return (
