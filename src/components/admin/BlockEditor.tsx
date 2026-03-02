@@ -560,7 +560,6 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
                 undoRedo: {
                     depth: 100,
                     newGroupDelay: 1000, // Group changes more aggressively
-                    keymap: false, // Let global listener handle Ctrl+Z
                 },
                 heading: { levels: [1, 2, 3, 4, 5] }
             }),
