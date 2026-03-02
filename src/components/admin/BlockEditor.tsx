@@ -557,7 +557,7 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
         immediatelyRender: false,
         extensions: [
             StarterKit.configure({
-                history: {
+                undoRedo: {
                     depth: 100,
                     newGroupDelay: 1000, // Group changes more aggressively
                     keymap: false, // Let global listener handle Ctrl+Z
