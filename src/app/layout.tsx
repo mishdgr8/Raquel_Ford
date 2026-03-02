@@ -19,6 +19,7 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://raquelford.com"),
   title: "Raquel Ford: Beauty, Entertainment, Fashion, Lifestyle and More..",
   description: "Browse the latest in lifestyle, fashion, beauty, and more on Raquel Ford.",
   openGraph: {

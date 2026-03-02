@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ContentBlock } from "@/lib/types";
 import Image from "next/image";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -16,8 +16,9 @@ import {
     List, ListOrdered, Quote,
     Link as LinkIcon,
     AlignLeft, AlignCenter, AlignRight,
-    GripVertical, Trash2, Plus, ArrowUp, ArrowDown,
-    Type, Image as ImageIcon, Minus as DividerIcon, Upload, Video, Images, X, Columns
+    GripVertical, Trash2, Plus, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+    Type, Image as ImageIcon, Minus as DividerIcon, Upload, Video, Images, X, Columns,
+    Undo2, Redo2
 } from "lucide-react";
 import styles from "./BlockEditor.module.css";
 import { mediaService } from "@/lib/services/media";
@@ -229,13 +230,12 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                 />
 
                 {images.length > 0 && (
-                    <div style={{
-                        columnCount: Math.min(columns, 4),
-                        columnGap: '0.5rem',
-                        padding: '0.75rem 1rem',
-                    }}>
+                    <div
+                        className={styles.galleryGrid}
+                        style={{ '--columns': Math.min(columns, 4) } as any}
+                    >
                         {images.map((img, i) => (
-                            <div key={i} className={styles.galleryImageContainer} style={{ breakInside: 'avoid', marginBottom: '0.5rem' }}>
+                            <div key={img.url || i} className={styles.galleryImageContainer}>
                                 <Image
                                     src={img.url}
                                     alt={img.alt || ""}
@@ -252,26 +252,20 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                                     {i > 0 && (
                                         <button
                                             onClick={() => moveImage(i, i - 1)}
-                                            style={{
-                                                width: '22px', height: '22px', borderRadius: '50%',
-                                                background: 'rgba(0,0,0,0.6)', color: 'white',
-                                                border: 'none', cursor: 'pointer', fontSize: '0.7rem',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            }}
+                                            className={styles.galleryReorderBtn}
                                             title="Move left"
-                                        >←</button>
+                                        >
+                                            <ArrowLeft size={14} />
+                                        </button>
                                     )}
                                     {i < images.length - 1 && (
                                         <button
                                             onClick={() => moveImage(i, i + 1)}
-                                            style={{
-                                                width: '22px', height: '22px', borderRadius: '50%',
-                                                background: 'rgba(0,0,0,0.6)', color: 'white',
-                                                border: 'none', cursor: 'pointer', fontSize: '0.7rem',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            }}
+                                            className={styles.galleryReorderBtn}
                                             title="Move right"
-                                        >→</button>
+                                        >
+                                            <ArrowRight size={14} />
+                                        </button>
                                     )}
                                     <div style={{ position: 'relative', display: 'flex' }}
                                         onMouseEnter={(e) => {
@@ -381,7 +375,9 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
 // ─── Types ──────────────────────────────────────────
 interface BlockEditorProps {
     blocks: ContentBlock[];
-    onChange: (blocks: ContentBlock[]) => void;
+    onChange: (blocks: ContentBlock[], forceHistory?: boolean) => void;
+    onUndo?: () => void;
+    onRedo?: () => void;
 }
 
 // ─── Embed Block Editor ─────────────────────────────
@@ -543,20 +539,31 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
 }
 
 // ─── Single Block Editor ────────────────────────────
-function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, onConvertToEmbed }: {
+function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast, onConvertToEmbed, onUndo, onRedo }: {
     block: ContentBlock;
-    onUpdate: (data: any) => void;
+    onUpdate: (data: any, forceHistory?: boolean) => void;
     onDelete: () => void;
     onMoveUp: () => void;
     onMoveDown: () => void;
     isFirst: boolean;
     isLast: boolean;
     onConvertToEmbed: (url: string) => void;
+    onUndo?: () => void;
+    onRedo?: () => void;
 }) {
+    const lastForcedText = useRef<string>(block.data.text || "");
+
     const editor = useEditor({
         immediatelyRender: false,
         extensions: [
-            StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5] } }),
+            StarterKit.configure({
+                history: {
+                    depth: 100,
+                    newGroupDelay: 1000, // Group changes more aggressively
+                    keymap: false, // Let global listener handle Ctrl+Z
+                },
+                heading: { levels: [1, 2, 3, 4, 5] }
+            }),
             Underline,
             TextAlign.configure({ types: ["heading", "paragraph"] }),
             LinkExt.configure({ openOnClick: false }),
@@ -565,15 +572,57 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
         ],
         content: block.data.text || block.data.html || "",
         onUpdate: ({ editor }) => {
-            // Check if the entire content is just an embed URL
-            const text = editor.getText().trim();
-            if (text && isEmbedUrl(text) && editor.getText().length === text.length) {
-                // Auto-convert: replace this text block with an embed block
-                onConvertToEmbed(text);
+            const text = editor.getText();
+            const trimmed = text.trim();
+            const html = editor.getHTML();
+
+            // Check for embeds
+            if (trimmed && isEmbedUrl(trimmed) && text.length === trimmed.length) {
+                onConvertToEmbed(trimmed);
                 return;
             }
-            onUpdate({ ...block.data, text: editor.getHTML() });
+
+            // Word-at-a-time logic: Detect spaces or punctuation
+            const lastChar = text[text.length - 1];
+            const isWordBoundary = [' ', '.', '!', '?', ',', ';', ':', '(', ')', '\n', '\t'].includes(lastChar);
+
+            // Only force history if we've actually added content since last save
+            let force = false;
+            // Check for sentence/paragraph endings: . followed by space, or just enter
+            const isSentenceEnd = lastChar === '.' || lastChar === '!' || lastChar === '?' || lastChar === '\n';
+
+            if ((isWordBoundary || isSentenceEnd) && html !== lastForcedText.current) {
+                // Check if we gained at least one non-space character
+                const currentPlain = text.trim();
+                const lastPlain = lastForcedText.current.replace(/<[^>]*>/g, '').trim();
+                if (currentPlain.length > lastPlain.length) {
+                    force = true;
+                    lastForcedText.current = html;
+                }
+            }
+
+            onUpdate({ ...block.data, text: html }, force);
         },
+        editorProps: {
+            handleKeyDown: (view, event) => {
+                // Explicitly intercept Mod-Z/Y before Tiptap or Browser handles them
+                if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+                    event.preventDefault();
+                    if (event.shiftKey) {
+                        onRedo?.();
+                    } else {
+                        onUndo?.();
+                    }
+                    return true;
+                }
+                if ((event.metaKey || event.ctrlKey) && event.key === 'y') {
+                    event.preventDefault();
+                    onRedo?.();
+                    return true;
+                }
+                return false;
+            }
+        }
     });
 
     const addLink = useCallback(() => {
@@ -583,6 +632,17 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
         if (url === "") { editor.chain().focus().unsetLink().run(); return; }
         editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
     }, [editor]);
+
+    // Sync content from parent (important for undo/redo)
+    useEffect(() => {
+        if (!editor) return;
+        const incomingContent = block.data.text || block.data.html || "";
+        if (incomingContent !== editor.getHTML()) {
+            editor.commands.setContent(incomingContent, { emitUpdate: false });
+            // Crucial: Update our tracking ref so the next space triggers properly
+            lastForcedText.current = incomingContent;
+        }
+    }, [editor, block.data.text, block.data.html]);
 
     if (!editor) return null;
 
@@ -602,6 +662,11 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
             <div className={styles.blockBody}>
                 {/* Per-block toolbar */}
                 <div className={styles.blockToolbar}>
+                    <div className={styles.toolbarSection}>
+                        <button type="button" onClick={onUndo} disabled={!onUndo} className={!onUndo ? styles.toolbarDisabled : ""} title="Undo (Cmd+Z)"><Undo2 size={15} /></button>
+                        <button type="button" onClick={onRedo} disabled={!onRedo} className={!onRedo ? styles.toolbarDisabled : ""} title="Redo (Cmd+Y)"><Redo2 size={15} /></button>
+                    </div>
+                    <span className={styles.toolbarDivider} />
                     <div className={styles.toolbarSection}>
                         <button type="button" onClick={() => editor.chain().focus().setParagraph().run()} className={editor.isActive("paragraph") ? styles.active : ""} title="Normal text"><Pilcrow size={15} /></button>
                         <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive("heading", { level: 1 }) ? styles.active : ""} title="Heading 1"><Heading1 size={15} /></button>
@@ -839,7 +904,7 @@ function BlockInserter({ onAdd }: { onAdd: (type: ContentBlock['type']) => void 
 }
 
 // ─── Main Block Editor ──────────────────────────────
-export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
+export function BlockEditor({ blocks, onChange, onUndo, onRedo }: BlockEditorProps) {
     const genId = () => Math.random().toString(36).substr(2, 9);
 
     const addBlock = (type: ContentBlock['type'], afterIndex?: number) => {
@@ -858,8 +923,8 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
         onChange(next);
     };
 
-    const updateBlock = (id: string, data: any) => {
-        onChange(blocks.map(b => b.id === id ? { ...b, data } : b));
+    const updateBlock = (id: string, data: any, forceHistory = false) => {
+        onChange(blocks.map(b => b.id === id ? { ...b, data } : b), forceHistory);
     };
 
     const removeBlock = (id: string) => {
@@ -899,13 +964,15 @@ export function BlockEditor({ blocks, onChange }: BlockEditorProps) {
                     {block.type === 'text' && (
                         <TextBlockEditor
                             block={block}
-                            onUpdate={(data) => updateBlock(block.id, data)}
+                            onUpdate={(data, forceHistory) => updateBlock(block.id, data, forceHistory)}
                             onDelete={() => removeBlock(block.id)}
                             onMoveUp={() => moveBlock(index, -1)}
                             onMoveDown={() => moveBlock(index, 1)}
                             isFirst={index === 0}
                             isLast={index === blocks.length - 1}
                             onConvertToEmbed={(url) => convertToEmbed(block.id, url)}
+                            onUndo={onUndo}
+                            onRedo={onRedo}
                         />
                     )}
                     {block.type === 'image' && (

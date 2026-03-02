@@ -33,22 +33,21 @@ function ArticleListContent() {
 
     // Sync state changes back to URL
     useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams();
         if (currentPage !== 1) {
             params.set('page', currentPage.toString());
-        } else {
-            params.delete('page');
         }
-
         if (filter !== 'all') {
             params.set('filter', filter);
-        } else {
-            params.delete('filter');
         }
 
-        const newUrl = `?${params.toString()}`;
-        // Push state without jumping to the top of the page
-        router.replace(newUrl, { scroll: false });
+        const currentParams = searchParams.toString();
+        const nextParams = params.toString();
+
+        if (currentParams !== nextParams) {
+            const newUrl = nextParams ? `?${nextParams}` : window.location.pathname;
+            router.replace(newUrl, { scroll: false });
+        }
     }, [currentPage, filter, router, searchParams]);
 
     const isFirstRender = useRef(true);

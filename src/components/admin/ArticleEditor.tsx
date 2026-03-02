@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Article, Category, Tag, ArticleStatus, ContentBlock } from "@/lib/types";
 import { articleService } from "@/lib/services/articles";
 import { categoryService } from "@/lib/services/categories";
@@ -12,7 +12,7 @@ import { Input } from "../ui/Input";
 import Image from "next/image";
 import styles from "./ArticleEditor.module.css";
 import { slugify, generateExcerpt } from "@/lib/utils";
-import { Save, ChevronLeft, Eye, Edit3, Upload, X, Images } from "lucide-react";
+import { Save, ChevronLeft, Eye, Edit3, Upload, X, Images, Undo2, Redo2 } from "lucide-react";
 import { BlockEditor } from "./BlockEditor";
 import { ArticleRenderer } from "../common/ArticleRenderer";
 import { clsx } from "clsx";
@@ -45,8 +45,117 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
         ...initialData
     });
 
+    // Reference to form for synchronous access in history logic
+    const formRef = useRef(form);
+    useEffect(() => { formRef.current = form; }, [form]);
+
     const [tagInput, setTagInput] = useState("");
     const [filteredSuggestions, setFilteredSuggestions] = useState<Tag[]>([]);
+
+    // --- History / Undo Redo ---
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
+    const historyRef = useRef<string[]>([]);
+    const redoRef = useRef<string[]>([]);
+    const isUndoingRedoing = useRef(false);
+    const lastSavedState = useRef<string>("");
+
+    // Initialize history
+    useEffect(() => {
+        const initialJson = JSON.stringify(form);
+        historyRef.current = [initialJson];
+        lastSavedState.current = initialJson;
+    }, []);
+
+    const recordHistory = useCallback((state: Partial<Article>, immediate = false) => {
+        if (isUndoingRedoing.current) return;
+
+        const currentJson = JSON.stringify(state);
+        if (currentJson === lastSavedState.current) return;
+
+        historyRef.current.push(currentJson);
+        redoRef.current = [];
+        lastSavedState.current = currentJson;
+
+        if (historyRef.current.length > 50) historyRef.current.shift();
+
+        setCanUndo(historyRef.current.length > 1);
+        setCanRedo(false);
+    }, []);
+
+    const undo = useCallback(() => {
+        // First, check if there's a pending change that hasn't been recorded (like active typing)
+        // Use formRef for absolute latest state to avoid race conditions with React state async updates
+        const currentJson = JSON.stringify(formRef.current);
+        if (currentJson !== lastSavedState.current) {
+            recordHistory(formRef.current, true);
+        }
+
+        if (historyRef.current.length <= 1) return;
+
+        isUndoingRedoing.current = true;
+        const current = historyRef.current.pop()!;
+        redoRef.current.push(current);
+
+        const previousJson = historyRef.current[historyRef.current.length - 1];
+        const previous = JSON.parse(previousJson);
+
+        setForm(previous);
+        lastSavedState.current = previousJson;
+
+        setCanUndo(historyRef.current.length > 1);
+        setCanRedo(true);
+
+        // Reset the flag after state update has propagated
+        setTimeout(() => { isUndoingRedoing.current = false; }, 100);
+    }, [recordHistory]);
+
+    const redo = useCallback(() => {
+        if (redoRef.current.length === 0) return;
+
+        isUndoingRedoing.current = true;
+        const nextJson = redoRef.current.pop()!;
+        historyRef.current.push(nextJson);
+
+        const next = JSON.parse(nextJson);
+        setForm(next);
+        lastSavedState.current = nextJson;
+
+        setCanUndo(true);
+        setCanRedo(redoRef.current.length > 0);
+
+        setTimeout(() => { isUndoingRedoing.current = false; }, 100);
+    }, []);
+
+    // Listen for keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    redo();
+                } else {
+                    e.preventDefault();
+                    undo();
+                }
+            } else if ((e.metaKey || e.ctrlKey) && e.key === 'y') {
+                e.preventDefault();
+                redo();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [undo, redo]);
+
+    // Update history when form changes (debounced for text)
+    useEffect(() => {
+        // Only auto-save metadata changes or very long typing sessions
+        const timer = setTimeout(() => {
+            recordHistory(form);
+        }, 8000); // 8 second idle before auto-saving a step (let word-boundary-force handle text)
+        return () => clearTimeout(timer);
+    }, [form, recordHistory]);
 
     useEffect(() => {
         categoryService.getCategories().then(setCategories);
@@ -304,10 +413,30 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
                         {/* Gutenberg-style Block Editor */}
                         <section className={styles.editorSection}>
+                            <div className={styles.editorHeader}>
+                                <h2 className={styles.editorTitle}>Content</h2>
+                                <div className={styles.historyGroup}>
+                                    <button
+                                        className={styles.historyBtn}
+                                        onClick={undo}
+                                        disabled={!canUndo}
+                                        title="Undo (Ctrl+Z)"
+                                    >
+                                        <Undo2 size={18} />
+                                    </button>
+                                    <button
+                                        className={styles.historyBtn}
+                                        onClick={redo}
+                                        disabled={!canRedo}
+                                        title="Redo (Ctrl+Y)"
+                                    >
+                                        <Redo2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
                             <BlockEditor
                                 blocks={form.contentJson?.blocks || []}
-                                onChange={(blocks: ContentBlock[]) => {
-                                    // Generate preview HTML whenever blocks change
+                                onChange={(blocks, force) => {
                                     const previewHtml = blocks.map(b => {
                                         if (b.type === 'text') return b.data.html || b.data.text || '';
                                         if (b.type === 'image' && b.data.url) return `<figure><img src="${b.data.url}" alt="${b.data.caption || ''}" />${b.data.caption ? `<figcaption>${b.data.caption}</figcaption>` : ''}</figure>`;
@@ -322,12 +451,26 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                         return '';
                                     }).join('\n');
 
-                                    setForm(prev => ({
-                                        ...prev,
-                                        contentJson: { blocks },
-                                        contentHtml: previewHtml
-                                    }));
+                                    setForm(prev => {
+                                        const next = {
+                                            ...prev,
+                                            contentJson: { blocks },
+                                            contentHtml: previewHtml
+                                        };
+
+                                        const prevBlocks = prev.contentJson?.blocks || [];
+                                        const isStructural = prevBlocks.length !== blocks.length ||
+                                            prevBlocks.some((b, i) => b.id !== blocks[i]?.id);
+
+                                        if (isStructural || force) {
+                                            recordHistory(next, true);
+                                        }
+
+                                        return next;
+                                    });
                                 }}
+                                onUndo={canUndo ? undo : undefined}
+                                onRedo={canRedo ? redo : undefined}
                             />
                         </section>
                     </div>
