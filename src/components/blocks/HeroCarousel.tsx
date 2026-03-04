@@ -20,12 +20,12 @@ interface HeroCarouselProps {
 }
 
 const HERO_IMAGES: Record<string, string> = {
-    'beauty': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771432494672_Screenshot%202026-02-18%20at%2017.12.07.jpg?alt=media&token=ab35822e-a7a7-4131-8db3-898cf8109c25',
-    'fashion': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771422242914_fashion.png?alt=media&token=98e8a617-d7b9-41de-be33-7665bcdbd12d',
-    'food': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420467268_food.png?alt=media&token=1f8d4cee-82a9-40a0-b5fd-f24a7baa238a',
-    'living': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771420421988_living.jpg?alt=media&token=3425673a-2bb9-4842-8b1e-9356f301f8a4',
-    'entertainment': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771345483671_Zendaya_entertainment.jpg?alt=media&token=18abe3a5-4d7a-4bfd-89ed-857630645a22',
-    'events': 'https://firebasestorage.googleapis.com/v0/b/raquel-ford-blog-cms.firebasestorage.app/o/uploads%2F1771423579552_Screenshot%202026-02-18%20at%2015.03.34.jpg?alt=media&token=52486cc4-2e58-4337-8a6b-50b570a90ae5'
+    'beauty': '/images/hero/beauty.jpg',
+    'fashion': '/images/hero/fashion.png',
+    'food': '/images/hero/food.png',
+    'living': '/images/hero/living.jpg',
+    'entertainment': '/images/hero/entertainment.jpg',
+    'events': '/images/hero/events.jpg'
 };
 
 export function HeroCarousel({ config, initialCategories }: HeroCarouselProps) {
