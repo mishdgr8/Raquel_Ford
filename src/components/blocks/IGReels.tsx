@@ -19,13 +19,11 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
     const [loading, setLoading] = useState(!initialFeeds || initialFeeds.length === 0);
 
     useEffect(() => {
-        // If initial data is provided, don't fetch on mount
         if (initialFeeds && initialFeeds.length > 0) {
             setLoading(false);
             return;
         }
 
-        // If manual URLs are provided in config, don't fetch from API
         if (config.reelUrls && config.reelUrls.length > 0) {
             setLoading(false);
             return;
@@ -47,7 +45,6 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
             </div>
             <div className={styles.reelScroll}>
                 {loading ? (
-                    // Skeleton Loaders
                     [1, 2, 3, 4, 5, 6].map((i) => (
                         <div key={i} className={styles.reelPlaceholder}>
                             <div className={styles.skeleton} />
@@ -65,6 +62,7 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
                                     allowTransparency={true}
                                     allow="autoplay"
                                     title={`Instagram Reel ${i + 1}`}
+                                    loading="lazy" /* CRITICAL for performance */
                                 />
                             </div>
                         </div>
@@ -86,6 +84,8 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
                                     className={styles.reelVideo}
                                     muted
                                     loop
+                                    playsInline /* Better for mobile */
+                                    loading="lazy"
                                     onMouseOver={(e) => e.currentTarget.play()}
                                     onMouseOut={(e) => e.currentTarget.pause()}
                                 />
@@ -94,6 +94,7 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
                                     src={feed.media_url}
                                     alt={feed.caption || "Instagram post"}
                                     fill
+                                    loading="lazy" /* Below-the-fold content */
                                     sizes="(max-width: 768px) 50vw, 16vw"
                                     className={styles.reelImage}
                                 />
@@ -101,11 +102,8 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
                         </a>
                     ))
                 ) : (
-                    // Fallback if no config and no API success
                     [1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className={styles.reelPlaceholder}>
-                            {/* Empty placeholders look cleaner than text fallback */}
-                        </div>
+                        <div key={i} className={styles.reelPlaceholder} />
                     ))
                 )}
             </div>

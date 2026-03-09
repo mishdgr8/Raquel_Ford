@@ -1,24 +1,25 @@
 export default function cloudinaryLoader({ src, width, quality }) {
-    // f_auto: Fetch the most optimal format (webp/avif)
-    // q_auto: Aggressively optimize quality based on the image content
-    // c_fill: Ensure the image fills the requested width (better for LCP than c_limit)
-    // dpr_auto: Adjust for high-density mobile screens
+    // Aggressive mobile optimization
+    // q_auto:eco - Use the most efficient compression possible
+    // f_auto - Automatically choose best format (WebP/AVIF)
+    // c_fill - Crop to fit the exact width
+    // dpr_1.0 - Force 1x pixel density for mobile scores (Retina 3x images are the LCP killer)
+
+    // We only use higher quality/DPR for very large (desktop) widths
+    const isSmall = width < 800;
+
     const params = [
         'f_auto',
-        'q_auto',
+        isSmall ? 'q_auto:eco' : 'q_auto',
         `w_${width}`,
         'c_fill',
-        'dpr_auto'
+        isSmall ? 'dpr_1.0' : 'dpr_auto'
     ];
 
-    // Fallback for non-cloudinary environments (development)
     const fallbackSrc = src.includes('?') ? `${src}&w=${width}` : `${src}?w=${width}`;
-
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dowyjfruh';
 
-    if (!cloudName) {
-        return fallbackSrc;
-    }
+    if (!cloudName) return fallbackSrc;
 
     let sourceUrl = src;
     if (src.startsWith('/')) {
@@ -27,14 +28,10 @@ export default function cloudinaryLoader({ src, width, quality }) {
         }
 
         let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        if (siteUrl) {
-            if (siteUrl.endsWith('/')) {
-                siteUrl = siteUrl.slice(0, -1);
-            }
-            sourceUrl = `${siteUrl}${src}`;
-        } else {
-            return fallbackSrc;
+        if (siteUrl && siteUrl.endsWith('/')) {
+            siteUrl = siteUrl.slice(0, -1);
         }
+        sourceUrl = siteUrl ? `${siteUrl}${src}` : src;
     }
 
     const encodedSourceUrl = encodeURIComponent(sourceUrl);
