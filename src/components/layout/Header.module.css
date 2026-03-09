@@ -102,6 +102,11 @@
        Key change is in searchInput below. */
 }
 
+.searchInput::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.8;
+}
+
 .searchInput {
     width: 0;
     opacity: 0;
@@ -109,13 +114,11 @@
     border-bottom: 1px solid var(--foreground);
     background: transparent;
     padding: 0;
-    /* padding 0 when closed to avoid jump */
     font-family: var(--font-sans);
     font-size: 0.875rem;
     color: var(--foreground);
     outline: none;
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    /* Removed absolute positioning so it pushes content smoothly */
     margin-right: 0;
 }
 
@@ -188,6 +191,11 @@
     padding-bottom: 0.5rem;
 }
 
+.mobileSearchInput::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.9;
+}
+
 .mobileSearchInput {
     flex: 1;
     border: none;
@@ -196,7 +204,8 @@
     font-size: 1rem;
     color: var(--foreground);
     outline: none;
-    padding: 0.5rem 0;
+    padding: 1rem 0;
+    /* More vertical padding for better touch area */
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }

@@ -5,17 +5,20 @@ import "@/app/globals.css";
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: 'swap', // Prevents block-wait for fonts, improving FCP/LCP
 });
 
 const playfair = Playfair_Display({
   variable: "--font-serif",
   subsets: ["latin"],
+  display: 'swap',
 });
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-vogue",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -29,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "Raquel Ford",
     images: [
       {
-        url: "/og-image.png", // Using the new RF logo for sharing
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "Raquel Ford",

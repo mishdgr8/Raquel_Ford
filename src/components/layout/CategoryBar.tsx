@@ -24,30 +24,24 @@ export function CategoryBar({ categories }: CategoryBarProps) {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Strictly ordered main categories as requested
     const targetOrder = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
 
     const allMainCategories = targetOrder
         .map(name => categories.find(cat => cat.name.toLowerCase() === name))
         .filter((cat): cat is Category => cat !== undefined);
 
-    // Determine how many to show based on device
     const visibleCount = isMobile ? 3 : 6;
     const visibleCategories = allMainCategories.slice(0, visibleCount);
-
-    // Categories that are "main" but hidden on mobile go to dropdown
     const hiddenMainCategories = allMainCategories.slice(visibleCount);
 
-    // Any other categories go to secondary
     const otherCategories = categories
         .filter(cat => !targetOrder.includes(cat.name.toLowerCase()))
         .sort((a, b) => a.name.localeCompare(b.name));
 
-    // Combined dropdown items
     const dropdownCategories = [...hiddenMainCategories, ...otherCategories];
 
     return (
-        <div className={styles.categoryBar}>
+        <div className={styles.categoryBar} role="navigation" aria-label="Category navigation">
             <div className={clsx("container", styles.container)}>
                 {visibleCategories.map((cat) => {
                     const href = `/category/${cat.slug}`;
@@ -57,6 +51,7 @@ export function CategoryBar({ categories }: CategoryBarProps) {
                             key={cat.id}
                             href={href}
                             className={clsx(styles.link, isActive && styles.active)}
+                            aria-current={isActive ? 'page' : undefined}
                         >
                             {cat.name}
                         </Link>
@@ -68,14 +63,19 @@ export function CategoryBar({ categories }: CategoryBarProps) {
                         className={styles.dropdown}
                         onMouseEnter={() => setIsMenuOpen(true)}
                         onMouseLeave={() => setIsMenuOpen(false)}
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
                     >
-                        <button className={clsx(styles.link, styles.dropdownTrigger)}>
+                        <button
+                            className={clsx(styles.link, styles.dropdownTrigger)}
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-expanded={isMenuOpen}
+                            aria-haspopup="true"
+                            aria-label="More categories"
+                        >
                             MORE <ChevronDown size={14} className={clsx(styles.icon, isMenuOpen && styles.iconActive)} />
                         </button>
 
                         {isMenuOpen && (
-                            <div className={styles.dropdownMenu}>
+                            <div className={styles.dropdownMenu} role="menu">
                                 {dropdownCategories.map((cat) => {
                                     const href = `/category/${cat.slug}`;
                                     const isActive = pathname === href;
@@ -84,6 +84,9 @@ export function CategoryBar({ categories }: CategoryBarProps) {
                                             key={cat.id}
                                             href={href}
                                             className={clsx(styles.dropdownLink, isActive && styles.active)}
+                                            role="menuitem"
+                                            aria-current={isActive ? 'page' : undefined}
+                                            onClick={() => setIsMenuOpen(false)}
                                         >
                                             {cat.name}
                                         </Link>
