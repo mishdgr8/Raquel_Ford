@@ -16,27 +16,24 @@ export default function cloudinaryLoader({ src, width, quality }) {
     // Handle relative local paths (e.g. /images/logo.png)
     let sourceUrl = src;
     if (src.startsWith('/')) {
-        // Determine absolute URL for local images
         // Note: Cloudinary Fetch ONLY works with publicly accessible and verifiable absolute URLs.
+        // Vercel Preview URLs are often protected and will cause Cloudinary fetch to fail (401/403).
 
-        // In local development, Cloudinary can't reach "localhost", so we serve it unoptimized 
-        if (process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_VERCEL_URL) {
+        // Only use Cloudinary for local images if we have a stable production URL
+        // In development or on preview branches without a hardcoded site URL, serve locally 
+        if (process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_SITE_URL) {
             return fallbackSrc;
         }
 
-        // In production, Vercel automatically populates NEXT_PUBLIC_VERCEL_URL.
-        // If you have a custom domain set in env variables, we use that.
-        let siteUrl = process.env.NEXT_PUBLIC_SITE_URL ||
-            (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : null);
+        let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
         if (siteUrl) {
-            // Remove trailing slash if it exists to avoid double slash issues
+            // Remove trailing slash if it exists
             if (siteUrl.endsWith('/')) {
                 siteUrl = siteUrl.slice(0, -1);
             }
             sourceUrl = `${siteUrl}${src}`;
         } else {
-            // Fallback relative if we can't build an absolute URL for Cloudinary
             return fallbackSrc;
         }
     }
