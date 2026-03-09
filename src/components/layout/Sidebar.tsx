@@ -57,6 +57,7 @@ export function Sidebar() {
                                     width={120}
                                     height={80}
                                     className={styles.image}
+                                    loading="lazy"
                                 />
                             )}
                             <div className={styles.articleInfo}>

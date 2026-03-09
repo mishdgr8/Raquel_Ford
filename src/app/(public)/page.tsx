@@ -3,16 +3,28 @@ import { EditorsPick } from "@/components/blocks/EditorsPick";
 import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
 import { categoryService } from "@/lib/services/categories";
+import { articleService } from "@/lib/services/articles";
 import { RSSFeedWidget } from "@/components/blocks/RSSFeedWidget";
+import { serializeFirestoreData } from "@/lib/utils";
 import styles from "./HomePage.module.css";
 
 // ISR: cache page and revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function HomePage() {
-    const [template, allCategories] = await Promise.all([
+    const [template, allCategories, editorsPicks] = await Promise.all([
         templateService.getActiveTemplate('home'),
-        categoryService.getCategories()
+        categoryService.getCategories(),
+        articleService.getEditorsPicks().then(async (picks) => {
+            // If not enough editors picks, supplement with latest articles
+            if (picks.length < 4) {
+                const extra = await articleService.getPublishedArticles(undefined, 8);
+                const existingIds = new Set(picks.map(a => a.id));
+                const newArticles = extra.articles.filter(a => !existingIds.has(a.id));
+                return [...picks, ...newArticles].slice(0, 4);
+            }
+            return picks;
+        })
     ]);
 
     // Filter for specific main categories for the hero slider
@@ -69,7 +81,7 @@ export default async function HomePage() {
             )}
 
             {/* Guarantee Editors Pick always renders on homepage below Hero */}
-            <EditorsPick />
+            <EditorsPick initialArticles={serializeFirestoreData(editorsPicks)} />
 
             {mainBlocks.length > 1 && <BlockRenderer blocks={mainBlocks.slice(1)} />}
 

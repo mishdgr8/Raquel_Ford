@@ -59,7 +59,7 @@ export function MagazinePromo({ config }: MagazinePromoProps) {
                                     alt={config.title || "Magazine cover"}
                                     fill
                                     className={styles.coverImage}
-                                    priority
+                                    loading="lazy"
                                 />
                             ) : (
                                 <div className={styles.magazinePlaceholder}>

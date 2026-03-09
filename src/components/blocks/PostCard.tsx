@@ -20,7 +20,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
                 <Card className={variant === 'horizontal' ? styles.horizontal : styles.vertical} hoverable={true}>
                     <div className={styles.imageContainer}>
                         {article.featuredImage ? (
-                            <Image src={article.featuredImage} alt={article.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className={styles.image} />
+                            <Image src={article.featuredImage} alt={article.title} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className={styles.image} loading="lazy" />
                         ) : (
                             <div className={styles.imagePlaceholder} />
                         )}
