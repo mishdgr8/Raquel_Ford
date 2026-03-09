@@ -160,43 +160,43 @@
 
 .navControls {
     position: absolute;
-    width: 100%;
-    top: 50%;
-    transform: translateY(-50%);
+    right: 4rem;
+    bottom: 4rem;
     display: flex;
-    justify-content: space-between;
-    padding: 0 4rem;
+    gap: 1px;
+    /* Minimal gap for separate look or 0 for joined */
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
 }
 
 .navButton {
-    width: 48px;
-    height: 48px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     cursor: pointer;
-    transition: all 0.3s ease;
-    pointer-events: auto;
-    backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    backdrop-filter: blur(4px);
 }
 
 .navButton:hover {
     background: #fff;
     color: #000;
+    border-color: #fff;
 }
 
 @media (max-width: 768px) {
     .navControls {
-        padding: 0 1rem;
+        right: 1.5rem;
+        bottom: 1.5rem;
     }
 
     .navButton {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
     }
 }
