@@ -1,39 +1,33 @@
 export default function cloudinaryLoader({ src, width, quality }) {
-    // Aggressive mobile optimization
-    // q_auto:eco - Use the most efficient compression possible
-    // f_auto - Automatically choose best format (WebP/AVIF)
-    // c_fill - Crop to fit the exact width
-    // dpr_1.0 - Force 1x pixel density for mobile scores (Retina 3x images are the LCP killer)
-
-    // We only use higher quality/DPR for very large (desktop) widths
-    const isSmall = width < 800;
-
+    // f_auto: Optimal format (WebP/AVIF)
+    // q_auto:eco: Aggressive mobile compression
+    // c_fill: Resize and crop to fit
     const params = [
         'f_auto',
-        isSmall ? 'q_auto:eco' : 'q_auto',
+        width < 800 ? 'q_auto:eco' : 'q_auto',
         `w_${width}`,
         'c_fill',
-        isSmall ? 'dpr_1.0' : 'dpr_auto'
+        'dpr_1.0' // Force 1x for Lighthouse score (prevents 3x retina downloads on 4G)
     ];
 
-    const fallbackSrc = src.includes('?') ? `${src}&w=${width}` : `${src}?w=${width}`;
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dowyjfruh';
 
-    if (!cloudName) return fallbackSrc;
-
+    // If it's a relative local path, we MUST make it absolute for Cloudinary 'fetch' to work
     let sourceUrl = src;
     if (src.startsWith('/')) {
-        if (process.env.NODE_ENV === 'development' || !process.env.NEXT_PUBLIC_SITE_URL) {
-            return fallbackSrc;
-        }
-
-        let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        if (siteUrl && siteUrl.endsWith('/')) {
-            siteUrl = siteUrl.slice(0, -1);
-        }
-        sourceUrl = siteUrl ? `${siteUrl}${src}` : src;
+        // Hardcoded production URL as a primary fallback to ensure Cloudinary triggers
+        // Vercel deployment URLs can also be used if NEXT_PUBLIC_SITE_URL is missing
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://raquel-ford.vercel.app';
+        sourceUrl = `${siteUrl}${src}`;
     }
 
+    // Prepare sourceUrl correctly encoding query parameters
     const encodedSourceUrl = encodeURIComponent(sourceUrl);
+
+    // If for some reason we are in dev and don't want Cloudinary, return local
+    if (process.env.NODE_ENV === 'development' && !src.startsWith('http')) {
+        return src.includes('?') ? `${src}&w=${width}` : `${src}?w=${width}`;
+    }
+
     return `https://res.cloudinary.com/${cloudName}/image/fetch/${params.join(',')}/${encodedSourceUrl}`;
 }

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Category } from "@/lib/types";
 import styles from "./CategoryBar.module.css";
 import { clsx } from "clsx";
-import { ChevronDown } from "lucide-react";
 
 interface CategoryBarProps {
     categories: Category[];
@@ -71,7 +70,7 @@ export function CategoryBar({ categories }: CategoryBarProps) {
                             aria-haspopup="true"
                             aria-label="More categories"
                         >
-                            MORE <ChevronDown size={14} className={clsx(styles.icon, isMenuOpen && styles.iconActive)} />
+                            MORE <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={clsx(styles.icon, isMenuOpen && styles.iconActive)}><path d="m6 9 6 6 6-6" /></svg>
                         </button>
 
                         {isMenuOpen && (

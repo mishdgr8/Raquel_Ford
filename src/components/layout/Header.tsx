@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Menu, X, Search } from "lucide-react";
 import styles from "./Header.module.css";
 import { clsx } from "clsx";
 import { Category } from "@/lib/types";
@@ -69,7 +68,11 @@ export function Header({ initialCategories = [] }: HeaderProps) {
                                 type="button"
                                 aria-label={isSearchOpen ? "Close search" : "Open search"}
                             >
-                                {isSearchOpen ? <X size={20} /> : <Search size={20} />}
+                                {isSearchOpen ? (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                ) : (
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                                )}
                             </button>
                         </div>
 
@@ -78,7 +81,11 @@ export function Header({ initialCategories = [] }: HeaderProps) {
                             onClick={() => setIsOpen(!isOpen)}
                             aria-label={isOpen ? "Close menu" : "Open menu"}
                         >
-                            {isOpen ? <X size={24} /> : <Menu size={24} />}
+                            {isOpen ? (
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            ) : (
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -107,7 +114,7 @@ export function Header({ initialCategories = [] }: HeaderProps) {
                         aria-label="Search articles"
                     />
                     <button type="submit" className={styles.mobileSearchButton} aria-label="Submit search">
-                        <Search size={20} />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                     </button>
                 </form>
 
