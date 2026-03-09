@@ -157,3 +157,46 @@
 .dotActive {
     opacity: 1;
 }
+
+.navControls {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 4rem;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.navButton {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
+}
+
+.navButton:hover {
+    background: #fff;
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .navControls {
+        padding: 0 1rem;
+    }
+
+    .navButton {
+        width: 40px;
+        height: 40px;
+    }
+}

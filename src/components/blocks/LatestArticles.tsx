@@ -6,22 +6,58 @@ import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
 import { deduplicateArticles } from "@/lib/utils";
 import { PostCard } from "./PostCard";
+import { Sidebar } from "../layout/Sidebar";
 
 interface LatestArticlesProps {
     config: {
         count?: number;
         title?: string;
     };
+    initialArticles?: Article[];
+    initialSidebarArticles?: Article[];
 }
 
-import { Sidebar } from "../layout/Sidebar";
-
-export function LatestArticles({ config }: LatestArticlesProps) {
-    const [articles, setArticles] = useState<Article[]>([]);
+export function LatestArticles({ config, initialArticles, initialSidebarArticles }: LatestArticlesProps) {
+    const [articles, setArticles] = useState<Article[]>(initialArticles || []);
+    const [loading, setLoading] = useState(!initialArticles || initialArticles.length === 0);
 
     useEffect(() => {
-        articleService.getPublishedArticles(undefined, config.count || 5).then(res => setArticles(res.articles));
-    }, [config.count]);
+        if (initialArticles && initialArticles.length > 0) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        articleService.getPublishedArticles(undefined, config.count || 5)
+            .then(res => {
+                setArticles(res.articles);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, [config.count, initialArticles]);
+
+    // Same skeleton pattern as EditorsPick to prevent CLS
+    if (loading) {
+        return (
+            <section className={styles.section}>
+                <div className="container">
+                    <div className={styles.layoutGrid}>
+                        <div>
+                            <div className={styles.header}>
+                                <div className={styles.skeletonTitle} />
+                            </div>
+                            <div className={styles.grid}>
+                                {[1, 2, 3, 4, 5].map((i) => (
+                                    <div key={i} className={styles.skeletonCard} />
+                                ))}
+                            </div>
+                        </div>
+                        <Sidebar initialLatest={initialSidebarArticles} />
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     if (articles.length === 0) return null;
 
@@ -42,7 +78,7 @@ export function LatestArticles({ config }: LatestArticlesProps) {
                         </div>
 
                         <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
-                            <a href="/articles" style={{
+                            <a href="/articles" aria-label="See all stories from Raquel Ford" style={{
                                 display: 'inline-block',
                                 padding: '1rem 2rem',
                                 border: '1px solid currentColor',
@@ -54,7 +90,7 @@ export function LatestArticles({ config }: LatestArticlesProps) {
                             </a>
                         </div>
                     </div>
-                    <Sidebar />
+                    <Sidebar initialLatest={initialSidebarArticles} />
                 </div>
             </div>
         </section>

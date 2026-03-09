@@ -10,27 +10,32 @@ import { formatDate } from "@/lib/utils";
 import { NewsletterSignup } from "../blocks/NewsletterSignup";
 import { RSSFeedWidget } from "../blocks/RSSFeedWidget";
 import clsx from "clsx";
-
 import { categoryService } from "@/lib/services/categories";
 
-export function Sidebar() {
-    const [latest, setLatest] = useState<Article[]>([]);
-    const [loading, setLoading] = useState(true);
+interface SidebarProps {
+    initialLatest?: Article[];
+}
+
+export function Sidebar({ initialLatest }: SidebarProps) {
+    const [latest, setLatest] = useState<Article[]>(initialLatest || []);
+    const [loading, setLoading] = useState(!initialLatest || initialLatest.length === 0);
 
     useEffect(() => {
+        if (initialLatest && initialLatest.length > 0) {
+            setLoading(false);
+            return;
+        }
+
         const fetchArticlesByCategory = async () => {
             try {
+                setLoading(true);
                 const categories = await categoryService.getCategories();
-                // Fetch only first 6 categories to keep sidebar concise
                 const selectedCategories = categories.slice(0, 6);
-
                 const articlePromises = selectedCategories.map(cat =>
                     articleService.getPublishedArticles(cat.id, 1)
                 );
-
                 const results = await Promise.all(articlePromises);
                 const articles = results.flatMap(res => res.articles).filter(Boolean);
-
                 setLatest(articles);
             } catch (error) {
                 console.error("Error fetching sidebar articles:", error);
@@ -40,37 +45,51 @@ export function Sidebar() {
         };
 
         fetchArticlesByCategory();
-    }, []);
+    }, [initialLatest]);
 
     return (
         <aside className={styles.sidebar}>
             {/* Best of Categories Section */}
             <div className={styles.section}>
                 <h3 className={styles.title}>Explore the Mix</h3>
-                <div className={styles.latestArticles}>
-                    {latest.map((article) => (
-                        <div key={article.id} className={styles.articleItem}>
-                            {article.featuredImage && (
-                                <Image
-                                    src={article.featuredImage}
-                                    alt={article.title}
-                                    width={120}
-                                    height={80}
-                                    className={styles.image}
-                                    loading="lazy"
-                                />
-                            )}
-                            <div className={styles.articleInfo}>
-                                <Link href={`/articles/${article.slug}`} className={styles.articleTitle}>
-                                    <span dangerouslySetInnerHTML={{ __html: article.title }} />
-                                </Link>
-                                <span className={styles.articleMeta}>{article.categoryId}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
 
+                {loading && (
+                    <div className={styles.latestArticles}>
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className={styles.skeletonItem} />
+                        ))}
+                    </div>
+                )}
+
+                {!loading && (
+                    <div className={styles.latestArticles}>
+                        {latest.map((article) => (
+                            <div key={article.id} className={styles.articleItem}>
+                                {article.featuredImage && (
+                                    <Image
+                                        src={article.featuredImage}
+                                        alt={article.title}
+                                        width={120}
+                                        height={80}
+                                        className={styles.image}
+                                        loading="lazy"
+                                    />
+                                )}
+                                <div className={styles.articleInfo}>
+                                    <Link
+                                        href={`/articles/${article.slug}`}
+                                        className={styles.articleTitle}
+                                        aria-label={`Read ${article.title}`}
+                                    >
+                                        <span dangerouslySetInnerHTML={{ __html: article.title }} />
+                                    </Link>
+                                    <span className={styles.articleMeta}>{article.categoryId}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {/* External Feeds */}
             <div className={styles.section}>

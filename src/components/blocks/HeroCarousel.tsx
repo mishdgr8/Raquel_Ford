@@ -7,6 +7,7 @@ import Link from "next/link";
 import { clsx } from "clsx";
 import { Category } from "@/lib/types";
 import { categoryService } from "@/lib/services/categories";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Dynamically import framer-motion to reduce initial JS bundle
 import dynamic from "next/dynamic";
@@ -80,97 +81,114 @@ export function HeroCarousel({ config, initialCategories }: HeroCarouselProps) {
 
     // Auto-scroll logic
     useEffect(() => {
-        if (categories.length === 0) return;
+        if (categories.length === 0 || !isClient) return;
 
         const interval = setInterval(() => {
             setIndex((current) => (current + 1) % categories.length);
-        }, 4000);
+        }, 5000);
 
         return () => clearInterval(interval);
-    }, [categories.length]);
+    }, [categories.length, isClient]);
+
+    const handleNext = () => setIndex((prev) => (prev + 1) % categories.length);
+    const handlePrev = () => setIndex((prev) => (prev - 1 + categories.length) % categories.length);
 
     if (categories.length === 0) return null;
 
     const current = categories[index];
     const displayImage = HERO_IMAGES[current.name.toLowerCase()] || current.image;
 
-    // SSR/initial render: static hero without framer-motion
+    // Static SSR version for SEO and LCP
+    const renderSlideContent = (isStatic: boolean = false) => (
+        <div className={styles.slide}>
+            <div className={styles.overlay} />
+            {displayImage ? (
+                <Image
+                    src={displayImage}
+                    alt={`Exploring the world of ${current.name}`}
+                    fill
+                    priority={isStatic || index === 0}
+                    sizes="100vw"
+                    quality={75}
+                    className={styles.heroImage}
+                    {...(isStatic ? { fetchPriority: "high" } : {})}
+                />
+            ) : (
+                <div className={styles.imagePlaceholder} />
+            )}
+            <div className={clsx("container", styles.content)}>
+                {isStatic ? (
+                    <h1 className={styles.title}>{current.name}</h1>
+                ) : (
+                    <MotionH1
+                        initial={{ y: 15, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.15, duration: 0.3 }}
+                        className={styles.title}
+                    >
+                        {current.name}
+                    </MotionH1>
+                )}
+                {isStatic ? (
+                    <div>
+                        <Link
+                            href={`/category/${current.slug}`}
+                            className={styles.cta}
+                            aria-label={`View ${current.name} stories`}
+                        >
+                            VIEW STORIES
+                        </Link>
+                    </div>
+                ) : (
+                    <MotionDiv
+                        initial={{ y: 15, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                    >
+                        <Link
+                            href={`/category/${current.slug}`}
+                            className={styles.cta}
+                            aria-label={`View ${current.name} stories`}
+                        >
+                            VIEW STORIES
+                        </Link>
+                    </MotionDiv>
+                )}
+            </div>
+
+            {/* Navigation buttons - Hidden on SSR, shown on client */}
+            {!isStatic && (
+                <div className={styles.navControls}>
+                    <button onClick={handlePrev} className={styles.navButton} aria-label="Previous slide">
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button onClick={handleNext} className={styles.navButton} aria-label="Next slide">
+                        <ChevronRight size={24} />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+
     if (!isClient) {
         return (
             <section className={styles.hero}>
-                <div className={styles.slide}>
-                    <div className={styles.overlay} />
-                    {displayImage ? (
-                        <Image
-                            src={displayImage}
-                            alt={current.name}
-                            fill
-                            priority
-                            sizes="100vw"
-                            quality={75}
-                            className={styles.heroImage}
-                        />
-                    ) : (
-                        <div className={styles.imagePlaceholder} />
-                    )}
-                    <div className={clsx("container", styles.content)}>
-                        <h1 className={styles.title}>{current.name}</h1>
-                        <div>
-                            <Link href={`/category/${current.slug}`} className={styles.cta}>
-                                VIEW STORIES
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                {renderSlideContent(true)}
             </section>
         );
     }
 
     return (
-        <section className={styles.hero}>
-            <AnimatePresenceWrapper>
+        <section className={styles.hero} aria-roledescription="carousel" aria-label="Main gallery">
+            <AnimatePresenceWrapper mode="wait">
                 <MotionDiv
                     key={index}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 1 }}
-                    transition={{ duration: 0.4, ease: "easeInOut" }}
-                    className={styles.slide}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
                 >
-                    <div className={styles.overlay} />
-                    {displayImage ? (
-                        <Image
-                            src={displayImage}
-                            alt={current.name}
-                            fill
-                            priority={index === 0}
-                            sizes="100vw"
-                            quality={75}
-                            className={styles.heroImage}
-                        />
-                    ) : (
-                        <div className={styles.imagePlaceholder} />
-                    )}
-
-                    <div className={clsx("container", styles.content)}>
-                        <MotionH1
-                            initial={{ y: 15, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.15, duration: 0.3 }}
-                            className={styles.title}
-                        >
-                            {current.name}
-                        </MotionH1>
-                        <MotionDiv
-                            initial={{ y: 15, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.2, duration: 0.3 }}
-                        >
-                            <Link href={`/category/${current.slug}`} className={styles.cta}>
-                                VIEW STORIES
-                            </Link>
-                        </MotionDiv>
-                    </div>
+                    {renderSlideContent(false)}
                 </MotionDiv>
             </AnimatePresenceWrapper>
         </section>

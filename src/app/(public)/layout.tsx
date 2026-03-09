@@ -1,16 +1,21 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { categoryService } from "@/lib/services/categories";
+import { serializeFirestoreData } from "@/lib/utils";
 import Script from "next/script";
 
-export default function PublicLayout({
+export default async function PublicLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    // Pre-fetch categories on the server for the Header
+    const categories = await categoryService.getCategories();
+    const serializedCategories = serializeFirestoreData(categories);
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <Header />
+            <Header initialCategories={serializedCategories} />
             <main style={{ flex: 1, paddingTop: '140px' }}>
                 {children}
             </main>

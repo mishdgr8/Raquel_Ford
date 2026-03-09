@@ -11,13 +11,20 @@ interface IGReelsProps {
         title?: string;
         reelUrls?: string[];
     };
+    initialFeeds?: InstagramMedia[];
 }
 
-export function IGReels({ config }: IGReelsProps) {
-    const [feeds, setFeeds] = useState<InstagramMedia[]>([]);
-    const [loading, setLoading] = useState(true);
+export function IGReels({ config, initialFeeds }: IGReelsProps) {
+    const [feeds, setFeeds] = useState<InstagramMedia[]>(initialFeeds || []);
+    const [loading, setLoading] = useState(!initialFeeds || initialFeeds.length === 0);
 
     useEffect(() => {
+        // If initial data is provided, don't fetch on mount
+        if (initialFeeds && initialFeeds.length > 0) {
+            setLoading(false);
+            return;
+        }
+
         // If manual URLs are provided in config, don't fetch from API
         if (config.reelUrls && config.reelUrls.length > 0) {
             setLoading(false);
@@ -28,7 +35,7 @@ export function IGReels({ config }: IGReelsProps) {
             .then(setFeeds)
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [config.reelUrls]);
+    }, [config.reelUrls, initialFeeds]);
 
     const title = config.title || "FOLLOW THE VIBE";
     const manualReels = config.reelUrls || [];
@@ -57,6 +64,7 @@ export function IGReels({ config }: IGReelsProps) {
                                     scrolling="no"
                                     allowTransparency={true}
                                     allow="autoplay"
+                                    title={`Instagram Reel ${i + 1}`}
                                 />
                             </div>
                         </div>
@@ -69,6 +77,7 @@ export function IGReels({ config }: IGReelsProps) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className={styles.reelPlaceholder}
+                            aria-label={`View Instagram post: ${feed.caption || 'Raquel Ford Media'}`}
                         >
                             {feed.media_type === 'VIDEO' ? (
                                 <video

@@ -16,7 +16,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
 
     return (
         <div className={styles.cardContainer}>
-            <Link href={`/articles/${article.slug}`} className={styles.link}>
+            <Link href={`/articles/${article.slug}`} className={styles.link} aria-label={`Read more about ${article.title}`}>
                 <Card className={variant === 'horizontal' ? styles.horizontal : styles.vertical} hoverable={true}>
                     <div className={styles.imageContainer}>
                         {article.featuredImage ? (

@@ -1,22 +1,21 @@
 import { BlockRenderer } from "@/components/blocks/BlockRenderer";
 import { EditorsPick } from "@/components/blocks/EditorsPick";
-import { LatestArticles } from "@/components/blocks/LatestArticles";
 import { templateService } from "@/lib/services/templates";
 import { categoryService } from "@/lib/services/categories";
 import { articleService } from "@/lib/services/articles";
 import { RSSFeedWidget } from "@/components/blocks/RSSFeedWidget";
 import { serializeFirestoreData } from "@/lib/utils";
+import { getInstagramFeed } from "@/app/actions/instagram";
 import styles from "./HomePage.module.css";
 
 // ISR: cache page and revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function HomePage() {
-    const [template, allCategories, editorsPicks] = await Promise.all([
+    const [template, allCategories, editorsPicks, latestArticlesResponse, igFeeds] = await Promise.all([
         templateService.getActiveTemplate('home'),
         categoryService.getCategories(),
         articleService.getEditorsPicks().then(async (picks) => {
-            // If not enough editors picks, supplement with latest articles
             if (picks.length < 4) {
                 const extra = await articleService.getPublishedArticles(undefined, 8);
                 const existingIds = new Set(picks.map(a => a.id));
@@ -24,10 +23,20 @@ export default async function HomePage() {
                 return [...picks, ...newArticles].slice(0, 4);
             }
             return picks;
-        })
+        }),
+        articleService.getPublishedArticles(undefined, 8),
+        getInstagramFeed(6).catch(() => []) // Pre-fetch Instagram
     ]);
 
-    // Filter for specific main categories for the hero slider
+    const latestArticles = latestArticlesResponse.articles;
+
+    // Fetch sidebar articles (1 per category for first 6)
+    const sidebarArticles = await Promise.all(
+        allCategories.slice(0, 6).map(cat =>
+            articleService.getPublishedArticles(cat.id, 1).then(res => res.articles[0])
+        )
+    ).then(articles => articles.filter(Boolean));
+
     const targetNames = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
     const initialCategories = allCategories
         .filter(cat => targetNames.includes(cat.name.toLowerCase()))
@@ -71,21 +80,32 @@ export default async function HomePage() {
         bannerBlocks = template.blocks.slice(firstBannerIndex);
     }
 
+    const serializedLatest = serializeFirestoreData(latestArticles);
+    const serializedSidebar = serializeFirestoreData(sidebarArticles);
+
     return (
         <>
             {mainBlocks.length > 0 && (
                 <BlockRenderer
                     blocks={[mainBlocks[0]]}
                     initialCategories={initialCategories}
+                    initialLatestArticles={serializedLatest}
+                    initialSidebarArticles={serializedSidebar}
+                    initialIGFeeds={igFeeds}
                 />
             )}
 
-            {/* Guarantee Editors Pick always renders on homepage below Hero */}
             <EditorsPick initialArticles={serializeFirestoreData(editorsPicks)} />
 
-            {mainBlocks.length > 1 && <BlockRenderer blocks={mainBlocks.slice(1)} />}
+            {mainBlocks.length > 1 && (
+                <BlockRenderer
+                    blocks={mainBlocks.slice(1)}
+                    initialLatestArticles={serializedLatest}
+                    initialSidebarArticles={serializedSidebar}
+                    initialIGFeeds={igFeeds}
+                />
+            )}
 
-            {/* Mobile-only RSS Feeds matching Sidebar content */}
             <div className={styles.mobileRSS}>
                 <div className={styles.rssSection}>
                     <RSSFeedWidget
@@ -105,7 +125,12 @@ export default async function HomePage() {
                 </div>
             </div>
 
-            <BlockRenderer blocks={bannerBlocks} />
+            <BlockRenderer
+                blocks={bannerBlocks}
+                initialLatestArticles={serializedLatest}
+                initialSidebarArticles={serializedSidebar}
+                initialIGFeeds={igFeeds}
+            />
         </>
     );
 }

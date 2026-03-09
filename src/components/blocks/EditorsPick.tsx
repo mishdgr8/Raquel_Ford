@@ -83,7 +83,12 @@ export function EditorsPick({ initialArticles }: EditorsPickProps) {
 
                         if (isInner) {
                             return (
-                                <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.innerCard}`}>
+                                <Link
+                                    href={`/articles/${article.slug}`}
+                                    key={article.id}
+                                    className={`${styles.card} ${styles.innerCard}`}
+                                    aria-label={`Featured story: ${article.title}`}
+                                >
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
                                             <Image
@@ -104,7 +109,12 @@ export function EditorsPick({ initialArticles }: EditorsPickProps) {
                             );
                         } else {
                             return (
-                                <Link href={`/articles/${article.slug}`} key={article.id} className={`${styles.card} ${styles.outerCard}`}>
+                                <Link
+                                    href={`/articles/${article.slug}`}
+                                    key={article.id}
+                                    className={`${styles.card} ${styles.outerCard}`}
+                                    aria-label={`Featured story: ${article.title}`}
+                                >
                                     <div className={styles.imageWrapper}>
                                         {article.featuredImage && (
                                             <Image
