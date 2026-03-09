@@ -1,12 +1,15 @@
+"use client";
+
 import dynamic from 'next/dynamic';
 import { BlockInstance, Category } from "@/lib/types";
 import { HeroCarousel } from "./HeroCarousel";
 
 // Dynamically import all below-the-fold components to reduce initial JS payload
+// Using ssr: true (default) is better for SEO and allowed in Client Components
 const LatestArticles = dynamic(() => import("./LatestArticles").then(mod => mod.LatestArticles), { ssr: true });
-const NewsletterSignup = dynamic(() => import("./NewsletterSignup").then(mod => mod.NewsletterSignup), { ssr: false });
+const NewsletterSignup = dynamic(() => import("./NewsletterSignup").then(mod => mod.NewsletterSignup), { ssr: true });
 const PostGrid = dynamic(() => import("./PostGrid").then(mod => mod.PostGrid), { ssr: true });
-const IGReels = dynamic(() => import("./IGReels").then(mod => mod.IGReels), { ssr: false });
+const IGReels = dynamic(() => import("./IGReels").then(mod => mod.IGReels), { ssr: true });
 const MagazinePromo = dynamic(() => import("./MagazinePromo").then(mod => mod.MagazinePromo), { ssr: true });
 const BrandBanner = dynamic(() => import("./BrandBanner").then(mod => mod.BrandBanner), { ssr: true });
 const SimpleBanner = dynamic(() => import("./SimpleBanner").then(mod => mod.SimpleBanner), { ssr: true });
