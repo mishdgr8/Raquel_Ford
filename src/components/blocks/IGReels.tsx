@@ -85,7 +85,7 @@ export function IGReels({ config, initialFeeds }: IGReelsProps) {
                                     muted
                                     loop
                                     playsInline /* Better for mobile */
-                                    loading="lazy"
+                                    preload="none"
                                     onMouseOver={(e) => e.currentTarget.play()}
                                     onMouseOut={(e) => e.currentTarget.pause()}
                                 />
