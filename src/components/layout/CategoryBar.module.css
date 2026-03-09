@@ -3,8 +3,8 @@
     border-bottom: 1px solid rgba(17, 0, 28, 0.1);
     padding: 0.75rem 0;
     position: sticky;
-    top: 80px;
-    /* Below the scrolled header */
+    top: 84px;
+    /* Increased slightly to match header height exactly */
     z-index: 900;
     transition: all 0.5s ease;
 }
@@ -27,20 +27,20 @@
     letter-spacing: 0.2rem;
     text-transform: uppercase;
     color: #11001C;
-    opacity: 0.8;
+    /* Solid color for perfect contrast */
     transition: all 0.3s ease;
     padding: 0.5rem 0.25rem;
-    /* Increase touch target */
     display: flex;
     align-items: center;
     min-height: 44px;
-    /* WCAG minimum touch target height */
+    /* Essential for mobile touch targets */
 }
 
 .link:hover,
 .active {
-    opacity: 1;
     color: #11001C;
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .dropdown {
@@ -57,6 +57,13 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.2rem;
+    text-transform: uppercase;
+    color: #11001C;
+    min-height: 44px;
 }
 
 .icon {
@@ -90,36 +97,28 @@
     letter-spacing: 0.15rem;
     text-transform: uppercase;
     color: #11001C;
-    opacity: 0.7;
+    /* Solid color for contrast */
     transition: all 0.3s ease;
 }
 
 .dropdownLink:hover {
-    opacity: 1;
     background: rgba(17, 0, 28, 0.05);
     padding-left: 2rem;
 }
 
 @media (max-width: 1024px) {
     .container {
-        gap: 1rem;
+        gap: 1.5rem;
         justify-content: center;
-        padding: 0 1rem;
-        flex-wrap: wrap;
-        /* Allow wrapping if needed, but we aim for single line 3 items + More */
+        padding: 0 1.5rem;
     }
 
     .categoryBar {
-        top: 80px;
+        top: 84px;
     }
 
-    .dropdown {
-        display: flex;
-        /* Show dropdown */
-    }
-
-    .dropdownTrigger {
+    .link {
         font-size: 0.75rem;
-        /* Match other mobile links if needed */
+        letter-spacing: 0.1rem;
     }
 }

@@ -1,13 +1,15 @@
+import dynamic from 'next/dynamic';
 import { BlockInstance, Category } from "@/lib/types";
 import { HeroCarousel } from "./HeroCarousel";
-import { LatestArticles } from "./LatestArticles";
-import { NewsletterSignup } from "./NewsletterSignup";
-import { PostGrid } from "./PostGrid";
-import { IGReels } from "./IGReels";
-import { MagazinePromo } from "./MagazinePromo";
-import { EditorsPick } from "./EditorsPick";
-import { BrandBanner } from "./BrandBanner";
-import { SimpleBanner } from "./SimpleBanner";
+
+// Dynamically import all below-the-fold components to reduce initial JS payload
+const LatestArticles = dynamic(() => import("./LatestArticles").then(mod => mod.LatestArticles), { ssr: true });
+const NewsletterSignup = dynamic(() => import("./NewsletterSignup").then(mod => mod.NewsletterSignup), { ssr: false });
+const PostGrid = dynamic(() => import("./PostGrid").then(mod => mod.PostGrid), { ssr: true });
+const IGReels = dynamic(() => import("./IGReels").then(mod => mod.IGReels), { ssr: false });
+const MagazinePromo = dynamic(() => import("./MagazinePromo").then(mod => mod.MagazinePromo), { ssr: true });
+const BrandBanner = dynamic(() => import("./BrandBanner").then(mod => mod.BrandBanner), { ssr: true });
+const SimpleBanner = dynamic(() => import("./SimpleBanner").then(mod => mod.SimpleBanner), { ssr: true });
 
 interface BlockRendererProps {
     blocks: BlockInstance[];

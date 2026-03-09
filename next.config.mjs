@@ -4,10 +4,11 @@ const nextConfig = {
   images: {
     loader: 'custom',
     loaderFile: './cloudinaryLoader.js',
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // Added more granular sizes to target mobile discovery better (shaves off LCP)
+    deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
     formats: ['image/webp'],
-    minimumCacheTTL: 3600,
+    minimumCacheTTL: 86400, // Increase cache TTL to 24h
     remotePatterns: [
       {
         protocol: "https",
