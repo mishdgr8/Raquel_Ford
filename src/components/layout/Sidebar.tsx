@@ -69,8 +69,8 @@ export function Sidebar({ initialLatest }: SidebarProps) {
                                     <Image
                                         src={article.featuredImage}
                                         alt={article.title}
-                                        width={120}
-                                        height={80}
+                                        width={160}
+                                        height={90}
                                         className={styles.image}
                                         loading="lazy"
                                     />
