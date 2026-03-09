@@ -14,7 +14,7 @@ export interface InstagramMedia {
 export async function fetchInstagramMedia(limit: number = 10): Promise<InstagramMedia[]> {
     let accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
 
-    if (!accessToken) {
+    if (!accessToken || accessToken === 'your_token_here') {
         try {
             const settingsDoc = await getDoc(doc(db, "settings", "instagram"));
             if (settingsDoc.exists()) {
@@ -25,7 +25,7 @@ export async function fetchInstagramMedia(limit: number = 10): Promise<Instagram
         }
     }
 
-    if (!accessToken) {
+    if (!accessToken || accessToken === 'your_token_here') {
         console.warn("INSTAGRAM_ACCESS_TOKEN is not defined in environment variables or Firestore.");
         return [];
     }
@@ -38,8 +38,16 @@ export async function fetchInstagramMedia(limit: number = 10): Promise<Instagram
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Instagram API error: ${errorData.error?.message || response.statusText}`);
+            const errorText = await response.text();
+            let errorMessage = response.statusText;
+            try {
+                const errorData = JSON.parse(errorText);
+                errorMessage = errorData.error?.message || errorMessage;
+            } catch (e) {
+                // Not JSON, fallback to text
+                errorMessage = `${errorMessage} (Non-JSON response)`;
+            }
+            throw new Error(`Instagram API error: ${errorMessage}`);
         }
 
         const data = await response.json();
