@@ -30,14 +30,15 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                     const text = p.textContent?.trim();
                     if (!text) return;
 
-                    // Instagram
-                    if (text.startsWith('https://www.instagram.com/p/') || text.startsWith('https://instagram.com/p/')) {
-                        const match = text.match(/instagram\.com\/p\/([^/?#]+)/);
-                        if (match && match[1]) {
-                            const embedId = match[1];
+                    // Instagram (posts and reels)
+                    if (text.match(/instagram\.com\/(p|reel)\//)) {
+                        const match = text.match(/instagram\.com\/(p|reel)\/([^/?#]+)/);
+                        if (match && match[1] && match[2]) {
+                            const pathType = match[1]; // 'p' or 'reel'
+                            const embedId = match[2];
                             const quote = document.createElement('blockquote');
                             quote.className = 'instagram-media';
-                            quote.setAttribute('data-instgrm-permalink', `https://www.instagram.com/p/${embedId}/`);
+                            quote.setAttribute('data-instgrm-permalink', `https://www.instagram.com/${pathType}/${embedId}/`);
                             quote.setAttribute('data-instgrm-version', '14');
                             quote.style.background = '#FFF';
                             quote.style.border = '0';
@@ -105,19 +106,28 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
         }
     }, [blocks, html]);
 
-    // Helper to render Instagram embed
+    // Helper to render Instagram embed — handles both posts (/p/) and reels (/reel/)
     const renderInstagramEmbed = (urlOrId: string) => {
-        let embedId = urlOrId;
-        if (urlOrId.includes('instagram.com/p/')) {
-            const match = urlOrId.match(/instagram\.com\/p\/([^/?#]+)/);
-            embedId = match ? match[1] : urlOrId;
+        // The embedId may be in format "reel/CODE" or "p/CODE" (from new storage),
+        // or a full URL, or just a shortcode (legacy)
+        let embedPath = urlOrId; // default: use as-is
+
+        if (urlOrId.includes('instagram.com/')) {
+            const match = urlOrId.match(/instagram\.com\/(p|reel)\/([^/?#]+)/);
+            if (match) {
+                embedPath = `${match[1]}/${match[2]}`;
+            }
+        } else if (!urlOrId.includes('/')) {
+            // Legacy: plain shortcode without path type — default to /p/
+            embedPath = `p/${urlOrId}`;
         }
+        // else: already in "reel/CODE" or "p/CODE" format
 
         return (
             <div style={{ margin: '2rem 0', display: 'flex', justifyContent: 'center' }}>
                 <blockquote
                     className="instagram-media"
-                    data-instgrm-permalink={`https://www.instagram.com/p/${embedId}/`}
+                    data-instgrm-permalink={`https://www.instagram.com/${embedPath}/`}
                     data-instgrm-version="14"
                     style={{
                         background: '#FFF',
@@ -133,7 +143,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                 >
                     <div style={{ padding: '16px' }}>
                         <a
-                            href={`https://www.instagram.com/p/${embedId}/`}
+                            href={`https://www.instagram.com/${embedPath}/`}
                             style={{
                                 background: '#FFFFFF',
                                 lineHeight: '0',
@@ -268,7 +278,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                     />
                                 </div>
                             ) : (
-                                renderInstagramEmbed(`https://www.instagram.com/p/${embedId}/`)
+                                renderInstagramEmbed(embedId)
                             )}
                         </div>
                     )
@@ -327,7 +337,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                     case 'text':
                         const textContent = block.data.text || block.data.html || '';
                         const cleanText = textContent.replace(/<[^>]*>/g, '').trim();
-                        if (cleanText.startsWith('https://www.instagram.com/p/') || cleanText.startsWith('https://instagram.com/p/')) {
+                        if (cleanText.match(/instagram\.com\/(p|reel)\//)) {
                             return (
                                 <div key={block.id}>
                                     {renderInstagramEmbed(cleanText)}

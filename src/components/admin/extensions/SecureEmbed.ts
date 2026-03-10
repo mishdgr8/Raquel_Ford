@@ -20,8 +20,8 @@ function parseYouTubeUrl(url: string): string | null {
 }
 
 function parseInstagramUrl(url: string): string | null {
-    const match = url.match(/instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : null;
+    const match = url.match(/instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)/);
+    return match ? `${match[1]}/${match[2]}` : null;
 }
 
 function detectEmbedType(url: string): { type: 'youtube' | 'instagram' | null; id: string | null } {
@@ -109,7 +109,7 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
         } else if (embedType === 'instagram' && embedId) {
             embedContent = [
                 ['iframe', {
-                    src: `https://www.instagram.com/p/${embedId}/embed`,
+                    src: `https://www.instagram.com/${embedId}/embed`,
                     width: '100%',
                     height: '500',
                     frameborder: '0',
@@ -192,7 +192,7 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
                 label.textContent = '📷 Instagram Embed';
 
                 const iframe = document.createElement('iframe');
-                iframe.src = `https://www.instagram.com/p/${embedId}/embed`;
+                iframe.src = `https://www.instagram.com/${embedId}/embed`;
                 iframe.style.width = '100%';
                 iframe.style.maxWidth = '540px';
                 iframe.style.height = '600px';

@@ -36,9 +36,9 @@ function detectEmbedUrl(url: string): { type: 'youtube' | 'instagram' | 'twitter
         const m = url.match(p);
         if (m) return { type: 'youtube', id: m[1] };
     }
-    // Instagram
-    const igMatch = url.match(/instagram\.com\/(?:p|reel)\/([a-zA-Z0-9_-]+)/);
-    if (igMatch) return { type: 'instagram', id: igMatch[1] };
+    // Instagram — preserve post vs reel path for correct embed URL
+    const igMatch = url.match(/instagram\.com\/(p|reel)\/([a-zA-Z0-9_-]+)/);
+    if (igMatch) return { type: 'instagram', id: `${igMatch[1]}/${igMatch[2]}` };
 
     // Twitter / X
     const twMatch = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
@@ -444,7 +444,7 @@ function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isF
                         {embedType === 'instagram' && (
                             <div style={{ textAlign: 'center' }}>
                                 <iframe
-                                    src={`https://www.instagram.com/p/${embedId}/embed`}
+                                    src={`https://www.instagram.com/${embedId}/embed`}
                                     style={{ width: '100%', maxWidth: '540px', height: '600px', border: 0 }}
                                     scrolling="no"
                                     loading="lazy"
