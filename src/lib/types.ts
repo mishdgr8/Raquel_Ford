@@ -53,6 +53,7 @@ export interface Article {
     seoDescription?: string;
     ogMediaId?: string;
     isEditorsPick?: boolean;
+    isExploreTheMix?: boolean;
     editorPickOrder?: number;
     headingStyle?: HeadingStyle;
     tags?: string[];

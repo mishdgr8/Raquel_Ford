@@ -235,98 +235,92 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                         style={{ '--columns': Math.min(columns, 4) } as any}
                     >
                         {images.map((img, i) => (
-                            <div key={img.url || i} className={styles.galleryImageContainer}>
-                                <Image
-                                    src={img.url}
-                                    alt={img.alt || ""}
-                                    width={0}
-                                    height={0}
-                                    className={styles.galleryImage}
-                                    sizes="(max-width: 768px) 50vw, 200px"
-                                />
-                                <div style={{
-                                    position: 'absolute', top: 0, right: 0,
-                                    display: 'flex', gap: '2px', padding: '4px',
-                                    zIndex: 10,
-                                }}>
-                                    {i > 0 && (
-                                        <button
-                                            onClick={() => moveImage(i, i - 1)}
-                                            className={styles.galleryReorderBtn}
-                                            title="Move left"
+                            <div key={img.url || i} className={styles.galleryItemWrapper}>
+                                <div className={styles.galleryImageContainer}>
+                                    <Image
+                                        src={img.url}
+                                        alt={img.alt || ""}
+                                        width={0}
+                                        height={0}
+                                        className={styles.galleryImage}
+                                        sizes="(max-width: 768px) 50vw, 200px"
+                                    />
+                                    <div style={{
+                                        position: 'absolute', top: 0, right: 0,
+                                        display: 'flex', gap: '2px', padding: '4px',
+                                        zIndex: 10,
+                                    }}>
+                                        {i > 0 && (
+                                            <button
+                                                onClick={() => moveImage(i, i - 1)}
+                                                className={styles.galleryReorderBtn}
+                                                title="Move left"
+                                            >
+                                                <ArrowLeft size={14} />
+                                            </button>
+                                        )}
+                                        {i < images.length - 1 && (
+                                            <button
+                                                onClick={() => moveImage(i, i + 1)}
+                                                className={styles.galleryReorderBtn}
+                                                title="Move right"
+                                            >
+                                                <ArrowRight size={14} />
+                                            </button>
+                                        )}
+                                        <div style={{ position: 'relative', display: 'flex' }}
+                                            onMouseEnter={(e) => {
+                                                const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
+                                                if (menu) menu.style.display = 'flex';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
+                                                if (menu) menu.style.display = 'none';
+                                            }}
                                         >
-                                            <ArrowLeft size={14} />
-                                        </button>
-                                    )}
-                                    {i < images.length - 1 && (
+                                            <button
+                                                style={{
+                                                    width: '22px', height: '22px', borderRadius: '50%',
+                                                    background: 'rgba(59, 130, 246, 0.85)', color: 'white',
+                                                    border: 'none', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    marginRight: '2px'
+                                                }}
+                                                title="Replace image"
+                                            ><Upload size={10} /></button>
+                                            <div className="replaceMenu" style={{
+                                                display: 'none', position: 'absolute', top: '100%', right: 0,
+                                                background: 'white', borderRadius: '6px', padding: '4px',
+                                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 20, flexDirection: 'column',
+                                                gap: '2px', minWidth: '100px'
+                                            }}>
+                                                <button onClick={() => { setReplaceIndex(i); setShowLibrary(true); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Images size={10} /> Library</button>
+                                                <button onClick={() => { setReplaceIndex(i); replaceFileInputRef.current?.click(); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Upload size={10} /> Upload</button>
+                                            </div>
+                                        </div>
                                         <button
-                                            onClick={() => moveImage(i, i + 1)}
-                                            className={styles.galleryReorderBtn}
-                                            title="Move right"
-                                        >
-                                            <ArrowRight size={14} />
-                                        </button>
-                                    )}
-                                    <div style={{ position: 'relative', display: 'flex' }}
-                                        onMouseEnter={(e) => {
-                                            const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
-                                            if (menu) menu.style.display = 'flex';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            const menu = e.currentTarget.querySelector('.replaceMenu') as HTMLElement;
-                                            if (menu) menu.style.display = 'none';
-                                        }}
-                                    >
-                                        <button
+                                            onClick={() => removeImage(i)}
                                             style={{
                                                 width: '22px', height: '22px', borderRadius: '50%',
-                                                background: 'rgba(59, 130, 246, 0.85)', color: 'white',
+                                                background: 'rgba(220,38,38,0.85)', color: 'white',
                                                 border: 'none', cursor: 'pointer',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                marginRight: '2px'
                                             }}
-                                            title="Replace image"
-                                        ><Upload size={10} /></button>
-                                        <div className="replaceMenu" style={{
-                                            display: 'none', position: 'absolute', top: '100%', right: 0,
-                                            background: 'white', borderRadius: '6px', padding: '4px',
-                                            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 20, flexDirection: 'column',
-                                            gap: '2px', minWidth: '100px'
-                                        }}>
-                                            <button onClick={() => { setReplaceIndex(i); setShowLibrary(true); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Images size={10} /> Library</button>
-                                            <button onClick={() => { setReplaceIndex(i); replaceFileInputRef.current?.click(); }} style={{ padding: '4px 8px', fontSize: '0.7rem', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><Upload size={10} /> Upload</button>
-                                        </div>
+                                            title="Remove image"
+                                        ><X size={12} /></button>
                                     </div>
-                                    <button
-                                        onClick={() => removeImage(i)}
-                                        style={{
-                                            width: '22px', height: '22px', borderRadius: '50%',
-                                            background: 'rgba(220,38,38,0.85)', color: 'white',
-                                            border: 'none', cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        }}
-                                        title="Remove image"
-                                    ><X size={12} /></button>
                                 </div>
                                 <input
                                     type="text"
-                                    value={img.caption || img.alt || ""}
+                                    value={img.caption || ""}
                                     onChange={(e) => {
                                         const nextValue = e.target.value;
                                         const newImages = [...images];
-                                        newImages[i] = { ...newImages[i], caption: nextValue, alt: nextValue };
+                                        newImages[i] = { ...newImages[i], caption: nextValue };
                                         onUpdate({ ...block.data, images: newImages });
                                     }}
                                     placeholder="Enter caption..."
-                                    style={{
-                                        width: '100%',
-                                        marginTop: '0.25rem',
-                                        padding: '0.25rem 0.5rem',
-                                        fontSize: '0.75rem',
-                                        border: '1px solid #e2e8f0',
-                                        borderRadius: '4px',
-                                        background: 'rgba(255,255,255,0.8)',
-                                    }}
+                                    className={styles.galleryCaptionInput}
                                 />
                             </div>
                         ))}

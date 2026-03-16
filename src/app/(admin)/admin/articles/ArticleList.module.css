@@ -261,12 +261,19 @@
 }
 
 .pinBtn:hover {
-    color: #f59e0b;
-    background: #fefce8;
+    background: #f1f5f9;
+}
+
+.pinBtn:hover svg {
+    transform: scale(1.1);
 }
 
 .pinned {
     color: #f59e0b;
+}
+
+.shuffleActive {
+    color: #3b82f6;
 }
 
 /* Actions */

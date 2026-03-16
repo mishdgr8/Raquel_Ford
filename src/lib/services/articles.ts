@@ -81,6 +81,18 @@ export const articleService = {
         }).slice(0, 4);
     },
 
+    async getExploreTheMix() {
+        const q = query(
+            collection(db, ARTICLES_COLLECTION),
+            where("status", "==", "published"),
+            where("isExploreTheMix", "==", true),
+            orderBy("publishedAt", "desc"),
+            limit(6)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+    },
+
     async getArticleBySlug(slug: string) {
         // Query by slug only to avoid composite index requirements
         const q = query(collection(db, ARTICLES_COLLECTION), where("slug", "==", slug));
@@ -225,5 +237,13 @@ export const articleService = {
                 updatedAt: serverTimestamp(),
             });
         }
+    },
+
+    async toggleExploreTheMix(id: string, currentValue: boolean) {
+        const docRef = doc(db, ARTICLES_COLLECTION, id);
+        await updateDoc(docRef, {
+            isExploreTheMix: !currentValue,
+            updatedAt: serverTimestamp(),
+        });
     },
 };

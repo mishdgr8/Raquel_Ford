@@ -7,7 +7,7 @@ import { Article, ArticleStatus } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import Link from "next/link";
-import { Plus, Edit, Trash2, ExternalLink, Star, Archive, Send, CheckSquare } from "lucide-react";
+import { Plus, Edit, Trash2, ExternalLink, Star, Archive, Send, CheckSquare, Shuffle } from "lucide-react";
 import styles from "./ArticleList.module.css";
 import { formatDate } from "@/lib/utils";
 
@@ -194,6 +194,15 @@ function ArticleListContent() {
         }
     };
 
+    const handleToggleMix = async (article: Article) => {
+        try {
+            await articleService.toggleExploreTheMix(article.id!, article.isExploreTheMix || false);
+            await fetchArticles();
+        } catch (err) {
+            console.error('Toggle mix failed:', err);
+        }
+    };
+
     if (loading) return <div style={{ padding: '2rem' }}>Loading articles...</div>;
 
     return (
@@ -315,7 +324,8 @@ function ArticleListContent() {
                             <th>Category</th>
                             <th>Status</th>
                             <th>Tags</th>
-                            <th style={{ width: '40px' }}>⭐</th>
+                            <th style={{ width: '40px' }} title="Editor's Pick">⭐</th>
+                            <th style={{ width: '40px' }} title="Explore the Mix">🔀</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
@@ -358,6 +368,15 @@ function ArticleListContent() {
                                         title={article.isEditorsPick ? "Unpin from Editor's Pick" : "Pin as Editor's Pick"}
                                     >
                                         <Star size={16} fill={article.isEditorsPick ? '#f59e0b' : 'none'} />
+                                    </button>
+                                </td>
+                                <td>
+                                    <button
+                                        className={`${styles.pinBtn} ${article.isExploreTheMix ? styles.shuffleActive : ''}`}
+                                        onClick={() => handleToggleMix(article)}
+                                        title={article.isExploreTheMix ? "Remove from Explore the Mix" : "Add to Explore the Mix"}
+                                    >
+                                        <Shuffle size={16} />
                                     </button>
                                 </td>
                                 <td>{formatDate(article.createdAt)}</td>
