@@ -76,13 +76,13 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
     const [uploading, setUploading] = useState(false);
     const [showLibrary, setShowLibrary] = useState(false);
     const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
-    const images: { url: string; alt: string }[] = block.data.images || [];
+    const images: { url: string; alt: string; caption?: string }[] = block.data.images || [];
     const columns: number = block.data.columns || 3;
 
     const handleUpload = async (files: FileList) => {
         setUploading(true);
         try {
-            const uploaded: { url: string; alt: string }[] = [];
+            const uploaded: { url: string; alt: string; caption?: string }[] = [];
             for (const file of Array.from(files)) {
                 const result = await mediaService.uploadMedia(file, 'uploads');
                 uploaded.push({ url: result.url, alt: file.name.replace(/\.[^.]+$/, '') });
@@ -183,7 +183,7 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                             const uploaded = await Promise.all(
                                 files.map(f => mediaService.uploadMedia(f, 'gallery'))
                             );
-                            const newImages = uploaded.map((u, i) => ({ url: u.url, alt: files[i].name }));
+                            const newImages = uploaded.map((u, i) => ({ url: u.url, alt: files[i].name, caption: '' }));
 
                             if (replaceIndex !== null) {
                                 // Replace single image
@@ -214,14 +214,14 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                     onSelect={(url) => {
                         if (replaceIndex !== null) {
                             const next = [...images];
-                            next[replaceIndex] = { url, alt: '' };
+                            next[replaceIndex] = { url, alt: '', caption: '' };
                             onUpdate({ ...block.data, images: next });
                             setReplaceIndex(null);
                         }
                     }}
                     onSelectMultiple={(urls) => {
                         if (replaceIndex === null) {
-                            const newImages = urls.map(url => ({ url, alt: '' }));
+                            const newImages = urls.map(url => ({ url, alt: '', caption: '' }));
                             onUpdate({ ...block.data, images: [...images, ...newImages] });
                         }
                     }}
