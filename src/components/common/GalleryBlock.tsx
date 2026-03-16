@@ -7,6 +7,7 @@ import styles from "./GalleryBlock.module.css";
 interface GalleryImage {
     url: string;
     alt?: string;
+    caption?: string;
 }
 
 interface GalleryBlockProps {
@@ -51,19 +52,19 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                         key={i}
                         className={styles.item}
                         onClick={() => setLightboxIndex(i)}
-                        aria-label={`View image ${i + 1}: ${img.alt || ''}`}
+                        aria-label={`View image ${i + 1}: ${img.caption || img.alt || ''}`}
                     >
                         <Image
                             src={img.url}
-                            alt={img.alt || `Gallery image ${i + 1}`}
+                            alt={img.alt || img.caption || `Gallery image ${i + 1}`}
                             width={0}
                             height={0}
                             sizes="(max-width: 768px) 100vw, 33vw"
                             style={{ width: '100%', height: 'auto', display: 'block' }}
                         />
                         {/* Render caption if it exists and is not just empty space */}
-                        {img.alt && img.alt.trim().length > 0 && (
-                            <div className={styles.caption}>{img.alt}</div>
+                        {(img.caption || img.alt) && (img.caption || img.alt)?.trim().length! > 0 && (
+                            <div className={styles.caption}>{img.caption || img.alt}</div>
                         )}
                     </button>
                 ))}
@@ -89,7 +90,7 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                         className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            setLightboxIndex((lightboxIndex - 1 + images.length) % images.length);
+                            setLightboxIndex((prev) => (prev !== null ? (prev - 1 + images.length) % images.length : 0));
                         }}
                         aria-label="Previous image"
                     >
@@ -99,15 +100,15 @@ export function GalleryBlock({ images, columns = 3 }: GalleryBlockProps) {
                     <div className={styles.lightboxImageContainer} onClick={(e) => e.stopPropagation()}>
                         <Image
                             src={images[lightboxIndex].url}
-                            alt={images[lightboxIndex].alt || ''}
+                            alt={images[lightboxIndex].alt || images[lightboxIndex].caption || ''}
                             fill
                             className={styles.lightboxImage}
                             sizes="100vw"
                             priority
                         />
-                        {images[lightboxIndex].alt && images[lightboxIndex].alt.trim().length > 0 && (
+                        {(images[lightboxIndex].caption || images[lightboxIndex].alt) && (images[lightboxIndex].caption || images[lightboxIndex].alt)?.trim().length! > 0 && (
                             <div className={styles.lightboxCaption}>
-                                {images[lightboxIndex].alt}
+                                {images[lightboxIndex].caption || images[lightboxIndex].alt}
                             </div>
                         )}
                     </div>

@@ -31,12 +31,27 @@ export function Sidebar({ initialLatest }: SidebarProps) {
                 setLoading(true);
                 const categories = await categoryService.getCategories();
                 const selectedCategories = categories.slice(0, 6);
+
+                // Fetch up to 3 articles per category to find one with a working featured image
                 const articlePromises = selectedCategories.map(cat =>
-                    articleService.getPublishedArticles(cat.id, 1)
+                    articleService.getPublishedArticles(cat.id, 3)
                 );
                 const results = await Promise.all(articlePromises);
-                const articles = results.flatMap(res => res.articles).filter(Boolean);
-                setLatest(articles);
+
+                // For each category, find the first article that has a non-empty featured image
+                const articlesWithImages = [];
+                for (const res of results) {
+                    const found = res.articles.find(article =>
+                        article.featuredImage &&
+                        typeof article.featuredImage === 'string' &&
+                        article.featuredImage.trim().length > 0 &&
+                        !article.featuredImage.includes('undefined') &&
+                        (article.featuredImage.startsWith('http') || article.featuredImage.startsWith('/'))
+                    );
+                    if (found) articlesWithImages.push(found);
+                }
+
+                setLatest(articlesWithImages);
             } catch (error) {
                 console.error("Error fetching sidebar articles:", error);
             } finally {

@@ -310,10 +310,11 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                                 </div>
                                 <input
                                     type="text"
-                                    value={img.alt || ""}
+                                    value={img.caption || img.alt || ""}
                                     onChange={(e) => {
+                                        const nextValue = e.target.value;
                                         const newImages = [...images];
-                                        newImages[i] = { ...newImages[i], alt: e.target.value };
+                                        newImages[i] = { ...newImages[i], caption: nextValue, alt: nextValue };
                                         onUpdate({ ...block.data, images: newImages });
                                     }}
                                     placeholder="Enter caption..."
