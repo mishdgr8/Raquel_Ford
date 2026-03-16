@@ -82,15 +82,21 @@ export const articleService = {
     },
 
     async getExploreTheMix() {
+        // Query only by boolean field to avoid composite index requirements
         const q = query(
             collection(db, ARTICLES_COLLECTION),
             where("status", "==", "published"),
-            where("isExploreTheMix", "==", true),
-            orderBy("publishedAt", "desc"),
-            limit(6)
+            where("isExploreTheMix", "==", true)
         );
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+        const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+
+        // Sort in memory to avoid index requirements for now
+        return articles.sort((a, b) => {
+            const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
+            const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+            return timeB - timeA;
+        }).slice(0, 6);
     },
 
     async getArticleBySlug(slug: string) {

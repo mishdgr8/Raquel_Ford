@@ -30,12 +30,8 @@ export default async function HomePage() {
 
     const latestArticles = latestArticlesResponse.articles;
 
-    // Fetch sidebar articles (1 per category for first 6)
-    const sidebarArticles = await Promise.all(
-        allCategories.slice(0, 6).map(cat =>
-            articleService.getPublishedArticles(cat.id, 1).then(res => res.articles[0])
-        )
-    ).then(articles => articles.filter(Boolean));
+    // Fetch sidebar articles (Explore the Mix)
+    const sidebarArticles = await articleService.getExploreTheMix();
 
     const targetNames = ['beauty', 'entertainment', 'events', 'fashion', 'food', 'living'];
     const initialCategories = allCategories

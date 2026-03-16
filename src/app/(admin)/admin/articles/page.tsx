@@ -196,10 +196,19 @@ function ArticleListContent() {
 
     const handleToggleMix = async (article: Article) => {
         try {
+            const newValue = !(article.isExploreTheMix || false);
             await articleService.toggleExploreTheMix(article.id!, article.isExploreTheMix || false);
+
+            // Optimistic update to UI state
+            setArticles(prev => prev.map(a =>
+                a.id === article.id ? { ...a, isExploreTheMix: newValue } : a
+            ));
+
+            // Re-fetch to be sure
             await fetchArticles();
         } catch (err) {
             console.error('Toggle mix failed:', err);
+            alert('Failed to update Explore the Mix status.');
         }
     };
 

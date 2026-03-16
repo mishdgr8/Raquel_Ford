@@ -30,7 +30,16 @@ export function Sidebar({ initialLatest }: SidebarProps) {
             try {
                 setLoading(true);
                 const articles = await articleService.getExploreTheMix();
-                setLatest(articles);
+
+                // Safety filter for broken images
+                const validArticles = articles.filter(article =>
+                    article.featuredImage &&
+                    typeof article.featuredImage === 'string' &&
+                    article.featuredImage.trim().length > 0 &&
+                    !article.featuredImage.includes('undefined')
+                );
+
+                setLatest(validArticles);
             } catch (error) {
                 console.error("Error fetching Explore the Mix articles:", error);
             } finally {

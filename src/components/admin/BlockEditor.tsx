@@ -310,18 +310,21 @@ export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMove
                                         ><X size={12} /></button>
                                     </div>
                                 </div>
-                                <input
-                                    type="text"
-                                    value={img.caption || ""}
-                                    onChange={(e) => {
-                                        const nextValue = e.target.value;
-                                        const newImages = [...images];
-                                        newImages[i] = { ...newImages[i], caption: nextValue };
-                                        onUpdate({ ...block.data, images: newImages });
-                                    }}
-                                    placeholder="Enter caption..."
-                                    className={styles.galleryCaptionInput}
-                                />
+                                <div className={styles.captionWrapper}>
+                                    <label className={styles.captionLabel}>Caption</label>
+                                    <input
+                                        type="text"
+                                        value={img.caption || ""}
+                                        onChange={(e) => {
+                                            const nextValue = e.target.value;
+                                            const newImages = [...images];
+                                            newImages[i] = { ...newImages[i], caption: nextValue };
+                                            onUpdate({ ...block.data, images: newImages });
+                                        }}
+                                        placeholder="Add a descriptive caption..."
+                                        className={styles.galleryCaptionInput}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>
