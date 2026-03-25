@@ -150,11 +150,11 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
     };
 
     const handleEmbed = () => {
-        const url = prompt("Paste YouTube or Instagram URL:");
+        const url = prompt("Paste YouTube, Instagram, X/Twitter, TikTok, or Spotify URL:");
         if (!url) return;
         const success = editor.chain().focus().setEmbed({ url }).run();
         if (!success) {
-            alert("Could not detect embed type. Please use a valid YouTube or Instagram URL.");
+            alert("Could not detect embed type. Please use a valid URL from supported platforms (YouTube, Instagram, X, TikTok, Spotify).");
         }
     };
 

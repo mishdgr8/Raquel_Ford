@@ -277,6 +277,28 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                                     />
                                 </div>
+                            ) : embedType === 'twitter' ? (
+                                <div className="light" style={{ width: '100%', maxWidth: '550px', margin: '0 auto' }}>
+                                    <Tweet id={embedId} />
+                                </div>
+                            ) : embedType === 'tiktok' ? (
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <blockquote className="tiktok-embed" data-video-id={embedId} style={{ maxWidth: '605px', minWidth: '325px' }}>
+                                        <section><a target="_blank" title="TikTok" href={`https://www.tiktok.com/video/${embedId}`}>@TikTok</a></section>
+                                    </blockquote>
+                                </div>
+                            ) : embedType === 'spotify' ? (
+                                <div style={{ width: '100%', maxWidth: '100%' }}>
+                                    <iframe
+                                        src={`https://open.spotify.com/embed/${embedId}`}
+                                        width="100%"
+                                        height="152"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                        allowFullScreen
+                                        style={{ borderRadius: '12px' }}
+                                    />
+                                </div>
                             ) : (
                                 renderInstagramEmbed(embedId)
                             )}

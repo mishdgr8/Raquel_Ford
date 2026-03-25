@@ -24,12 +24,36 @@ function parseInstagramUrl(url: string): string | null {
     return match ? `${match[1]}/${match[2]}` : null;
 }
 
-function detectEmbedType(url: string): { type: 'youtube' | 'instagram' | null; id: string | null } {
+function parseTwitterUrl(url: string): string | null {
+    const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+    return match ? match[1] : null;
+}
+
+function parseTikTokUrl(url: string): string | null {
+    const match = url.match(/tiktok\.com\/@[\w.-]+\/video\/(\d+)/) || url.match(/tiktok\.com\/v\/(\d+)/);
+    return match ? match[1] : null;
+}
+
+function parseSpotifyUrl(url: string): string | null {
+    const match = url.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/);
+    return match ? `${match[1]}/${match[2]}` : null;
+}
+
+function detectEmbedType(url: string): { type: 'youtube' | 'instagram' | 'twitter' | 'tiktok' | 'spotify' | null; id: string | null } {
     const ytId = parseYouTubeUrl(url);
     if (ytId) return { type: 'youtube', id: ytId };
 
     const igId = parseInstagramUrl(url);
     if (igId) return { type: 'instagram', id: igId };
+
+    const twId = parseTwitterUrl(url);
+    if (twId) return { type: 'twitter', id: twId };
+
+    const tkId = parseTikTokUrl(url);
+    if (tkId) return { type: 'tiktok', id: tkId };
+
+    const spId = parseSpotifyUrl(url);
+    if (spId) return { type: 'spotify', id: spId };
 
     return { type: null, id: null };
 }
@@ -119,6 +143,34 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
                     style: 'border: 0; max-width: 540px; margin: 0 auto; display: block;',
                 }],
             ];
+        } else if (embedType === 'twitter' && embedId) {
+            embedContent = [
+                ['div', {
+                    class: 'twitter-embed-placeholder',
+                    'data-tweet-id': embedId,
+                    style: 'padding: 2rem; text-align: center; border: 1px solid #e2e8f0; border-radius: 8px;'
+                }, 'Twitter/X Post Placeholder']
+            ];
+        } else if (embedType === 'tiktok' && embedId) {
+            embedContent = [
+                ['blockquote', {
+                    class: 'tiktok-embed',
+                    'data-video-id': embedId,
+                    style: 'width: 100%; border: 1px solid #e2e8f0; border-radius: 8px;'
+                }, ['section', {}, ['a', { href: `https://www.tiktok.com/video/${embedId}` }, 'TikTok Video']]]
+            ];
+        } else if (embedType === 'spotify' && embedId) {
+            embedContent = [
+                ['iframe', {
+                    src: `https://open.spotify.com/embed/${embedId}`,
+                    width: '100%',
+                    height: '152',
+                    frameborder: '0',
+                    allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture',
+                    allowfullscreen: 'true',
+                    style: 'border-radius: 12px;',
+                }],
+            ];
         }
 
         return [
@@ -203,6 +255,37 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
                 iframe.setAttribute('loading', 'lazy');
                 iframe.title = 'Embedded Instagram post';
 
+                dom.appendChild(label);
+                dom.appendChild(iframe);
+            } else if (embedType === 'twitter') {
+                label.textContent = '𝕏 Twitter Embed';
+                const placeholder = document.createElement('div');
+                placeholder.style.padding = '2rem';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.color = '#64748b';
+                placeholder.innerHTML = `<strong>Tweet ID: ${embedId}</strong><br/><span style="font-size: 0.8rem">${originalUrl}</span>`;
+                dom.appendChild(label);
+                dom.appendChild(placeholder);
+            } else if (embedType === 'tiktok') {
+                label.textContent = '🎵 TikTok Embed';
+                const placeholder = document.createElement('div');
+                placeholder.style.padding = '2rem';
+                placeholder.style.textAlign = 'center';
+                placeholder.style.color = '#64748b';
+                placeholder.innerHTML = `<strong>TikTok Video: ${embedId}</strong><br/><span style="font-size: 0.8rem">${originalUrl}</span>`;
+                dom.appendChild(label);
+                dom.appendChild(placeholder);
+            } else if (embedType === 'spotify') {
+                label.textContent = '🎧 Spotify Embed';
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://open.spotify.com/embed/${embedId}`;
+                iframe.style.width = '100%';
+                iframe.style.height = '152px';
+                iframe.style.border = '0';
+                iframe.style.borderRadius = '12px';
+                iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture');
+                iframe.setAttribute('loading', 'lazy');
+                iframe.title = 'Embedded Spotify content';
                 dom.appendChild(label);
                 dom.appendChild(iframe);
             } else {
