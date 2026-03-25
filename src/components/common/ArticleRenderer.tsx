@@ -12,11 +12,21 @@ interface ArticleRendererProps {
     html?: string;
 }
 
+declare global {
+    interface Window {
+        instgrm?: {
+            Embeds: {
+                process: () => void;
+            };
+        };
+    }
+}
+
 export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
     useEffect(() => {
         // Trigger Instagram embed processing when content loads/changes
         if (typeof window !== 'undefined') {
-            if ((window as any).instgrm) (window as any).instgrm.Embeds.process();
+            if (window.instgrm) window.instgrm.Embeds.process();
         }
 
         // Handle native embeds for non-Twitter content (Instagram, TikTok, Spotify)
@@ -299,8 +309,12 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
                                         style={{ borderRadius: '12px' }}
                                     />
                                 </div>
-                            ) : (
+                            ) : embedType === 'instagram' ? (
                                 renderInstagramEmbed(embedId)
+                            ) : (
+                                <div style={{ padding: '1rem', border: '1px solid #eee', borderRadius: '0.5rem', textAlign: 'center', color: '#666' }}>
+                                    External content from {embedType} is showing here.
+                                </div>
                             )}
                         </div>
                     )

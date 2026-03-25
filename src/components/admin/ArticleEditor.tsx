@@ -11,7 +11,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import Image from "next/image";
 import styles from "./ArticleEditor.module.css";
-import { slugify, generateExcerpt } from "@/lib/utils";
+import { slugify, generateExcerpt, toDate } from "@/lib/utils";
 import { Save, ChevronLeft, Eye, Edit3, Upload, X, Images, Undo2, Redo2 } from "lucide-react";
 import { BlockEditor } from "./BlockEditor";
 import { ArticleRenderer } from "../common/ArticleRenderer";
@@ -191,7 +191,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
             const finalExcerpt = form.excerpt?.trim() ? form.excerpt.trim() : generateExcerpt(html);
 
-            const dataToSave: any = {
+            const dataToSave: Partial<Article> = {
                 title: form.title || "",
                 slug: finalSlug,
                 excerpt: finalExcerpt || "",
@@ -208,8 +208,8 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
             // Firestore rejects undefined values, so strip them out just in case
             Object.keys(dataToSave).forEach(key => {
-                if (dataToSave[key] === undefined) {
-                    delete dataToSave[key];
+                if ((dataToSave as any)[key] === undefined) {
+                    delete (dataToSave as any)[key];
                 }
             });
 
@@ -231,15 +231,16 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
             // Firestore rejects undefined values completely, even nested ones.
             // We recursively strip out undefined values to ensure successful saves.
-            const removeUndefined = (obj: any): any => {
+            const removeUndefined = (obj: unknown): unknown => {
                 if (obj === null || obj === undefined) return obj;
                 if (obj instanceof Date) return obj;
                 if (Array.isArray(obj)) return obj.map(removeUndefined);
                 if (typeof obj === 'object') {
-                    const result: any = {};
-                    for (const key in obj) {
-                        if (obj[key] !== undefined) {
-                            result[key] = removeUndefined(obj[key]);
+                    const result: Record<string, unknown> = {};
+                    const castObj = obj as Record<string, unknown>;
+                    for (const key in castObj) {
+                        if (castObj[key] !== undefined) {
+                            result[key] = removeUndefined(castObj[key]);
                         }
                     }
                     return result;
@@ -247,7 +248,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 return obj;
             };
 
-            const finalDataToSave = removeUndefined(dataToSave);
+            const finalDataToSave = removeUndefined(dataToSave) as Partial<Article>;
 
             setForm(prev => ({ ...prev, status: newStatus }));
 
@@ -380,9 +381,9 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                         type="datetime-local"
                                         value={(() => {
                                             if (!form.publishedAt) return '';
-                                            const date = new Date(form.publishedAt);
+                                            const date = toDate(form.publishedAt);
                                             // Handle invalid dates
-                                            if (isNaN(date.getTime())) return '';
+                                            if (!date || isNaN(date.getTime())) return '';
 
                                             // Format to YYYY-MM-DDTHH:mm in local time
                                             const pad = (n: number) => n < 10 ? '0' + n : n;
@@ -493,7 +494,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                 </label>
                                 <select
                                     value={form.headingStyle || 'none'}
-                                    onChange={(e) => setForm(prev => ({ ...prev, headingStyle: e.target.value as any }))}
+                                    onChange={(e) => setForm(prev => ({ ...prev, headingStyle: e.target.value as Article['headingStyle'] }))}
                                     style={{
                                         width: '100%', padding: '0.5rem', borderRadius: '0.375rem',
                                         border: '1px solid #e2e8f0', fontSize: '0.875rem', backgroundColor: '#fff'

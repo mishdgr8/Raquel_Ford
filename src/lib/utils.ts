@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { FirestoreTimestamp, ContentBlock } from "./types";
 
 /**
  * Merges class names safely
@@ -22,11 +23,27 @@ export function slugify(text: string): string {
 }
 
 /**
+ * Converts any timestamp/date/string to a native Date object
+ */
+export function toDate(timestamp: FirestoreTimestamp | Date | string | null | undefined): Date | null {
+    if (!timestamp) return null;
+    if (timestamp instanceof Date) return timestamp;
+
+    const ts = timestamp as any;
+    if (typeof ts.toDate === 'function') return ts.toDate();
+    if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000);
+
+    const date = new Date(timestamp as string);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+/**
  * Formats a Firestore timestamp to a readable date
  */
-export function formatDate(timestamp: any): string {
-    if (!timestamp) return "";
-    const date = timestamp.toDate?.() || new Date(timestamp);
+export function formatDate(timestamp: FirestoreTimestamp | Date | string | null | undefined): string {
+    const date = toDate(timestamp);
+    if (!date) return "";
+
     return new Intl.DateTimeFormat("en-US", {
         month: "long",
         day: "numeric",
@@ -35,13 +52,22 @@ export function formatDate(timestamp: any): string {
 }
 
 /**
+ * Converts any timestamp/date to an ISO string
+ */
+export function toISODateString(timestamp: FirestoreTimestamp | Date | string | null | undefined): string | undefined {
+    const date = toDate(timestamp);
+    return date ? date.toISOString() : undefined;
+}
+
+/**
  * Estimates reading time for a block-based content
  */
-export function estimateReadingTime(blocks: any[]): number {
+export function estimateReadingTime(blocks: ContentBlock[] | null | undefined): number {
     if (!blocks) return 0;
     const words = blocks.reduce((acc, block) => {
-        if (block.type === 'paragraph' || block.type === 'heading') {
-            return acc + (block.content?.split(' ').length || 0);
+        if (block.type === 'text') {
+            const content = typeof block.data === 'string' ? block.data : (block.data as Record<string, unknown>)?.text as string;
+            return acc + (content?.split(' ').length || 0);
         }
         return acc;
     }, 0);
@@ -52,7 +78,7 @@ export function estimateReadingTime(blocks: any[]): number {
  * Serializes Firestore data (converts Timestamps to ISO strings)
  * so it can be passed to Client Components.
  */
-export function serializeFirestoreData(data: any): any {
+export function serializeFirestoreData(data: unknown): any {
     if (!data) return data;
 
     if (Array.isArray(data)) {
@@ -60,19 +86,20 @@ export function serializeFirestoreData(data: any): any {
     }
 
     if (typeof data === 'object' && data !== null) {
+        const obj = data as Record<string, any>;
         // Handle Firestore Timestamp
-        if (typeof data.toDate === 'function') {
-            return data.toDate().toISOString();
+        if (typeof obj.toDate === 'function') {
+            return obj.toDate().toISOString();
         }
 
         // Handle simple object with seconds/nanoseconds (sometimes passed like this)
-        if ('seconds' in data && 'nanoseconds' in data && Object.keys(data).length <= 2) {
-            return new Date(data.seconds * 1000).toISOString();
+        if ('seconds' in obj && 'nanoseconds' in obj && Object.keys(obj).length <= 3) {
+            return new Date(obj.seconds * 1000).toISOString();
         }
 
-        const newData: any = {};
-        for (const key in data) {
-            newData[key] = serializeFirestoreData(data[key]);
+        const newData: Record<string, any> = {};
+        for (const key in obj) {
+            newData[key] = serializeFirestoreData(obj[key]);
         }
         return newData;
     }

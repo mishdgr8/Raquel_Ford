@@ -163,8 +163,9 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         input.type = 'file';
         input.multiple = true;
         input.accept = 'image/*';
-        input.onchange = async (e: any) => {
-            const files = Array.from(e.target.files || []) as File[];
+        input.onchange = async (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const files = Array.from(target.files || []) as File[];
             if (files.length === 0) return;
             try {
                 const uploaded = await Promise.all(

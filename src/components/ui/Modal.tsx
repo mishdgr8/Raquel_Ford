@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from './Modal.module.css';
 import { X } from "lucide-react";
-import { clsx } from "clsx";
 
 interface ModalProps {
     isOpen: boolean;
@@ -18,13 +17,16 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
     useEffect(() => {
         setMounted(true);
-        if (isOpen) {
+    }, []);
+
+    useEffect(() => {
+        if (isOpen && mounted) {
             document.body.style.overflow = 'hidden';
         }
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen]);
+    }, [isOpen, mounted]);
 
     if (!mounted || !isOpen) return null;
 

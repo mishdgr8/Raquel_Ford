@@ -64,7 +64,7 @@ function isEmbedUrl(text: string): boolean {
 // ─── Gallery Block Editor ────────────────────────────
 export function GalleryBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
     block: ContentBlock;
-    onUpdate: (data: any) => void;
+    onUpdate: (data: ContentBlock['data']) => void;
     onDelete: () => void;
     onMoveUp: () => void;
     onMoveDown: () => void;
@@ -381,7 +381,7 @@ interface BlockEditorProps {
 // ─── Embed Block Editor ─────────────────────────────
 function EmbedBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
     block: ContentBlock;
-    onUpdate: (data: any) => void;
+    onUpdate: (data: ContentBlock['data']) => void;
     onDelete: () => void;
     onMoveUp: () => void;
     onMoveDown: () => void;
@@ -709,7 +709,7 @@ function TextBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFi
 // ─── Image Block ────────────────────────────────────
 function ImageBlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: {
     block: ContentBlock;
-    onUpdate: (data: any) => void;
+    onUpdate: (data: ContentBlock['data']) => void;
     onDelete: () => void;
     onMoveUp: () => void;
     onMoveDown: () => void;
@@ -920,7 +920,7 @@ export function BlockEditor({ blocks, onChange, onUndo, onRedo }: BlockEditorPro
         onChange(next);
     };
 
-    const updateBlock = (id: string, data: any, forceHistory = false) => {
+    const updateBlock = (id: string, data: ContentBlock['data'], forceHistory = false) => {
         onChange(blocks.map(b => b.id === id ? { ...b, data } : b), forceHistory);
     };
 

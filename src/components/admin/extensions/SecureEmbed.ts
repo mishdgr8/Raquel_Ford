@@ -1,9 +1,10 @@
 "use client";
 
 import { Node, mergeAttributes } from '@tiptap/core';
+import { DOMOutputSpec } from '@tiptap/pm/model';
 
 export interface SecureEmbedOptions {
-    HTMLAttributes: Record<string, any>;
+    HTMLAttributes: Record<string, unknown>;
 }
 
 // URL parsers for supported platforms
@@ -83,21 +84,21 @@ export const SecureEmbed = Node.create<SecureEmbedOptions>({
             embedType: {
                 default: null,
                 parseHTML: (element: HTMLElement) => element.getAttribute('data-embed-type'),
-                renderHTML: (attributes: Record<string, any>) => ({
+                renderHTML: (attributes: Record<string, unknown>) => ({
                     'data-embed-type': attributes.embedType,
                 }),
             },
             embedId: {
                 default: null,
                 parseHTML: (element: HTMLElement) => element.getAttribute('data-embed-id'),
-                renderHTML: (attributes: Record<string, any>) => ({
+                renderHTML: (attributes: Record<string, unknown>) => ({
                     'data-embed-id': attributes.embedId,
                 }),
             },
             originalUrl: {
                 default: '',
                 parseHTML: (element: HTMLElement) => element.getAttribute('data-original-url') || '',
-                renderHTML: (attributes: Record<string, any>) => ({
+                renderHTML: (attributes: Record<string, unknown>) => ({
                     'data-original-url': attributes.originalUrl,
                 }),
             },

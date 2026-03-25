@@ -17,6 +17,13 @@ export interface Tag {
     slug: string;
 }
 
+export interface FirestoreTimestamp {
+    seconds: number;
+    nanoseconds: number;
+    toMillis: () => number;
+    toDate: () => Date;
+}
+
 export interface Media {
     id?: string;
     url: string;
@@ -31,7 +38,7 @@ export interface Media {
     description?: string;
     fileName?: string;
     slug?: string;
-    createdAt: any; // Firestore Timestamp
+    createdAt: FirestoreTimestamp;
 }
 
 export interface Article {
@@ -47,8 +54,8 @@ export interface Article {
     coverMediaId?: string;
     categoryId: string;
     status: ArticleStatus;
-    publishedAt: any;
-    scheduledAt?: any;
+    publishedAt?: FirestoreTimestamp | Date;
+    scheduledAt?: FirestoreTimestamp | Date;
     seoTitle?: string;
     seoDescription?: string;
     ogMediaId?: string;
@@ -58,21 +65,21 @@ export interface Article {
     headingStyle?: HeadingStyle;
     tags?: string[];
     tagSlugs?: string[];
-    createdAt: any;
-    updatedAt: any;
+    createdAt: FirestoreTimestamp | Date;
+    updatedAt: FirestoreTimestamp | Date;
 }
 
 export interface ContentBlock {
     id: string;
     type: 'text' | 'image' | 'video' | 'divider' | 'embed' | 'gallery';
-    data: any;
+    data: Record<string, any>;
 }
 
 export interface BlockInstance {
     id: string;
     templateId: string;
     blockType: string;
-    configJson: any;
+    configJson: Record<string, unknown>;
     orderIndex: number;
 }
 
@@ -82,8 +89,8 @@ export interface PageTemplate {
     name: string;
     isActive: boolean;
     blocks: BlockInstance[];
-    createdAt: any;
-    updatedAt: any;
+    createdAt: FirestoreTimestamp | Date;
+    updatedAt: FirestoreTimestamp | Date;
 }
 
 export interface NewsletterSubscriber {
@@ -92,7 +99,7 @@ export interface NewsletterSubscriber {
     firstName?: string;
     status: 'pending' | 'active' | 'unsubscribed';
     source: string;
-    createdAt: any;
+    createdAt: FirestoreTimestamp;
 }
 
 export interface SiteSettings {
@@ -116,5 +123,5 @@ export interface SiteSettings {
     footer: {
         content?: string;
     };
-    updatedAt?: any;
+    updatedAt?: FirestoreTimestamp;
 }
