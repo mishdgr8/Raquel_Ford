@@ -13,13 +13,17 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 
+import { FirestoreTimestamp } from "../types";
+
 export interface Comment {
     id: string;
     articleId: string;
     authorName: string;
     content: string;
-    createdAt: any; // Serialized date string
+    createdAt: FirestoreTimestamp | Date | string;
 }
+
+import { toDate } from "../utils";
 
 const COMMENTS_COLLECTION = "comments";
 
@@ -41,8 +45,8 @@ export const commentService = {
 
         // Sort in memory to avoid needing a composite index
         return comments.sort((a, b) => {
-            const timeA = new Date(a.createdAt).getTime();
-            const timeB = new Date(b.createdAt).getTime();
+            const timeA = toDate(a.createdAt)?.getTime() || 0;
+            const timeB = toDate(b.createdAt)?.getTime() || 0;
             return timeB - timeA; // Descending
         });
     },
@@ -71,8 +75,8 @@ export const commentService = {
 
         // Sort in memory (newest first)
         return comments.sort((a, b) => {
-            const timeA = new Date(a.createdAt).getTime();
-            const timeB = new Date(b.createdAt).getTime();
+            const timeA = toDate(a.createdAt)?.getTime() || 0;
+            const timeB = toDate(b.createdAt)?.getTime() || 0;
             return timeB - timeA;
         });
     },

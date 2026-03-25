@@ -5,6 +5,7 @@ import { getArticleComments, postComment } from "@/app/actions/comments";
 import { Comment } from "@/lib/services/comments";
 import styles from "./CommentSection.module.css";
 import { formatDistanceToNow } from "date-fns";
+import { toDate } from "@/lib/utils";
 
 interface CommentSectionProps {
     articleId: string;
@@ -98,7 +99,7 @@ export function CommentSection({ articleId }: CommentSectionProps) {
                             <div className={styles.commentHeader}>
                                 <span className={styles.author}>{comment.authorName}</span>
                                 <span className={styles.date}>
-                                    {comment.createdAt?.toDate ? formatDistanceToNow(comment.createdAt.toDate(), { addSuffix: true }) : 'Just now'}
+                                    {toDate(comment.createdAt) ? formatDistanceToNow(toDate(comment.createdAt)!, { addSuffix: true }) : 'Just now'}
                                 </span>
                             </div>
                             <p className={styles.content}>{comment.content}</p>

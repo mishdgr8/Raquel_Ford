@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ExternalLink, CheckSquare } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { toDate } from "@/lib/utils";
 
 export default function CommentsModerationPage() {
     const [comments, setComments] = useState<Comment[]>([]);
@@ -166,7 +167,7 @@ export default function CommentsModerationPage() {
                                         </div>
                                     </td>
                                     <td>
-                                        {comment.createdAt?.toDate ? format(comment.createdAt.toDate(), "MMM d, yyyy h:mm a") : "Unknown"}
+                                        {toDate(comment.createdAt) ? format(toDate(comment.createdAt)!, "MMM d, yyyy h:mm a") : "Unknown"}
                                     </td>
                                     <td>
                                         {/* Ideally we'd have the article slug, but we only store the articleId in the comment. We can link to edit article for now. */}

@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
+import { toDate } from "@/lib/utils";
 
 export default function AdminDashboard() {
     const { user } = useAuth();
@@ -27,7 +28,7 @@ export default function AdminDashboard() {
     const loadStats = async () => {
         try {
             const all = await articleService.getAllArticles();
-            setArticles(all);
+            setArticles(all || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -37,12 +38,12 @@ export default function AdminDashboard() {
 
     const published = articles.filter(a => a.status === 'published');
     const drafts = articles.filter(a => a.status === 'draft');
-    const editorsPicks = articles.filter(a => a.isEditorsPick);
+    const editorsPicks = articles.filter(a => !!a.isEditorsPick);
     const recentArticles = [...articles]
         .sort((a, b) => {
-            const aTime = a.updatedAt?.seconds || a.createdAt?.seconds || 0;
-            const bTime = b.updatedAt?.seconds || b.createdAt?.seconds || 0;
-            return bTime - aTime;
+            const aDate = toDate(a.updatedAt) || toDate(a.createdAt) || new Date(0);
+            const bDate = toDate(b.updatedAt) || toDate(b.createdAt) || new Date(0);
+            return bDate.getTime() - aDate.getTime();
         })
         .slice(0, 5);
 
@@ -134,9 +135,7 @@ export default function AdminDashboard() {
                                 </span>
                             </div>
                             <span className={styles.recentDate}>
-                                {article.updatedAt?.seconds
-                                    ? new Date(article.updatedAt.seconds * 1000).toLocaleDateString()
-                                    : '—'}
+                                {toDate(article.updatedAt)?.toLocaleDateString() || '—'}
                             </span>
                         </Link>
                     ))}
