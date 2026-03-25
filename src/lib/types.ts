@@ -38,7 +38,7 @@ export interface Media {
     description?: string;
     fileName?: string;
     slug?: string;
-    createdAt: FirestoreTimestamp;
+    createdAt: FirestoreTimestamp | Date | string;
 }
 
 export interface Article {
@@ -79,8 +79,9 @@ export interface BlockInstance {
     id: string;
     templateId: string;
     blockType: string;
-    configJson: Record<string, unknown>;
+    configJson: Record<string, any>;
     orderIndex: number;
+
 }
 
 export interface PageTemplate {

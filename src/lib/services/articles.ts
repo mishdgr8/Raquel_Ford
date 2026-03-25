@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { Article, ArticleStatus } from "../types";
+import { toDate } from "../utils";
 
 const ARTICLES_COLLECTION = "articles";
 
@@ -75,8 +76,8 @@ export const articleService = {
                 return orderB - orderA; // Highest order first (most recently pinned)
             }
             // Fallback to publishedAt
-            const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
-            const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+            const timeA = toDate(a.publishedAt)?.getTime() || 0;
+            const timeB = toDate(b.publishedAt)?.getTime() || 0;
             return timeB - timeA;
         }).slice(0, 4);
     },
@@ -93,8 +94,8 @@ export const articleService = {
 
         // Sort in memory to avoid index requirements for now
         return articles.sort((a, b) => {
-            const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
-            const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+            const timeA = toDate(a.publishedAt)?.getTime() || 0;
+            const timeB = toDate(b.publishedAt)?.getTime() || 0;
             return timeB - timeA;
         }).slice(0, 6);
     },
@@ -133,8 +134,8 @@ export const articleService = {
         // 2. If we have published ones, sort by date and take the OLDEST to match the grid's dedupe behavior
         if (publishedArticles.length > 0) {
             publishedArticles.sort((a, b) => {
-                const dateA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : 0;
-                const dateB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : 0;
+                const dateA = toDate(a.publishedAt)?.getTime() || 0;
+                const dateB = toDate(b.publishedAt)?.getTime() || 0;
                 return dateA - dateB; // ASCENDING for OLDEST first
             });
             return publishedArticles[0];

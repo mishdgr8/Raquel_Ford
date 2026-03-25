@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { deduplicateArticles } from "@/lib/utils";
+import { deduplicateArticles, toDate } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
@@ -40,8 +40,8 @@ function SearchResults() {
 
                 // Sort by date (newest first) and keep only unique slugs (first occurrence = newest)
                 const uniqueArticles = deduplicateArticles(filtered).sort((a, b) => {
-                    const timeA = a.publishedAt?.toMillis ? a.publishedAt.toMillis() : new Date(a.publishedAt || 0).getTime();
-                    const timeB = b.publishedAt?.toMillis ? b.publishedAt.toMillis() : new Date(b.publishedAt || 0).getTime();
+                    const timeA = toDate(a.publishedAt)?.getTime() || 0;
+                    const timeB = toDate(b.publishedAt)?.getTime() || 0;
                     return timeB - timeA;
                 });
 
