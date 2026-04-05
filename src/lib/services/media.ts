@@ -9,9 +9,11 @@ import {
     orderBy,
     serverTimestamp
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { db, storage } from "../firebase";
+import { db } from "../firebase";
 import { Media } from "../types";
+
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dowyjfruh";
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default";
 
 const MEDIA_COLLECTION = "media";
 
@@ -36,31 +38,60 @@ export const mediaService = {
         folder: string = "uploads",
         meta: { altText?: string; title?: string; caption?: string; description?: string } = {}
     ) {
-        // 1. Upload to Storage
-        const path = `${folder}/${Date.now()}_${file.name}`;
-        const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(snapshot.ref);
+        try {
+            console.log(`Starting Cloudinary upload for ${file.name}...`);
 
-        // 2. Save metadata to Firestore
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
-        const docRef = await addDoc(collection(db, MEDIA_COLLECTION), {
-            url,
-            path,
-            name: file.name,
-            fileName: file.name,
-            type: file.type,
-            size: file.size,
-            extension: file.name.split('.').pop() || "",
-            altText: meta.altText || "",
-            title: meta.title || baseName,
-            caption: meta.caption || "",
-            description: meta.description || "",
-            slug: slugify(baseName),
-            createdAt: serverTimestamp(),
-        });
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('folder', folder);
 
-        return { id: docRef.id, url, path };
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Cloudinary upload failed');
+            }
+
+            const data = await response.json();
+            const url = data.secure_url;
+            const path = data.public_id;
+
+            console.log("Cloudinary upload success, saving to Firestore...");
+
+            // 2. Save metadata to Firestore
+            const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const docRef = await addDoc(collection(db, MEDIA_COLLECTION), {
+                url,
+                path,
+                name: file.name,
+                fileName: file.name,
+                type: file.type,
+                size: file.size,
+                extension: file.name.split('.').pop() || "",
+                altText: meta.altText || "",
+                title: meta.title || baseName,
+                caption: meta.caption || "",
+                description: meta.description || "",
+                slug: slugify(baseName),
+                createdAt: serverTimestamp(),
+            });
+
+            console.log("Firestore metadata saved successfully.");
+            return { id: docRef.id, url, path };
+        } catch (error: any) {
+            console.error("Upload failed in mediaService:", {
+                message: error.message,
+                fullError: error
+            });
+            throw error;
+        }
     },
 
     async updateMediaMeta(id: string, meta: Partial<Pick<Media, 'altText' | 'title' | 'caption' | 'description'>>) {
@@ -69,11 +100,8 @@ export const mediaService = {
     },
 
     async deleteMedia(id: string, path: string) {
-        // 1. Delete from Storage
-        const storageRef = ref(storage, path);
-        await deleteObject(storageRef);
-
-        // 2. Delete from Firestore
+        // Note: For full deletion from Cloudinary, we'd need a signed request.
+        // For now, we delete from Firestore to hide it from the UI.
         const docRef = doc(db, MEDIA_COLLECTION, id);
         await deleteDoc(docRef);
     },

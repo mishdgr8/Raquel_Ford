@@ -21,6 +21,23 @@ export default function cloudinaryLoader({ src, width, quality }) {
         sourceUrl = `${siteUrl}${src}`;
     }
 
+    // If it's already a Cloudinary URL, we can use it directly by injecting params
+    if (src.includes('res.cloudinary.com')) {
+        // Find the index after 'upload/' or 'fetch/' to insert transformations
+        const parts = src.split('/');
+        const uploadIndex = parts.indexOf('upload');
+        const fetchIndex = parts.indexOf('fetch');
+
+        if (uploadIndex !== -1) {
+            // It's a direct upload, inject our custom params
+            parts.splice(uploadIndex + 1, 0, params.join(','));
+            return parts.join('/');
+        } else if (fetchIndex !== -1) {
+            // It's already a fetch URL, just return it
+            return src;
+        }
+    }
+
     // Prepare sourceUrl correctly encoding query parameters
     const encodedSourceUrl = encodeURIComponent(sourceUrl);
 
