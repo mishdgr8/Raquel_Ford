@@ -147,7 +147,7 @@ export default function MediaLibraryPage() {
                                     onChange={() => toggleSelect(item.id!)}
                                 />
                             </div>
-                            {item.type.startsWith("image") ? (
+                            {(item.type || "").startsWith("image") ? (
                                 <Image
                                     src={item.url}
                                     alt={item.altText || ""}
