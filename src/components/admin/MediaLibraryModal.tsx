@@ -42,9 +42,9 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, onSelectMultiple,
     if (!isOpen) return null;
 
     const filteredMedia = media.filter(item =>
-        item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.altText?.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.altText || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleConfirm = () => {

@@ -160,7 +160,11 @@ export default function MediaLibraryPage() {
                             )}
                         </div>
                         <div className={styles.details}>
-                            <span className={styles.name}>{item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name}</span>
+                            <span className={styles.name}>
+                                {(item.name || 'Untitled').length > 20
+                                    ? (item.name || 'Untitled').substring(0, 20) + '...'
+                                    : (item.name || 'Untitled')}
+                            </span>
                             <div className={styles.actions}>
                                 <button onClick={() => copyUrl(item.url, item.id!)}>
                                     {copiedId === item.id ? <Check size={16} color="#10b981" /> : <Copy size={16} />}
