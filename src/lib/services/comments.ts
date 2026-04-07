@@ -1,88 +1,67 @@
-import {
-    collection,
-    getDocs,
-    getDoc,
-    addDoc,
-    deleteDoc,
-    doc,
-    query,
-    where,
-    orderBy,
-    serverTimestamp,
-    Timestamp
-} from "firebase/firestore";
-import { db } from "../firebase";
-
-import { FirestoreTimestamp } from "../types";
+import { supabase } from "../supabase";
 
 export interface Comment {
     id: string;
     articleId: string;
     authorName: string;
     content: string;
-    createdAt: FirestoreTimestamp | Date | string;
+    createdAt: string;
 }
 
-import { toDate } from "../utils";
+const COMMENTS_TABLE = "comments";
 
-const COMMENTS_COLLECTION = "comments";
+const mapComment = (data: any): Comment => ({
+    id: data.id,
+    articleId: data.article_id,
+    authorName: data.author_name,
+    content: data.content,
+    createdAt: data.created_at,
+});
 
 export const commentService = {
     async getCommentsByArticleId(articleId: string): Promise<Comment[]> {
-        const q = query(
-            collection(db, COMMENTS_COLLECTION),
-            where("articleId", "==", articleId)
-        );
-        const snapshot = await getDocs(q);
-        const comments = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
-            } as Comment;
-        });
+        const { data, error } = await supabase
+            .from(COMMENTS_TABLE)
+            .select('*')
+            .eq('article_id', articleId)
+            .order('created_at', { ascending: false });
 
-        // Sort in memory to avoid needing a composite index
-        return comments.sort((a, b) => {
-            const timeA = toDate(a.createdAt)?.getTime() || 0;
-            const timeB = toDate(b.createdAt)?.getTime() || 0;
-            return timeB - timeA; // Descending
-        });
+        if (error) throw error;
+        return (data || []).map(mapComment);
     },
 
     async addComment(articleId: string, authorName: string, content: string): Promise<string> {
-        const docRef = await addDoc(collection(db, COMMENTS_COLLECTION), {
-            articleId,
-            authorName,
-            content,
-            createdAt: serverTimestamp(),
-        });
-        return docRef.id;
+        const { data, error } = await supabase
+            .from(COMMENTS_TABLE)
+            .insert([{
+                article_id: articleId,
+                author_name: authorName,
+                content,
+                created_at: new Date().toISOString(),
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data.id;
     },
 
     async getAllComments(): Promise<Comment[]> {
-        const q = query(collection(db, COMMENTS_COLLECTION));
-        const snapshot = await getDocs(q);
-        const comments = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
-            } as Comment;
-        });
+        const { data, error } = await supabase
+            .from(COMMENTS_TABLE)
+            .select('*')
+            .order('created_at', { ascending: false });
 
-        // Sort in memory (newest first)
-        return comments.sort((a, b) => {
-            const timeA = toDate(a.createdAt)?.getTime() || 0;
-            const timeB = toDate(b.createdAt)?.getTime() || 0;
-            return timeB - timeA;
-        });
+        if (error) throw error;
+        return (data || []).map(mapComment);
     },
 
     async deleteComment(commentId: string): Promise<void> {
-        const docRef = doc(db, COMMENTS_COLLECTION, commentId);
-        await deleteDoc(docRef);
+        const { error } = await supabase
+            .from(COMMENTS_TABLE)
+            .delete()
+            .eq('id', commentId);
+
+        if (error) throw error;
     }
 };

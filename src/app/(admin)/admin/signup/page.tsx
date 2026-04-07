@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import styles from "../login/LoginPage.module.css";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminSignupPage() {
     const [email, setEmail] = useState("");
@@ -28,15 +27,24 @@ export default function AdminSignupPage() {
         setLoading(true);
         setError("");
         try {
-            const userCredential = await authService.signUp(email, password);
-            const user = userCredential.user;
+            const { data, error: signUpError } = await authService.signUp(email, password);
+            if (signUpError) throw signUpError;
 
-            // Require manual approval from the database for admin rights
-            await setDoc(doc(db, "users", user.uid), {
-                email: user.email,
-                isAdmin: false,
-                createdAt: serverTimestamp()
-            });
+            const user = data.user;
+
+            if (user) {
+                // In Supabase, we can store profiles in a public table
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .upsert({
+                        id: user.id,
+                        email: user.email,
+                        is_admin: false, // Default to false, must be updated manually in Supabase dashboard
+                        created_at: new Date().toISOString()
+                    });
+
+                if (profileError) console.error("Error creating profile:", profileError);
+            }
 
             setSuccess(true);
             setTimeout(() => {

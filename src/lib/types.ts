@@ -17,13 +17,6 @@ export interface Tag {
     slug: string;
 }
 
-export interface FirestoreTimestamp {
-    seconds: number;
-    nanoseconds: number;
-    toMillis: () => number;
-    toDate: () => Date;
-}
-
 export interface Media {
     id?: string;
     url: string;
@@ -38,7 +31,7 @@ export interface Media {
     description?: string;
     fileName?: string;
     slug?: string;
-    createdAt: FirestoreTimestamp | Date | string;
+    createdAt: Date | string;
 }
 
 export interface Article {
@@ -54,8 +47,8 @@ export interface Article {
     coverMediaId?: string;
     categoryId: string;
     status: ArticleStatus;
-    publishedAt?: FirestoreTimestamp | Date;
-    scheduledAt?: FirestoreTimestamp | Date;
+    publishedAt?: Date | string;
+    scheduledAt?: Date | string;
     seoTitle?: string;
     seoDescription?: string;
     ogMediaId?: string;
@@ -65,8 +58,10 @@ export interface Article {
     headingStyle?: HeadingStyle;
     tags?: string[];
     tagSlugs?: string[];
-    createdAt: FirestoreTimestamp | Date;
-    updatedAt: FirestoreTimestamp | Date;
+    categoryName?: string;
+    categorySlug?: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
 }
 
 export interface ContentBlock {
@@ -81,7 +76,6 @@ export interface BlockInstance {
     blockType: string;
     configJson: Record<string, any>;
     orderIndex: number;
-
 }
 
 export interface PageTemplate {
@@ -90,8 +84,8 @@ export interface PageTemplate {
     name: string;
     isActive: boolean;
     blocks: BlockInstance[];
-    createdAt: FirestoreTimestamp | Date;
-    updatedAt: FirestoreTimestamp | Date;
+    createdAt: Date | string;
+    updatedAt: Date | string;
 }
 
 export interface NewsletterSubscriber {
@@ -100,7 +94,7 @@ export interface NewsletterSubscriber {
     firstName?: string;
     status: 'pending' | 'active' | 'unsubscribed';
     source: string;
-    createdAt: FirestoreTimestamp;
+    createdAt: Date | string;
 }
 
 export interface SiteSettings {
@@ -124,5 +118,5 @@ export interface SiteSettings {
     footer: {
         content?: string;
     };
-    updatedAt?: FirestoreTimestamp;
+    updatedAt?: Date | string;
 }

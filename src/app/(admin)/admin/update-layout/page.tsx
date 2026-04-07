@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 
 export default function UpdateTemplatePageV2() {
@@ -14,41 +13,52 @@ export default function UpdateTemplatePageV2() {
         setStatus("Finding templates...");
         try {
             // 1. Find the active home template
-            const q = query(collection(db, "templates"), where("pageType", "==", "home"), where("isActive", "==", true));
-            const snapshot = await getDocs(q);
+            const { data: templates, error: tError } = await supabase
+                .from('page_templates')
+                .select('id')
+                .eq('page_type', 'home')
+                .eq('is_active', true)
+                .single();
 
-            if (snapshot.empty) {
+            if (tError || !templates) {
                 setStatus("No active home template found.");
                 return;
             }
 
-            const templateId = snapshot.docs[0].id;
+            const templateId = templates.id;
 
-            // 2. Find the BrandBanner block to get its orderIndex
-            const blocksQ = query(collection(db, "blocks"), where("templateId", "==", templateId), where("blockType", "==", "BrandBanner"));
-            const blocksSnap = await getDocs(blocksQ);
+            // 2. Find the BrandBanner block to get its order_index
+            const { data: blocks, error: bError } = await supabase
+                .from('block_instances')
+                .select('*')
+                .eq('template_id', templateId)
+                .eq('block_type', 'BrandBanner')
+                .single();
 
-            if (blocksSnap.empty) {
+            if (bError || !blocks) {
                 setStatus("BrandBanner block not found in active template.");
                 return;
             }
 
-            const brandBannerBlock = blocksSnap.docs[0].data();
-            const newOrderIndex = (brandBannerBlock.orderIndex || 0) + 1;
+            const newOrderIndex = (blocks.order_index || 0) + 1;
 
             // 3. Add the new SimpleBanner block
-            await addDoc(collection(db, "blocks"), {
-                blockType: "SimpleBanner",
-                templateId: templateId,
-                orderIndex: newOrderIndex,
-                configJson: {
-                    title: "ADVERTISE WITH RAQUEL FORD",
-                    backgroundColor: "#FFD447",
-                    textColor: "#11001C"
-                },
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
-            });
+            const { error: iError } = await supabase
+                .from('block_instances')
+                .insert([{
+                    block_type: "SimpleBanner",
+                    template_id: templateId,
+                    order_index: newOrderIndex,
+                    config_json: {
+                        title: "ADVERTISE WITH RAQUEL FORD",
+                        backgroundColor: "#FFD447",
+                        textColor: "#11001C"
+                    },
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }]);
+
+            if (iError) throw iError;
 
             setStatus(`Successfully added Ad banner below BrandBanner in template ${templateId}.`);
         } catch (err: any) {
@@ -61,7 +71,7 @@ export default function UpdateTemplatePageV2() {
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Homepage Refinement Util</h1>
-            <p>This will add the "Advertise with Raquel Ford" banner below the Brand Banner.</p>
+            <p>This will add the "Advertise with Raquel Ford" banner below the Brand Banner on the Supabase DB.</p>
             <Button onClick={updateBlocks} disabled={loading}>
                 {loading ? "Adding Banner..." : "Add Advertisement Banner"}
             </Button>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 
 export default function FinalUpdatePage() {
@@ -14,29 +13,37 @@ export default function FinalUpdatePage() {
         setStatus("Finding Ad banner...");
         try {
             // Find the SimpleBanner block that is an advertisement
-            const q = query(collection(db, "blocks"), where("blockType", "==", "SimpleBanner"));
-            const snapshot = await getDocs(q);
+            const { data: blocks, error } = await supabase
+                .from('block_instances')
+                .select('*')
+                .eq('block_type', 'SimpleBanner');
 
-            if (snapshot.empty) {
+            if (error) throw error;
+
+            if (!blocks || blocks.length === 0) {
                 setStatus("No SimpleBanner blocks found.");
                 return;
             }
 
             let updatedCount = 0;
-            for (const blockDoc of snapshot.docs) {
-                const data = blockDoc.data();
-                if (data.configJson?.title === "ADVERTISE WITH RAQUEL FORD") {
-                    await updateDoc(doc(db, "blocks", blockDoc.id), {
-                        configJson: {
-                            ...data.configJson,
-                            buttonText: "CONTACT US",
-                            buttonLink: "mailto:momentswithraquel@gmail.com"
-                        }
-                    });
-                    updatedCount++;
+            for (const block of blocks) {
+                if (block.config_json?.title === "ADVERTISE WITH RAQUEL FORD") {
+                    const { error: uError } = await supabase
+                        .from('block_instances')
+                        .update({
+                            config_json: {
+                                ...block.config_json,
+                                buttonText: "CONTACT US",
+                                buttonLink: "mailto:momentswithraquel@gmail.com"
+                            },
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', block.id);
+
+                    if (!uError) updatedCount++;
                 }
             }
-            setStatus(`Successfully added contact button to ${updatedCount} ad banner(s).`);
+            setStatus(`Successfully added contact button to ${updatedCount} ad banner(s) in Supabase.`);
         } catch (err: any) {
             setStatus("Error: " + err.message);
         } finally {
@@ -47,7 +54,7 @@ export default function FinalUpdatePage() {
     return (
         <div style={{ padding: '2rem' }}>
             <h1>Final Layout Update</h1>
-            <p>This will add the "CONTACT ME" button to the Advertise banner.</p>
+            <p>This will add the "CONTACT ME" button to the Advertise banner on Supabase.</p>
             <Button onClick={updateBlocks} disabled={loading}>
                 {loading ? "Updating..." : "Add Contact Button"}
             </Button>

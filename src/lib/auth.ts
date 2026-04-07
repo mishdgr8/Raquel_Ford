@@ -1,26 +1,24 @@
-import {
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signOut as firebaseSignOut,
-    onAuthStateChanged,
-    User
-} from "firebase/auth";
-import { auth, db } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { User } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 
 export const authService = {
     async signIn(email: string, pass: string) {
-        return signInWithEmailAndPassword(auth, email, pass);
+        return supabase.auth.signInWithPassword({
+            email,
+            password: pass,
+        });
     },
     async signUp(email: string, pass: string) {
-        return createUserWithEmailAndPassword(auth, email, pass);
+        return supabase.auth.signUp({
+            email,
+            password: pass,
+        });
     },
     async signOut() {
-        return firebaseSignOut(auth);
+        return supabase.auth.signOut();
     }
 };
-
-import { useState, useEffect } from "react";
 
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
@@ -28,28 +26,26 @@ export function useAuth() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            if (firebaseUser) {
-                setUser(firebaseUser);
-                // Fetch admin status
-                try {
-                    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-                    if (userDoc.exists()) {
-                        setIsAdmin(userDoc.data().isAdmin === true);
-                    } else {
-                        setIsAdmin(false);
-                    }
-                } catch (err) {
-                    console.error("Error fetching admin status:", err);
-                    setIsAdmin(false);
-                }
-            } else {
-                setUser(null);
-                setIsAdmin(false);
+        // 1. Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                setUser(session.user);
+                setIsAdmin(session.user.app_metadata?.is_admin === true || session.user.user_metadata?.is_admin === true);
             }
             setLoading(false);
         });
-        return unsubscribe;
+
+        // 2. Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            setIsAdmin(currentUser?.app_metadata?.is_admin === true || currentUser?.user_metadata?.is_admin === true);
+            setLoading(false);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     return { user, isAdmin, loading };

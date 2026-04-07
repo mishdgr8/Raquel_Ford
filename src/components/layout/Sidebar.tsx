@@ -86,7 +86,7 @@ export function Sidebar({ initialLatest }: SidebarProps) {
                                     >
                                         <span dangerouslySetInnerHTML={{ __html: article.title }} />
                                     </Link>
-                                    <span className={styles.articleMeta}>{article.categoryId}</span>
+                                    <span className={styles.articleMeta}>{article.categoryName || article.categoryId || 'Uncategorized'}</span>
                                 </div>
                             </div>
                         ))}

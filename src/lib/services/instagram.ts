@@ -1,5 +1,4 @@
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { supabase } from "../supabase";
 
 export interface InstagramMedia {
     id: string;
@@ -16,17 +15,22 @@ export async function fetchInstagramMedia(limit: number = 10): Promise<Instagram
 
     if (!accessToken || accessToken === 'your_token_here') {
         try {
-            const settingsDoc = await getDoc(doc(db, "settings", "instagram"));
-            if (settingsDoc.exists()) {
-                accessToken = settingsDoc.data().accessToken;
+            const { data, error } = await supabase
+                .from('site_settings')
+                .select('config')
+                .eq('id', 'instagram')
+                .single();
+
+            if (!error && data) {
+                accessToken = (data.config as any).accessToken;
             }
         } catch (error) {
-            console.error("Error fetching Instagram token from Firestore:", error);
+            console.error("Error fetching Instagram token from Supabase:", error);
         }
     }
 
     if (!accessToken || accessToken === 'your_token_here') {
-        console.warn("INSTAGRAM_ACCESS_TOKEN is not defined in environment variables or Firestore.");
+        console.warn("INSTAGRAM_ACCESS_TOKEN is not defined in environment variables or Supabase.");
         return [];
     }
 
@@ -44,7 +48,6 @@ export async function fetchInstagramMedia(limit: number = 10): Promise<Instagram
                 const errorData = JSON.parse(errorText);
                 errorMessage = errorData.error?.message || errorMessage;
             } catch (e) {
-                // Not JSON, fallback to text
                 errorMessage = `${errorMessage} (Non-JSON response)`;
             }
             throw new Error(`Instagram API error: ${errorMessage}`);

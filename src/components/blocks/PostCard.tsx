@@ -27,7 +27,7 @@ export function PostCard({ article, variant = 'vertical' }: PostCardProps) {
                     </div>
                     <CardContent className={styles.content}>
                         <div className={styles.metaRow}>
-                            <span className={styles.categoryText}>{(article.categoryId || 'Uncategorized').toUpperCase()}</span>
+                            <span className={styles.categoryText}>{(article.categoryName || article.categoryId || 'Uncategorized').toUpperCase()}</span>
                             <span className={styles.dot}>•</span>
                             <p className={styles.date}>{formatDate(article.publishedAt || article.createdAt)}</p>
                         </div>

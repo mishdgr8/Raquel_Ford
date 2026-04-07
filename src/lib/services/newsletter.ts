@@ -1,41 +1,42 @@
-import {
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    addDoc,
-    serverTimestamp
-} from "firebase/firestore";
-import { db } from "../firebase";
+import { supabase } from "../supabase";
 import { NewsletterSubscriber } from "../types";
 
-const NEWSLETTER_COLLECTION = "newsletter";
+const SUBSCRIBERS_TABLE = "newsletter_subscribers";
+
+const mapSubscriber = (data: any): NewsletterSubscriber => ({
+    id: data.id,
+    email: data.email,
+    firstName: data.first_name,
+    status: data.status,
+    source: data.source,
+    createdAt: data.created_at,
+});
 
 export const newsletterService = {
-    async subscribe(email: string, firstName?: string, source: string = "home") {
-        // Check if already exists (optional, could also be handled by security rules or unique indices if possible)
-        const q = query(collection(db, NEWSLETTER_COLLECTION), where("email", "==", email));
-        const snapshot = await getDocs(q);
+    async subscribe(email: string, firstName?: string, source: string = 'unknown') {
+        const { data, error } = await supabase
+            .from(SUBSCRIBERS_TABLE)
+            .insert([{
+                email,
+                first_name: firstName,
+                source,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            }])
+            .select()
+            .single();
 
-        if (!snapshot.empty) {
-            throw new Error("Already subscribed");
-        }
-
-        const docRef = await addDoc(collection(db, NEWSLETTER_COLLECTION), {
-            email,
-            firstName,
-            status: "active",
-            source,
-            createdAt: serverTimestamp(),
-        });
-
-        return docRef.id;
+        if (error) throw error;
+        return data.id;
     },
 
     async getSubscribers() {
-        const q = query(collection(db, NEWSLETTER_COLLECTION), orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as NewsletterSubscriber));
+        const { data, error } = await supabase
+            .from(SUBSCRIBERS_TABLE)
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []).map(mapSubscriber);
     }
 };

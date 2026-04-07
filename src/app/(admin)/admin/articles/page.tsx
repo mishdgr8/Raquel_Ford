@@ -354,7 +354,7 @@ function ArticleListContent() {
                                     <strong>{article.title || '(Untitled)'}</strong>
                                     <span className={styles.slug}>/{article.slug}</span>
                                 </td>
-                                <td>{article.categoryId}</td>
+                                <td>{article.categoryName || article.categoryId || 'Uncategorized'}</td>
                                 <td>
                                     <span className={`${styles.badge} ${styles[article.status]}`}>
                                         {article.status}

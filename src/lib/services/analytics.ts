@@ -1,122 +1,49 @@
-import { db } from "../firebase";
-import {
-    collection, doc, getDoc, setDoc, getDocs,
-    query, where, orderBy, limit, increment, serverTimestamp, Timestamp
-} from "firebase/firestore";
+import { supabase } from "../supabase";
 
-const ANALYTICS_COLLECTION = "analytics";
+const ANALYTICS_TABLE = "analytics_events";
 
-export interface DailyMetric {
-    articleId: string;
-    date: string; // YYYY-MM-DD
-    views: number;
-    shares: number;
-    avgReadTime: number;
-    updatedAt: any;
-}
+const isTableMissing = (error: any) =>
+    error?.code === 'PGRST205' || error?.code === '42P01';
 
 export const analyticsService = {
-    // Track page view
+    async trackEvent(type: string, entityType: string, entityId: string, metadata: any = {}) {
+        const { error } = await supabase
+            .from(ANALYTICS_TABLE)
+            .insert([{
+                type,
+                entity_type: entityType,
+                entity_id: entityId,
+                metadata_json: metadata,
+                created_at: new Date().toISOString()
+            }]);
+
+        if (error) {
+            // Silently fail — analytics should never crash the site
+            console.warn("Analytics tracking skipped:", error.message);
+        }
+    },
+
+    async getStats(days: number = 30) {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        const { data, error } = await supabase
+            .from(ANALYTICS_TABLE)
+            .select('*')
+            .gte('created_at', startDate.toISOString());
+
+        if (error) {
+            if (isTableMissing(error)) return [];
+            throw error;
+        }
+        return data || [];
+    },
+
     async trackView(articleId: string) {
-        const today = new Date().toISOString().split('T')[0];
-        const docId = `${articleId}_${today}`;
-        const docRef = doc(db, ANALYTICS_COLLECTION, docId);
-
-        try {
-            const existing = await getDoc(docRef);
-            if (existing.exists()) {
-                await setDoc(docRef, {
-                    views: increment(1),
-                    updatedAt: serverTimestamp(),
-                }, { merge: true });
-            } else {
-                await setDoc(docRef, {
-                    articleId,
-                    date: today,
-                    views: 1,
-                    shares: 0,
-                    avgReadTime: 0,
-                    updatedAt: serverTimestamp(),
-                });
-            }
-        } catch (err) {
-            console.error('Analytics tracking failed:', err);
-        }
+        return this.trackEvent('view', 'article', articleId);
     },
 
-    // Track share
     async trackShare(articleId: string) {
-        const today = new Date().toISOString().split('T')[0];
-        const docId = `${articleId}_${today}`;
-        const docRef = doc(db, ANALYTICS_COLLECTION, docId);
-
-        try {
-            const existing = await getDoc(docRef);
-            if (existing.exists()) {
-                await setDoc(docRef, {
-                    shares: increment(1),
-                    updatedAt: serverTimestamp(),
-                }, { merge: true });
-            } else {
-                await setDoc(docRef, {
-                    articleId,
-                    date: today,
-                    views: 0,
-                    shares: 1,
-                    avgReadTime: 0,
-                    updatedAt: serverTimestamp(),
-                });
-            }
-        } catch (err) {
-            console.error('Share tracking failed:', err);
-        }
-    },
-
-    // Get metrics for an article
-    async getArticleMetrics(articleId: string, days: number = 30): Promise<DailyMetric[]> {
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
-        const startStr = startDate.toISOString().split('T')[0];
-
-        const q = query(
-            collection(db, ANALYTICS_COLLECTION),
-            where('articleId', '==', articleId),
-            where('date', '>=', startStr),
-            orderBy('date', 'desc')
-        );
-
-        const snap = await getDocs(q);
-        return snap.docs.map(d => ({ ...d.data() } as DailyMetric));
-    },
-
-    // Get total views across all articles (last N days)
-    async getTotalMetrics(days: number = 30): Promise<{ totalViews: number; totalShares: number; topArticles: { articleId: string; views: number }[] }> {
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - days);
-        const startStr = startDate.toISOString().split('T')[0];
-
-        const q = query(
-            collection(db, ANALYTICS_COLLECTION),
-            where('date', '>=', startStr)
-        );
-
-        const snap = await getDocs(q);
-        const byArticle: Record<string, number> = {};
-        let totalViews = 0;
-        let totalShares = 0;
-
-        snap.docs.forEach(d => {
-            const data = d.data() as DailyMetric;
-            totalViews += data.views || 0;
-            totalShares += data.shares || 0;
-            byArticle[data.articleId] = (byArticle[data.articleId] || 0) + (data.views || 0);
-        });
-
-        const topArticles = Object.entries(byArticle)
-            .map(([articleId, views]) => ({ articleId, views }))
-            .sort((a, b) => b.views - a.views)
-            .slice(0, 10);
-
-        return { totalViews, totalShares, topArticles };
-    },
+        return this.trackEvent('share', 'article', articleId);
+    }
 };

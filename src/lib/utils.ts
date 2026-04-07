@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { FirestoreTimestamp, ContentBlock } from "./types";
+import { ContentBlock } from "./types";
 
 /**
  * Merges class names safely
@@ -17,19 +17,20 @@ export function slugify(text: string): string {
         .toString()
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')     // Replace spaces with -
-        .replace(/[^\w-]+/g, '')  // Remove all non-word chars
-        .replace(/--+/g, '-');    // Replace multiple - with single -
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-');
 }
 
 /**
  * Converts any timestamp/date/string to a native Date object
  */
-export function toDate(timestamp: FirestoreTimestamp | Date | string | null | undefined): Date | null {
+export function toDate(timestamp: Date | string | null | undefined): Date | null {
     if (!timestamp) return null;
     if (timestamp instanceof Date) return timestamp;
 
     const ts = timestamp as any;
+    // Legacy Firestore support (just in case old data slips through)
     if (typeof ts.toDate === 'function') return ts.toDate();
     if (typeof ts.seconds === 'number') return new Date(ts.seconds * 1000);
 
@@ -38,9 +39,9 @@ export function toDate(timestamp: FirestoreTimestamp | Date | string | null | un
 }
 
 /**
- * Formats a Firestore timestamp to a readable date
+ * Formats a timestamp to a readable date
  */
-export function formatDate(timestamp: FirestoreTimestamp | Date | string | null | undefined): string {
+export function formatDate(timestamp: Date | string | null | undefined): string {
     const date = toDate(timestamp);
     if (!date) return "";
 
@@ -54,7 +55,7 @@ export function formatDate(timestamp: FirestoreTimestamp | Date | string | null 
 /**
  * Converts any timestamp/date to an ISO string
  */
-export function toISODateString(timestamp: FirestoreTimestamp | Date | string | null | undefined): string | undefined {
+export function toISODateString(timestamp: Date | string | null | undefined): string | undefined {
     const date = toDate(timestamp);
     return date ? date.toISOString() : undefined;
 }
@@ -75,8 +76,9 @@ export function estimateReadingTime(blocks: ContentBlock[] | null | undefined): 
 }
 
 /**
- * Serializes Firestore data (converts Timestamps to ISO strings)
- * so it can be passed to Client Components.
+ * Serializes data for safe passing to Client Components.
+ * Now that we're on Supabase (no Firestore Timestamps), this is mostly a passthrough,
+ * but still handles any edge cases with Date objects.
  */
 export function serializeFirestoreData(data: unknown): any {
     if (!data) return data;
@@ -85,14 +87,16 @@ export function serializeFirestoreData(data: unknown): any {
         return data.map(serializeFirestoreData);
     }
 
+    if (data instanceof Date) {
+        return data.toISOString();
+    }
+
     if (typeof data === 'object' && data !== null) {
         const obj = data as Record<string, any>;
-        // Handle Firestore Timestamp
+        // Legacy Firestore Timestamp support
         if (typeof obj.toDate === 'function') {
             return obj.toDate().toISOString();
         }
-
-        // Handle simple object with seconds/nanoseconds (sometimes passed like this)
         if ('seconds' in obj && 'nanoseconds' in obj && Object.keys(obj).length <= 3) {
             return new Date(obj.seconds * 1000).toISOString();
         }
@@ -113,24 +117,19 @@ export function serializeFirestoreData(data: unknown): any {
 export function generateExcerpt(html: string, length: number = 160): string {
     if (!html) return "";
 
-    // Create a temporary element to strip HTML (works in browser)
-    // For server-side, simple regex replace
     let text = html;
     if (typeof window !== 'undefined') {
         const temp = document.createElement("div");
         temp.innerHTML = html;
         text = temp.textContent || temp.innerText || "";
     } else {
-        // Basic fallback for server-side stripping
         text = html.replace(/<[^>]*>?/gm, '');
     }
 
-    // Clean up whitespace
     text = text.replace(/\s+/g, ' ').trim();
 
     if (text.length <= length) return text;
 
-    // Truncate and add ellipsis, trying not to cut words in half
     const truncated = text.substring(0, length);
     const lastSpaceIndex = truncated.lastIndexOf(' ');
 
@@ -142,7 +141,6 @@ export function generateExcerpt(html: string, length: number = 160): string {
 
 /**
  * Deduplicates an array of items (like articles) based on their slug.
- * Prioritizes the first occurrence (i.e. the newest if the array is sorted newest-first).
  */
 export function deduplicateArticles<T extends { slug?: string }>(items: T[]): T[] {
     const seen = new Set<string>();

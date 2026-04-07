@@ -1,132 +1,140 @@
-import {
-    collection,
-    getDocs,
-    getDoc,
-    doc,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    query,
-    where,
-    orderBy,
-    limit,
-    serverTimestamp,
-    writeBatch
-} from "firebase/firestore";
-import { db } from "../firebase";
+import { supabase } from "../supabase";
 import { PageTemplate, BlockInstance } from "../types";
 
-const TEMPLATES_COLLECTION = "templates";
-const BLOCKS_COLLECTION = "blocks";
+const TEMPLATES_TABLE = "page_templates";
+const BLOCKS_TABLE = "block_instances";
+
+// Table may not exist yet — gracefully return null/empty
+const isTableMissing = (error: any) =>
+    error?.code === 'PGRST205' || error?.code === '42P01';
+
+const mapTemplate = (data: any): PageTemplate => ({
+    id: data.id,
+    pageType: data.page_type,
+    name: data.name,
+    isActive: data.is_active,
+    blocks: [],
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+});
+
+const mapBlock = (data: any): BlockInstance => ({
+    id: data.id,
+    templateId: data.template_id,
+    blockType: data.block_type,
+    configJson: data.config_json,
+    orderIndex: data.order_index,
+});
 
 export const templateService = {
     async getTemplates() {
-        const q = query(collection(db, TEMPLATES_COLLECTION), orderBy("updatedAt", "desc"));
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PageTemplate));
+        const { data, error } = await supabase
+            .from(TEMPLATES_TABLE)
+            .select('*')
+            .order('updated_at', { ascending: false });
+
+        if (error) {
+            if (isTableMissing(error)) return [];
+            throw error;
+        }
+        return (data || []).map(mapTemplate);
     },
 
     async getTemplateById(id: string) {
-        const docRef = doc(db, TEMPLATES_COLLECTION, id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return null;
+        const { data: template, error: tError } = await supabase
+            .from(TEMPLATES_TABLE)
+            .select('*')
+            .eq('id', id)
+            .single();
 
-        const template = { id: docSnap.id, ...docSnap.data() } as PageTemplate;
+        if (tError) {
+            if (isTableMissing(tError)) return null;
+            throw tError;
+        }
 
-        // Fetch blocks
-        const blocksQ = query(
-            collection(db, BLOCKS_COLLECTION),
-            where("templateId", "==", id),
-            orderBy("orderIndex", "asc")
-        );
-        const blocksSnapshot = await getDocs(blocksQ);
-        const blocks = blocksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlockInstance));
+        const { data: blocks, error: bError } = await supabase
+            .from(BLOCKS_TABLE)
+            .select('*')
+            .eq('template_id', id)
+            .order('order_index', { ascending: true });
 
-        return { ...template, blocks };
+        if (bError && !isTableMissing(bError)) throw bError;
+
+        const mapped = mapTemplate(template);
+        mapped.blocks = (blocks || []).map(mapBlock);
+        return mapped;
     },
 
     async getActiveTemplate(pageType: 'home' | 'category' | 'article') {
-        const q = query(
-            collection(db, TEMPLATES_COLLECTION),
-            where("pageType", "==", pageType),
-            where("isActive", "==", true),
-            limit(1)
-        );
-        const snapshot = await getDocs(q);
-        if (snapshot.empty) return null;
+        const { data, error } = await supabase
+            .from(TEMPLATES_TABLE)
+            .select('*')
+            .eq('page_type', pageType)
+            .eq('is_active', true)
+            .limit(1)
+            .single();
 
-        const template = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as PageTemplate;
-        return this.getTemplateById(template.id);
+        if (error) {
+            if (isTableMissing(error) || error.code === 'PGRST116') return null;
+            throw error;
+        }
+        if (!data) return null;
+
+        // Now fetch the blocks for this template
+        const template = mapTemplate(data);
+
+        const { data: blocks, error: bError } = await supabase
+            .from(BLOCKS_TABLE)
+            .select('*')
+            .eq('template_id', template.id)
+            .order('order_index', { ascending: true });
+
+        if (!bError && blocks) {
+            template.blocks = blocks.map(mapBlock);
+        }
+
+        return template;
     },
 
     async createTemplate(data: Partial<PageTemplate>) {
-        const { blocks, ...templateData } = data;
+        const { data: template, error } = await supabase
+            .from(TEMPLATES_TABLE)
+            .insert([{
+                page_type: data.pageType,
+                name: data.name,
+                is_active: data.isActive ?? false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }])
+            .select()
+            .single();
 
-        // 1. Create Template
-        const docRef = await addDoc(collection(db, TEMPLATES_COLLECTION), {
-            ...templateData,
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-        });
-
-        // 2. Create Blocks
-        if (blocks && blocks.length > 0) {
-            const batch = writeBatch(db);
-            blocks.forEach((block, index) => {
-                const blockRef = doc(collection(db, BLOCKS_COLLECTION));
-                batch.set(blockRef, {
-                    ...block,
-                    templateId: docRef.id,
-                    orderIndex: index
-                });
-            });
-            await batch.commit();
-        }
-
-        return docRef.id;
+        if (error) throw error;
+        return mapTemplate(template);
     },
 
     async updateTemplate(id: string, data: Partial<PageTemplate>) {
-        const { blocks, ...templateData } = data;
+        const mapped: any = {};
+        if (data.name !== undefined) mapped.name = data.name;
+        if (data.pageType !== undefined) mapped.page_type = data.pageType;
+        if (data.isActive !== undefined) mapped.is_active = data.isActive;
+        mapped.updated_at = new Date().toISOString();
 
-        // 1. Update Template
-        const docRef = doc(db, TEMPLATES_COLLECTION, id);
-        await updateDoc(docRef, {
-            ...templateData,
-            updatedAt: serverTimestamp(),
-        });
+        const { error } = await supabase
+            .from(TEMPLATES_TABLE)
+            .update(mapped)
+            .eq('id', id);
 
-        // 2. Sync Blocks (Delete old and recreates for simplicity in this version)
-        if (blocks) {
-            // Delete old blocks
-            const oldBlocksQ = query(collection(db, BLOCKS_COLLECTION), where("templateId", "==", id));
-            const oldBlocksSnap = await getDocs(oldBlocksQ);
-            const batch = writeBatch(db);
-            oldBlocksSnap.docs.forEach(doc => batch.delete(doc.ref));
-
-            // Add new blocks
-            blocks.forEach((block, index) => {
-                const blockRef = doc(collection(db, BLOCKS_COLLECTION));
-                const { id: _, ...blockToSave } = block; // Remove client-side temp id
-                batch.set(blockRef, {
-                    ...blockToSave,
-                    templateId: id,
-                    orderIndex: index
-                });
-            });
-            await batch.commit();
-        }
+        if (error) throw error;
     },
 
     async deleteTemplate(id: string) {
-        // Delete blocks first
-        const oldBlocksQ = query(collection(db, BLOCKS_COLLECTION), where("templateId", "==", id));
-        const oldBlocksSnap = await getDocs(oldBlocksQ);
-        const batch = writeBatch(db);
-        oldBlocksSnap.docs.forEach(doc => batch.delete(doc.ref));
+        await supabase.from(BLOCKS_TABLE).delete().eq('template_id', id);
+        const { error } = await supabase
+            .from(TEMPLATES_TABLE)
+            .delete()
+            .eq('id', id);
 
-        // Delete template
-        batch.delete(doc(db, TEMPLATES_COLLECTION, id));
-        await batch.commit();
+        if (error) throw error;
     }
 };
