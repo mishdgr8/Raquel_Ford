@@ -122,6 +122,11 @@ export const articleService = {
         };
     },
 
+    async getArticlesByCategory(categoryId: string, count: number = 10) {
+        const { articles } = await this.getPublishedArticles(categoryId, count);
+        return articles;
+    },
+
     async getAllPublishedArticles() {
         const { data, error } = await supabase
             .from(ARTICLES_TABLE)

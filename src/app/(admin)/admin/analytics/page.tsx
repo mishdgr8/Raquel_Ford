@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { analyticsService, DailyMetric } from "@/lib/services/analytics";
+import { analyticsService } from "@/lib/services/analytics";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
 import styles from "./Analytics.module.css";

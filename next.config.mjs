@@ -1,3 +1,5 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   compress: true,
@@ -12,15 +14,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-      },
-      {
-        protocol: "https",
         hostname: "res.cloudinary.com",
-      },
-      {
-        protocol: "https",
-        hostname: "*.firebasestorage.app",
       },
       {
         protocol: "https",
@@ -55,6 +49,9 @@ const nextConfig = {
         hostname: "raquelford.wordpress.com",
       },
     ],
+  },
+  turbopack: {
+    root: path.resolve(process.cwd()),
   },
 };
 

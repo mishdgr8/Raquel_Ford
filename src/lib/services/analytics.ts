@@ -45,5 +45,32 @@ export const analyticsService = {
 
     async trackShare(articleId: string) {
         return this.trackEvent('share', 'article', articleId);
+    },
+
+    async getTotalMetrics(days: number = 30) {
+        const events = await this.getStats(days);
+
+        const views = events.filter(e => e.type === 'view');
+        const shares = events.filter(e => e.type === 'share');
+
+        // Count views per article
+        const viewCounts: Record<string, number> = {};
+        views.forEach(v => {
+            if (v.entity_id) {
+                viewCounts[v.entity_id] = (viewCounts[v.entity_id] || 0) + 1;
+            }
+        });
+
+        // Top articles sorted by views
+        const topArticles = Object.entries(viewCounts)
+            .map(([articleId, views]) => ({ articleId, views }))
+            .sort((a, b) => b.views - a.views)
+            .slice(0, 10);
+
+        return {
+            totalViews: views.length,
+            totalShares: shares.length,
+            topArticles
+        };
     }
 };

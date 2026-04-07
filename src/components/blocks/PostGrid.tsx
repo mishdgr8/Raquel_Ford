@@ -19,7 +19,7 @@ interface PostGridProps {
 
 export function PostGrid({ config }: PostGridProps) {
     const [articles, setArticles] = useState<Article[]>([]);
-    const [lastDoc, setLastDoc] = useState<any>(null);
+    const [offset, setOffset] = useState<number>(0);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
 
@@ -32,61 +32,33 @@ export function PostGrid({ config }: PostGridProps) {
     const loadArticles = async (isInitial: boolean = false) => {
         setLoading(true);
         try {
-            let accumulatedArticles: Article[] = [];
-            let currentLastDoc = isInitial ? null : lastDoc;
-            let fetches = 0;
-            const maxFetches = 5; // Safety break
-            let hasMoreData = true;
+            const currentOffset = isInitial ? 0 : offset;
 
-            // Get current slugs to avoid duplicates
-            const currentSlugs = new Set(
-                isInitial ? [] : articles.map(a => a.slug)
+            const result = await articleService.getPublishedArticles(
+                config.categoryId,
+                count,
+                currentOffset,
+                config.tag
             );
 
-            while (accumulatedArticles.length < count && fetches < maxFetches && hasMoreData) {
-                const result = await articleService.getPublishedArticles(
-                    config.categoryId,
-                    count, // Fetch batch size
-                    currentLastDoc,
-                    config.tag
-                );
-
-                if (result.articles.length === 0) {
-                    hasMoreData = false;
-                    break;
-                }
-
-                // Filter for new unique articles from this batch
-                const newUnique = result.articles.filter(a => {
-                    if (currentSlugs.has(a.slug)) return false;
-                    currentSlugs.add(a.slug);
-                    return true;
-                });
-
-                accumulatedArticles = [...accumulatedArticles, ...newUnique];
-                currentLastDoc = result.lastDoc;
-
-                // If we got fewer than requested from DB, we hit the end
-                if (result.articles.length < count) {
-                    hasMoreData = false;
-                }
-
-                fetches++;
-            }
-
-            if (isInitial) {
-                setArticles(accumulatedArticles);
+            if (result.articles.length === 0) {
+                setHasMore(false);
             } else {
-                setArticles(prev => [...prev, ...accumulatedArticles]);
+                // If we got fewer than requested, we hit the end
+                if (result.articles.length < count) {
+                    setHasMore(false);
+                } else {
+                    setHasMore(true);
+                }
+
+                if (isInitial) {
+                    setArticles(result.articles);
+                } else {
+                    setArticles(prev => [...prev, ...result.articles]);
+                }
+
+                setOffset(currentOffset + result.articles.length);
             }
-
-            setLastDoc(currentLastDoc);
-            setHasMore(hasMoreData && accumulatedArticles.length > 0);
-
-            if (fetches >= maxFetches && accumulatedArticles.length < count) {
-                console.warn("PostGrid: Max fetches reached, might have more duplicates hidden.");
-            }
-
         } catch (error) {
             console.error("Failed to load articles", error);
         } finally {

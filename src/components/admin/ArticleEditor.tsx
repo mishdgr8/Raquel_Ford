@@ -645,8 +645,11 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                                     setTagInput("");
                                                     setFilteredSuggestions([]);
                                                     // Also add to global tags if it doesn't exist
-                                                    await tagService.createTag(tag);
-                                                    tagService.getTags().then(setAllTags);
+                                                    const existing = allTags.find(t => t.name.toLowerCase() === tag.toLowerCase());
+                                                    if (!existing) {
+                                                        await tagService.createTag(tag, slugify(tag));
+                                                        tagService.getTags().then(setAllTags);
+                                                    }
                                                 }
                                             }
                                         }}
