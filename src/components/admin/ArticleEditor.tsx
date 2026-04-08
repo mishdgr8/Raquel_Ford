@@ -166,8 +166,23 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
     const handleSave = async (newStatus: ArticleStatus) => {
         if (loading) return;
+
+        // Basic validation
+        if (!form.title?.trim()) {
+            setNotification({ type: 'error', message: "Article title is required" });
+            setTimeout(() => setNotification(null), 3000);
+            return;
+        }
+
+        if (!form.categoryId) {
+            setNotification({ type: 'error', message: "Please select a category" });
+            setTimeout(() => setNotification(null), 3000);
+            return;
+        }
+
         setLoading(true);
 
+        let payload: any = null;
         try {
             // Build HTML from blocks for contentHtml
             const html = (form.contentJson?.blocks || []).map(b => {
@@ -249,6 +264,15 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
 
             const finalDataToSave = removeUndefined(dataToSave) as Partial<Article>;
 
+            // Ensure dates are ISO strings for Supabase consistency
+            if (finalDataToSave.publishedAt instanceof Date) {
+                finalDataToSave.publishedAt = finalDataToSave.publishedAt.toISOString();
+            }
+            if (finalDataToSave.scheduledAt instanceof Date) {
+                finalDataToSave.scheduledAt = finalDataToSave.scheduledAt.toISOString();
+            }
+
+            payload = finalDataToSave;
             setForm(prev => ({ ...prev, status: newStatus }));
 
             const targetId = articleId || initialData?.id || createdId;
@@ -262,10 +286,10 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 setCreatedId(id);
                 router.push(`/admin/articles/edit/${id}`);
             }
-        } catch (err) {
-            console.error(err);
-            setNotification({ type: 'error', message: "Error saving article" });
-            setTimeout(() => setNotification(null), 3000);
+        } catch (err: any) {
+            const errorMsg = err.message || (typeof err === 'string' ? err : 'Unknown error');
+            setNotification({ type: 'error', message: `Error saving article: ${errorMsg}` });
+            setTimeout(() => setNotification(null), 5000);
         } finally {
             setLoading(false);
         }

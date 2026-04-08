@@ -53,7 +53,56 @@ ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public Read Access" ON public.comments FOR SELECT USING (true);
 CREATE POLICY "Public Insert Access" ON public.comments FOR INSERT WITH CHECK (true);
 
--- 4. Newsletter Subscribers Table
+-- 4. Categories Table
+CREATE TABLE IF NOT EXISTS public.categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  description TEXT,
+  image TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_main BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Categories
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public Read Access" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Authenticated Manage Access" ON public.categories FOR ALL USING (true);
+
+-- 5. Articles Table
+CREATE TABLE IF NOT EXISTS public.articles (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  excerpt TEXT,
+  content_html TEXT,
+  content_json JSONB DEFAULT '{"blocks": []}',
+  featured_image TEXT,
+  cover_media_id TEXT,
+  category_id UUID REFERENCES public.categories(id),
+  status TEXT DEFAULT 'draft',
+  published_at TIMESTAMPTZ,
+  scheduled_at TIMESTAMPTZ,
+  seo_title TEXT,
+  seo_description TEXT,
+  og_media_id TEXT,
+  is_editors_pick BOOLEAN DEFAULT false,
+  is_explore_the_mix BOOLEAN DEFAULT false,
+  editor_pick_order INTEGER,
+  heading_style TEXT DEFAULT 'none',
+  tags TEXT[] DEFAULT '{}',
+  tag_slugs TEXT[] DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Articles
+ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public Read Access" ON public.articles FOR SELECT USING (true);
+CREATE POLICY "Authenticated Manage Access" ON public.articles FOR ALL USING (true);
+
+-- 6. Newsletter Subscribers Table
 CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
