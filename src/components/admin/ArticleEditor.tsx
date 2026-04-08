@@ -206,7 +206,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 headingStyle: form.headingStyle || 'none',
             };
 
-            // Firestore rejects undefined values, so strip them out just in case
+            // Supabase/Postgres handles nulls fine, but we strip undefined for cleaner payloads
             Object.keys(dataToSave).forEach(key => {
                 if ((dataToSave as any)[key] === undefined) {
                     delete (dataToSave as any)[key];
@@ -229,8 +229,7 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                 dataToSave.publishedAt = form.publishedAt;
             }
 
-            // Firestore rejects undefined values completely, even nested ones.
-            // We recursively strip out undefined values to ensure successful saves.
+            // Recursively strip out undefined values to ensure successful saves.
             const removeUndefined = (obj: unknown): unknown => {
                 if (obj === null || obj === undefined) return obj;
                 if (obj instanceof Date) return obj;
@@ -538,11 +537,20 @@ export function ArticleEditor({ articleId, initialData }: ArticleEditorProps) {
                                     if (files.length === 0) return;
 
                                     try {
-                                        const uploadPromises = files.map(file => handleFeaturedUpload(file));
-                                        await Promise.all(uploadPromises);
+                                        setUploadingFeatured(true);
+                                        const uploadPromises = files.map(file => mediaService.uploadMedia(file, "featured"));
+                                        const results = await Promise.all(uploadPromises);
+                                        // Set the last one as featured
+                                        if (results.length > 0) {
+                                            const lastResult = results[results.length - 1];
+                                            setForm(prev => ({ ...prev, featuredImage: lastResult.url }));
+                                        }
                                     } catch (err) {
                                         console.error("Featured image batch upload error:", err);
+                                        setNotification({ type: 'error', message: "Failed to upload featured image" });
+                                        setTimeout(() => setNotification(null), 3000);
                                     } finally {
+                                        setUploadingFeatured(false);
                                         e.target.value = "";
                                     }
                                 }}

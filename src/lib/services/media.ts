@@ -1,8 +1,18 @@
 import { supabase } from "../supabase";
 import { Media } from "../types";
 
-const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dowyjfruh";
-const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default";
+const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+if (!CLOUD_NAME || !UPLOAD_PRESET) {
+    console.warn("Cloudinary configuration missing in environment variables. Falling back to defaults.", {
+        CLOUD_NAME: CLOUD_NAME || "dowyjfruh",
+        UPLOAD_PRESET: UPLOAD_PRESET || "ml_default"
+    });
+}
+
+const FINAL_CLOUD_NAME = CLOUD_NAME || "dowyjfruh";
+const FINAL_UPLOAD_PRESET = UPLOAD_PRESET || "ml_default";
 
 const MEDIA_TABLE = "media";
 
@@ -36,11 +46,11 @@ export const mediaService = {
 
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', UPLOAD_PRESET);
+            formData.append('upload_preset', FINAL_UPLOAD_PRESET);
             formData.append('folder', folder);
 
             const response = await fetch(
-                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+                `https://api.cloudinary.com/v1_1/${FINAL_CLOUD_NAME}/image/upload`,
                 {
                     method: 'POST',
                     body: formData,
@@ -49,44 +59,53 @@ export const mediaService = {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error?.message || 'Cloudinary upload failed');
+                console.error("Cloudinary upload error details:", errorData);
+                throw new Error(errorData.error?.message || `Cloudinary upload failed with status ${response.status}`);
             }
 
             const data = await response.json();
             const url = data.secure_url;
             const path = data.public_id;
 
-            console.log("Cloudinary upload success, saving to Supabase...");
+            console.log("Cloudinary upload success, saving to Supabase...", { url, path });
 
             // 2. Save metadata to Supabase
             const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const insertData = {
+                url,
+                path,
+                name: file.name,
+                file_name: file.name,
+                type: file.type,
+                size: file.size,
+                extension: file.name.split('.').pop() || "",
+                alt_text: meta.altText || "",
+                title: meta.title || baseName,
+                caption: meta.caption || "",
+                description: meta.description || "",
+                slug: slugify(baseName),
+                created_at: new Date().toISOString(),
+            };
+
             const { data: newMedia, error: dbError } = await supabase
                 .from(MEDIA_TABLE)
-                .insert([{
-                    url,
-                    path,
-                    name: file.name,
-                    file_name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    extension: file.name.split('.').pop() || "",
-                    alt_text: meta.altText || "",
-                    title: meta.title || baseName,
-                    caption: meta.caption || "",
-                    description: meta.description || "",
-                    slug: slugify(baseName),
-                    created_at: new Date().toISOString(),
-                }])
+                .insert([insertData])
                 .select()
                 .single();
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error("Supabase media insert error:", dbError);
+                throw dbError;
+            }
 
             console.log("Supabase metadata saved successfully.");
             return { id: newMedia.id, url, path };
         } catch (error: any) {
-            console.error("Upload failed in mediaService:", {
+            console.error("Upload failed in mediaService catch block:", {
                 message: error.message,
+                name: error.name,
+                code: error.code,
+                stack: error.stack,
                 fullError: error
             });
             throw error;
