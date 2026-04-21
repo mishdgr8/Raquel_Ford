@@ -110,6 +110,23 @@ export const templateService = {
             .single();
 
         if (error) throw error;
+
+        // If blocks provided, save them too
+        if (data.blocks && data.blocks.length > 0) {
+            const blocksToInsert = data.blocks.map((b, index) => ({
+                template_id: template.id,
+                block_type: b.blockType,
+                config_json: b.configJson,
+                order_index: index,
+            }));
+
+            const { error: bError } = await supabase
+                .from(BLOCKS_TABLE)
+                .insert(blocksToInsert);
+
+            if (bError) throw bError;
+        }
+
         return mapTemplate(template);
     },
 
@@ -126,6 +143,29 @@ export const templateService = {
             .eq('id', id);
 
         if (error) throw error;
+
+        // Sync blocks
+        if (data.blocks !== undefined) {
+            // 1. Delete existing blocks
+            const { error: dError } = await supabase.from(BLOCKS_TABLE).delete().eq('template_id', id);
+            if (dError) throw dError;
+
+            // 2. Insert new blocks
+            if (data.blocks.length > 0) {
+                const blocksToInsert = data.blocks.map((b, index) => ({
+                    template_id: id,
+                    block_type: b.blockType,
+                    config_json: b.configJson,
+                    order_index: index,
+                }));
+
+                const { error: bError } = await supabase
+                    .from(BLOCKS_TABLE)
+                    .insert(blocksToInsert);
+
+                if (bError) throw bError;
+            }
+        }
     },
 
     async deleteTemplate(id: string) {

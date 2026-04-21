@@ -26,12 +26,6 @@
     align-items: center;
 }
 
-.left {
-    flex: 1;
-    padding: 0 4rem;
-    display: flex;
-    align-items: center;
-}
 
 .title {
     font-family: var(--font-sans);
@@ -58,6 +52,57 @@
 
 .image {
     object-fit: cover;
+}
+
+.left {
+    flex: 1;
+    padding: 0 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.action {
+    display: flex;
+    align-items: center;
+}
+
+.button89 {
+    --b: 2px;
+    --s: .4em;
+    --color: #ffffff;
+
+    padding: calc(.6em + var(--s)) calc(1.2em + var(--s));
+    color: var(--color);
+    --_p: var(--s);
+    background:
+        conic-gradient(from 90deg at var(--b) var(--b), #0000 90deg, var(--color) 0) var(--_p) var(--_p)/calc(100% - var(--b) - 2*var(--_p)) calc(100% - var(--b) - 2*var(--_p));
+    transition: .3s linear, color 0s, background-color 0s;
+    outline: var(--b) solid #0000;
+    outline-offset: .6em;
+    font-size: 14px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 0;
+    user-select: none;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.button89:hover,
+.button89:focus-visible {
+    --_p: 0px;
+    outline-color: var(--color);
+    outline-offset: .05em;
+}
+
+.button89:active {
+    background-color: var(--color);
+    color: #7d2eac;
 }
 
 @media (max-width: 1024px) {

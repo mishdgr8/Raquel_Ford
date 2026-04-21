@@ -21,9 +21,13 @@ CREATE TABLE IF NOT EXISTS public.media (
 
 -- Enable RLS for Media
 ALTER TABLE public.media ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.media;
 CREATE POLICY "Public Read Access" ON public.media FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated Insert Access" ON public.media;
 CREATE POLICY "Authenticated Insert Access" ON public.media FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Authenticated Update Access" ON public.media;
 CREATE POLICY "Authenticated Update Access" ON public.media FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Authenticated Delete Access" ON public.media;
 CREATE POLICY "Authenticated Delete Access" ON public.media FOR DELETE USING (true);
 
 -- 2. Tags Table
@@ -36,8 +40,10 @@ CREATE TABLE IF NOT EXISTS public.tags (
 
 -- Enable RLS for Tags
 ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.tags;
 CREATE POLICY "Public Read Access" ON public.tags FOR SELECT USING (true);
-CREATE POLICY "Authenticated Manage Access" ON public.tags FOR ALL USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.tags;
+CREATE POLICY "Authenticated Manage Access" ON public.tags FOR ALL USING (true) WITH CHECK (true);
 
 -- 3. Comments Table
 CREATE TABLE IF NOT EXISTS public.comments (
@@ -50,7 +56,9 @@ CREATE TABLE IF NOT EXISTS public.comments (
 
 -- Enable RLS for Comments
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.comments;
 CREATE POLICY "Public Read Access" ON public.comments FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public Insert Access" ON public.comments;
 CREATE POLICY "Public Insert Access" ON public.comments FOR INSERT WITH CHECK (true);
 
 -- 4. Categories Table
@@ -67,8 +75,10 @@ CREATE TABLE IF NOT EXISTS public.categories (
 
 -- Enable RLS for Categories
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.categories;
 CREATE POLICY "Public Read Access" ON public.categories FOR SELECT USING (true);
-CREATE POLICY "Authenticated Manage Access" ON public.categories FOR ALL USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.categories;
+CREATE POLICY "Authenticated Manage Access" ON public.categories FOR ALL USING (true) WITH CHECK (true);
 
 -- 5. Articles Table
 CREATE TABLE IF NOT EXISTS public.articles (
@@ -99,8 +109,10 @@ CREATE TABLE IF NOT EXISTS public.articles (
 
 -- Enable RLS for Articles
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.articles;
 CREATE POLICY "Public Read Access" ON public.articles FOR SELECT USING (true);
-CREATE POLICY "Authenticated Manage Access" ON public.articles FOR ALL USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.articles;
+CREATE POLICY "Authenticated Manage Access" ON public.articles FOR ALL USING (true) WITH CHECK (true);
 
 -- 6. Newsletter Subscribers Table
 CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
@@ -114,5 +126,55 @@ CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
 
 -- Enable RLS for Newsletter
 ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Insert" ON public.newsletter_subscribers;
 CREATE POLICY "Public Insert" ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "View for authenticated" ON public.newsletter_subscribers;
 CREATE POLICY "View for authenticated" ON public.newsletter_subscribers FOR SELECT USING (true);
+
+-- 7. Page Templates Table
+CREATE TABLE IF NOT EXISTS public.page_templates (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  page_type TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Page Templates
+ALTER TABLE public.page_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.page_templates;
+CREATE POLICY "Public Read Access" ON public.page_templates FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.page_templates;
+CREATE POLICY "Authenticated Manage Access" ON public.page_templates FOR ALL USING (true) WITH CHECK (true);
+
+-- 8. Block Instances Table
+CREATE TABLE IF NOT EXISTS public.block_instances (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  template_id UUID REFERENCES public.page_templates(id) ON DELETE CASCADE,
+  block_type TEXT NOT NULL,
+  config_json JSONB DEFAULT '{}',
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Block Instances
+ALTER TABLE public.block_instances ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.block_instances;
+CREATE POLICY "Public Read Access" ON public.block_instances FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.block_instances;
+CREATE POLICY "Authenticated Manage Access" ON public.block_instances FOR ALL USING (true) WITH CHECK (true);
+
+-- 9. Site Settings Table
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  id TEXT PRIMARY KEY,
+  config JSONB DEFAULT '{}',
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for Site Settings
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Access" ON public.site_settings;
+CREATE POLICY "Public Read Access" ON public.site_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated Manage Access" ON public.site_settings;
+CREATE POLICY "Authenticated Manage Access" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);

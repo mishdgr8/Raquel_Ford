@@ -143,6 +143,107 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                         </div>
                     </>
                 );
+            case 'BrandBanner':
+                return (
+                    <>
+                        <div className={styles.fieldGroup}>
+                            <label>Title (Use \n for line breaks)</label>
+                            <textarea
+                                className={styles.textarea}
+                                value={block.configJson.title || ""}
+                                onChange={(e) => handleChange('title', e.target.value)}
+                                placeholder={"WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"}
+                                style={{ height: '80px' }}
+                            />
+                        </div>
+                        <div className={styles.fieldGroup}>
+                            <label>Image URL</label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <Input
+                                    value={block.configJson.imageUrl || ""}
+                                    onChange={(e) => handleChange('imageUrl', e.target.value)}
+                                    placeholder="https://..."
+                                    style={{ flex: 1 }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowLibrary({ open: true, target: 'cover' })}
+                                    style={{
+                                        padding: '0 0.75rem', background: '#f1f5f9', border: '1px solid #e2e8f0',
+                                        borderRadius: '4px', cursor: 'pointer'
+                                    }}
+                                >
+                                    <Images size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                );
+            case 'SimpleBanner':
+                return (
+                    <>
+                        <div className={styles.fieldGroup}>
+                            <label>Title</label>
+                            <Input
+                                value={block.configJson.title || ""}
+                                onChange={(e) => handleChange('title', e.target.value)}
+                                placeholder="ADVERTISE WITH RAQUEL FORD"
+                            />
+                        </div>
+                        <div className={styles.row}>
+                            <div className={styles.fieldGroup}>
+                                <label>BG Color</label>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                    <Input
+                                        type="color"
+                                        value={block.configJson.backgroundColor || "#FFD447"}
+                                        onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                                        style={{ width: '40px', padding: '2px', height: '36px' }}
+                                    />
+                                    <Input
+                                        value={block.configJson.backgroundColor || "#FFD447"}
+                                        onChange={(e) => handleChange('backgroundColor', e.target.value)}
+                                        style={{ flex: 1 }}
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.fieldGroup}>
+                                <label>Text Color</label>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                    <Input
+                                        type="color"
+                                        value={block.configJson.textColor || "#11001C"}
+                                        onChange={(e) => handleChange('textColor', e.target.value)}
+                                        style={{ width: '40px', padding: '2px', height: '36px' }}
+                                    />
+                                    <Input
+                                        value={block.configJson.textColor || "#11001C"}
+                                        onChange={(e) => handleChange('textColor', e.target.value)}
+                                        style={{ flex: 1 }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.row}>
+                            <div className={styles.fieldGroup}>
+                                <label>Button Text</label>
+                                <Input
+                                    value={block.configJson.buttonText || ""}
+                                    onChange={(e) => handleChange('buttonText', e.target.value)}
+                                    placeholder="CONTACT US"
+                                />
+                            </div>
+                            <div className={styles.fieldGroup}>
+                                <label>Button Link</label>
+                                <Input
+                                    value={block.configJson.buttonLink || ""}
+                                    onChange={(e) => handleChange('buttonLink', e.target.value)}
+                                    placeholder="mailto:..."
+                                />
+                            </div>
+                        </div>
+                    </>
+                );
             case 'IGReels':
                 return (
                     <>
@@ -391,14 +492,19 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                             onClose={() => setShowLibrary({ ...showLibrary, open: false })}
                             onSelect={(url) => {
                                 if (showLibrary.target === 'cover') {
-                                    handleChange('coverImage', url);
+                                    // Handles both Magazine cover and general image URL fields
+                                    if (block.blockType === 'BrandBanner') {
+                                        handleChange('imageUrl', url);
+                                    } else {
+                                        handleChange('coverImage', url);
+                                    }
                                 } else {
                                     const newPreviews = [...(block.configJson.previewImages || [])];
                                     newPreviews[showLibrary.target] = url;
                                     handleChange('previewImages', newPreviews);
                                 }
                             }}
-                            title={`Select ${showLibrary.target === 'cover' ? 'Cover' : 'Preview'} Image`}
+                            title={`Select ${showLibrary.target === 'cover' ? 'Image' : 'Preview Image'}`}
                         />
 
                         <div className={styles.fieldGroup}>

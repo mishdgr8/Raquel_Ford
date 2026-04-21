@@ -19,6 +19,8 @@ const AVAILABLE_BLOCKS = [
     { type: 'HeroCarousel', label: 'Hero Carousel' },
     { type: 'LatestArticles', label: 'Latest Articles' },
     { type: 'NewsletterSignup', label: 'Newsletter Signup' },
+    { type: 'BrandBanner', label: 'Brand Banner' },
+    { type: 'SimpleBanner', label: 'Simple Banner' },
     { type: 'PostGrid', label: 'Article Grid' },
     { type: 'IGReels', label: 'IG Reels Strip' },
     { type: 'MagazinePromo', label: 'Magazine Promo' }
@@ -46,8 +48,9 @@ export function TemplateEditor({ templateId, initialData }: TemplateEditorProps)
                 await templateService.createTemplate(template as PageTemplate);
             }
             alert("Template saved successfully");
-        } catch (err) {
-            alert("Error saving template");
+        } catch (err: any) {
+            console.error("Save error details:", err);
+            alert(`Error saving template: ${err.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }

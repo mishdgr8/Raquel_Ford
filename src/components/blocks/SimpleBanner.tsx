@@ -17,8 +17,8 @@ export function SimpleBanner({ config }: SimpleBannerProps) {
     const title = config?.title || "ADVERTISE WITH RAQUEL FORD";
     const backgroundColor = config?.backgroundColor || "#FFD447";
     const textColor = config?.textColor || "#11001C";
-    const buttonText = config?.buttonText;
-    const buttonLink = config?.buttonLink;
+    const buttonText = config?.buttonText || (title.includes("ADVERTISE") ? "CONTACT ME" : config?.buttonText);
+    const buttonLink = config?.buttonLink || (title.includes("ADVERTISE") ? "mailto:momentswithraquel@gmail.com?subject=Advertising%20Inquiry" : config?.buttonLink);
 
     return (
         <section

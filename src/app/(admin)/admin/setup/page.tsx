@@ -104,10 +104,10 @@ export default function SetupPage() {
 
             // 3. Home Template
             log("Creating home page template...");
-            const homeTemplate = {
-                page_type: 'home',
+            const homeTemplate: any = {
+                pageType: 'home',
                 name: 'Default Home Layout',
-                is_active: true,
+                isActive: true,
                 blocks: [
                     { blockType: 'HeroCarousel', configJson: { count: 3 } },
                     { blockType: 'LatestArticles', configJson: { title: "Latest Stories", count: 5 } },
