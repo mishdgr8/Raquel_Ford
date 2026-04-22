@@ -3,7 +3,16 @@ import { NewsletterSubscriber } from "../types";
 
 const SUBSCRIBERS_TABLE = "newsletter_subscribers";
 
-const mapSubscriber = (data: any): NewsletterSubscriber => ({
+interface SupabaseSubscriber {
+    id: string;
+    email: string;
+    first_name?: string;
+    status: NewsletterSubscriber['status'];
+    source: string;
+    created_at: string;
+}
+
+const mapSubscriber = (data: SupabaseSubscriber): NewsletterSubscriber => ({
     id: data.id,
     email: data.email,
     firstName: data.first_name,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import styles from "./Footer.module.css";
-import { Instagram, Twitter, Facebook, Mail } from "lucide-react";
+import { Instagram, Twitter, Facebook } from "lucide-react";
 import { newsletterService } from "@/lib/services/newsletter";
 
 export function Footer() {
