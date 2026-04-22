@@ -114,7 +114,7 @@ export default function SetupPage() {
                     { blockType: 'PostGrid', configJson: { title: "Editor's Pick", count: 4, category_id: "lifestyle" } },
                     { blockType: 'IGReels', configJson: { title: "Follow us @raquelford" } },
                     { blockType: 'MagazinePromo', configJson: { title: "The Summer Issue", description: "Download our latest digital magazine." } },
-                    { blockType: 'BrandBanner', configJson: { title: "WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE" } }
+                    { blockType: 'BrandBanner', configJson: { title: "WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE" } }
                 ]
             };
 

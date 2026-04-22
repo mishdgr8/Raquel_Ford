@@ -1,8 +1,34 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import styles from "./Footer.module.css";
 import { Instagram, Twitter, Facebook, Mail } from "lucide-react";
+import { newsletterService } from "@/lib/services/newsletter";
 
 export function Footer() {
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setLoading(true);
+        setStatus('idle');
+        try {
+            await newsletterService.subscribe(email, undefined, 'footer');
+            setStatus('success');
+            setEmail("");
+        } catch (err) {
+            console.error('Subscription error:', err);
+            setStatus('error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <footer className={styles.footer} aria-labelledby="footer-brand">
             <div className="container">
@@ -62,16 +88,22 @@ export function Footer() {
                     <div className={styles.newsletter}>
                         <h3 className={styles.sectionTitle}>NEWSLETTER</h3>
                         <p>Subscribe to receive the latest stories and updates.</p>
-                        <form className={styles.form}>
+                        <form className={styles.form} onSubmit={handleSubscribe}>
                             <input
                                 type="email"
                                 placeholder="Your email address"
                                 className={styles.input}
                                 aria-label="Email address for newsletter"
                                 required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
-                            <button type="submit" className={styles.button} aria-label="Subscribe to newsletter">JOIN</button>
+                            <button type="submit" className={styles.button} aria-label="Subscribe to newsletter" disabled={loading}>
+                                {loading ? "..." : "JOIN"}
+                            </button>
                         </form>
+                        {status === 'success' && <p className={styles.success}>Thanks for subscribing!</p>}
+                        {status === 'error' && <p className={styles.error}>Something went wrong. Please try again.</p>}
 
                         <div className={styles.supportArea}>
                             <h3 className={styles.sectionTitle}>SUPPORT US</h3>

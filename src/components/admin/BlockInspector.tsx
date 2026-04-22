@@ -152,7 +152,7 @@ export function BlockInspector({ block, onUpdate }: BlockInspectorProps) {
                                 className={styles.textarea}
                                 value={block.configJson.title || ""}
                                 onChange={(e) => handleChange('title', e.target.value)}
-                                placeholder={"WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"}
+                                placeholder={"WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"}
                                 style={{ height: '80px' }}
                             />
                         </div>

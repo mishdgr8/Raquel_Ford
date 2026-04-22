@@ -11,7 +11,7 @@ interface BrandBannerProps {
 }
 
 export function BrandBanner({ config }: BrandBannerProps) {
-    const title = config?.title || "WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE";
+    const title = config?.title || "WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE";
     const imageUrl = config?.imageUrl || "https://images.unsplash.com/photo-1523301343968-6a6ebf63c672?q=80&w=2069&auto=format&fit=crop";
 
     return (

@@ -39,7 +39,7 @@ export function NewsletterSignup({ config }: NewsletterSignupProps) {
             <div className={styles.container}>
                 <div className={styles.content}>
                     <h2 className={styles.title}>
-                        WE EMPOWER OUR,<br />
+                        WE EMPOWER OUR<br />
                         AUDIENCE TO LIVE<br />
                         THEIR BEST LIVE
                     </h2>
@@ -47,8 +47,8 @@ export function NewsletterSignup({ config }: NewsletterSignupProps) {
                     <div className={styles.divider} />
 
                     <p className={styles.description}>
-                        Sign up for our newsletter to see more of<br />
-                        Black Women's Boundlessness
+                        Sign up for our newsletter and stay ahead of the curve on pop culture, fashion, beauty, lifestyle and everything shaping the moment<br />
+
                     </p>
 
                     <form className={styles.form} onSubmit={handleSubmit}>
