@@ -27,13 +27,16 @@ export default function UpdateTemplatePage() {
 
             let updatedCount = 0;
             for (const block of blocks) {
-                if (block.config_json?.title === "Stay in the loop" || block.template_id) {
+                const currentTitle = block.config_json?.title || "";
+                if (currentTitle.includes("EMPOWER OUR") || currentTitle.includes("EMPOWER OUR,")) {
+                    const newTitle = currentTitle.replace("EMPOWER OUR,", "EMPOWER OUR").replace("EMPOWER OUR\n", "EMPOWER OUR\n");
+
                     const { error: uError } = await supabase
                         .from('block_instances')
                         .update({
-                            block_type: "BrandBanner",
                             config_json: {
-                                title: "WE EMPOWER OUR,\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"
+                                ...block.config_json,
+                                title: "WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"
                             },
                             updated_at: new Date().toISOString()
                         })
