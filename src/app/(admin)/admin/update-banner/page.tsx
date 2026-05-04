@@ -12,31 +12,31 @@ export default function UpdateTemplatePage() {
         setLoading(true);
         setStatus("Finding blocks...");
         try {
-            // 1. Find the BrandBanner and NewsletterSignup blocks
+            // 1. Find the NewsletterSignup blocks
             const { data: blocks, error } = await supabase
                 .from('block_instances')
                 .select('*')
-                .in('block_type', ['BrandBanner', 'NewsletterSignup']);
+                .eq('block_type', 'NewsletterSignup');
 
             if (error) throw error;
 
             if (!blocks || blocks.length === 0) {
-                setStatus("No matching blocks found.");
+                setStatus("No NewsletterSignup blocks found.");
                 return;
             }
 
             let updatedCount = 0;
             for (const block of blocks) {
                 const currentTitle = block.config_json?.title || "";
-                if (currentTitle.includes("EMPOWER OUR")) {
-                    const newTitle = "WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE";
+                if (currentTitle.includes("EMPOWER OUR") || currentTitle.includes("EMPOWER OUR,")) {
+                    const newTitle = currentTitle.replace("EMPOWER OUR,", "EMPOWER OUR").replace("EMPOWER OUR\n", "EMPOWER OUR\n");
 
                     const { error: uError } = await supabase
                         .from('block_instances')
                         .update({
                             config_json: {
                                 ...block.config_json,
-                                title: newTitle
+                                title: "WE EMPOWER OUR\nAUDIENCE TO LIVE\nTHEIR BEST LIVE"
                             },
                             updated_at: new Date().toISOString()
                         })
@@ -45,9 +45,8 @@ export default function UpdateTemplatePage() {
                     if (!uError) updatedCount++;
                 }
             }
-            setStatus(`Successfully updated ${updatedCount} block(s) in Supabase.`);
+            setStatus(`Successfully updated ${updatedCount} block(s) to BrandBanner in Supabase.`);
         } catch (err: any) {
-
             setStatus("Error: " + err.message);
         } finally {
             setLoading(false);

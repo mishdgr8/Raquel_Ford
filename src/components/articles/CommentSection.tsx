@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getArticleComments, postComment } from "@/app/actions/comments";
 import { Comment } from "@/lib/services/comments";
 import styles from "./CommentSection.module.css";
@@ -18,16 +18,16 @@ export function CommentSection({ articleId }: CommentSectionProps) {
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const loadComments = useCallback(async () => {
-        const data = await getArticleComments(articleId);
-        setComments(data);
-    }, [articleId]);
-
     useEffect(() => {
         if (articleId) {
             loadComments();
         }
-    }, [articleId, loadComments]);
+    }, [articleId]);
+
+    const loadComments = async () => {
+        const data = await getArticleComments(articleId);
+        setComments(data);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

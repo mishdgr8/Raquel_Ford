@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import styles from "./LatestArticles.module.css";
 import { articleService } from "@/lib/services/articles";
 import { Article } from "@/lib/types";
@@ -79,7 +78,7 @@ export function LatestArticles({ config, initialArticles, initialSidebarArticles
                         </div>
 
                         <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
-                            <Link href="/articles/all" aria-label="See all stories from Raquel Ford" style={{
+                            <a href="/articles" aria-label="See all stories from Raquel Ford" style={{
                                 display: 'inline-block',
                                 padding: '1rem 2rem',
                                 border: '1px solid currentColor',
@@ -88,7 +87,7 @@ export function LatestArticles({ config, initialArticles, initialSidebarArticles
                                 fontSize: '0.875rem'
                             }}>
                                 SEE ALL STORIES
-                            </Link>
+                            </a>
                         </div>
                     </div>
                     <Sidebar initialLatest={initialSidebarArticles} />

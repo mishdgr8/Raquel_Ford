@@ -34,7 +34,7 @@ export function ArticleRenderer({ blocks, html }: ArticleRendererProps) {
             const container = document.querySelector(`.${styles.container}`);
             if (container) {
                 const paragraphs = container.querySelectorAll('p');
-                const replacedTokens = { ig: false, tk: false, sp: false };
+                let replacedTokens = { ig: false, tk: false, sp: false };
 
                 paragraphs.forEach(p => {
                     const text = p.textContent?.trim();
