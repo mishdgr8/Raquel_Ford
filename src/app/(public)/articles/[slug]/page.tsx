@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (!article) return { title: "Article Not Found" };
 
     // Check if relative or absolute image url
-    const imageUrl = article.featuredImage || "/images/og-image.jpg";
+    const imageUrl = article.featuredImage || "/og-image.png";
 
     return {
         title: `${article.title} | Raquel Ford`,
